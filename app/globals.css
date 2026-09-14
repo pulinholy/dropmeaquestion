@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  --color-paper: #fbfaf7;
+  --color-ink: #1b2a3d;
+  --color-ink-soft: #4a5a6d;
+  --color-postal-red: #c1443c;
+  --color-postal-blue: #2f5d8a;
+  --color-line: #ddd8cc;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
