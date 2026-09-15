@@ -16,7 +16,7 @@ const publicSans = Public_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "DropMeAQuestion — Get a real answer from a real expert",
+  title: "Drop Me A Question  — Get a real answer from a real expert",
   description:
     "Ask one question. Get a personal, accountable answer from someone who actually knows.",
 };

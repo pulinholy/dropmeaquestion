@@ -11,72 +11,74 @@ export default function Home() {
 
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
         <span className="font-display text-lg tracking-tight text-ink">
-          DropMeAQuestion
+          Drop Me A Question
         </span>
         
-         <a href="#expert"
+       <a   href="#ask-instead"
           className="text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
         >
-          Become an expert
+          Looking to ask a question instead?
         </a>
       </header>
 
+      {/* Hero — written for the expert */}
       <section className="mx-auto max-w-3xl px-6 pt-16 pb-20">
         <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
-           Drop a real question to a real expert.
+          Turn the questions people already ask you into income.
         </h1>
         <p className="mt-6 max-w-xl text-lg text-ink-soft">
-          One question. One accountable, personal answer from someone who has
-          actually been there — no account needed, no browsing a crowd of
-          strangers.
+          Set a price, share one link, and get paid for the expertise
+          you&apos;re already giving away for free — in DMs, comments, and
+          emails.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-4">
           
-           <a href="#ask"
+          <a  href="/register"
             className="rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-postal-blue"
           >
-            Drop a Question
+            Start Your Page
           </a>
           
-           <a href="#expert"
+         <a     href="#how"
             className="text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
           >
-            Register as an expert
+            See how it works
           </a>
         </div>
       </section>
 
-      <section className="border-t border-line">
+      {/* How it works — from the expert's side */}
+      <section id="how" className="border-t border-line">
         <div className="mx-auto max-w-3xl px-6 py-16">
           <h2 className="font-display text-2xl text-ink">How it works</h2>
           <ol className="mt-8 space-y-8">
             <li className="flex gap-5">
               <span className="font-display text-2xl text-postal-red">1</span>
               <div>
-                <p className="font-medium text-ink">Find the person you trust</p>
+                <p className="font-medium text-ink">Set your price</p>
                 <p className="mt-1 text-ink-soft">
-                  Follow a link an expert shared on their site, newsletter, or
-                  bio.
+                  Decide what a question is worth and how fast you&apos;ll
+                  answer. Takes five minutes.
                 </p>
               </div>
             </li>
             <li className="flex gap-5">
               <span className="font-display text-2xl text-postal-red">2</span>
               <div>
-                <p className="font-medium text-ink">Drop your question</p>
+                <p className="font-medium text-ink">Share your link</p>
                 <p className="mt-1 text-ink-soft">
-                  Pay a small fee and write exactly what you want answered —
-                  paste what AI told you, if that&apos;s where you started.
+                  Drop it in your bio, newsletter, or wherever your audience
+                  already finds you.
                 </p>
               </div>
             </li>
             <li className="flex gap-5">
               <span className="font-display text-2xl text-postal-red">3</span>
               <div>
-                <p className="font-medium text-ink">Get a real answer</p>
+                <p className="font-medium text-ink">Answer and get paid</p>
                 <p className="mt-1 text-ink-soft">
-                  A personal reply within the expert&apos;s stated window — or
-                  an automatic refund if they miss it.
+                  Reply in your own words, on your own time. You keep most of
+                  every payment.
                 </p>
               </div>
             </li>
@@ -84,38 +86,51 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why this beats free DMs / beats AI — reframed for the expert's pitch to their audience */}
       <section className="border-t border-line bg-ink text-paper">
         <div className="mx-auto max-w-3xl px-6 py-16">
-          <h2 className="font-display text-2xl">Why not just ask AI?</h2>
+          <h2 className="font-display text-2xl">
+            Give your audience more than AI can
+          </h2>
           <p className="mt-4 max-w-xl text-paper/80">
-            AI is a good place to start. But it can&apos;t vouch for you,
-            hasn&apos;t lived your specific situation, and won&apos;t put its
-            name behind the answer. DropMeAQuestion connects you with someone
-            who will — a real person, accountable for what they tell you.
+            Your audience can already ask AI anything for free. What they
+            can&apos;t get from AI is you — your judgment, your experience,
+            your name behind the answer. Drop Me A Question turns that into
+            something you can actually charge for, without building a
+            website or chasing invoices.
           </p>
         </div>
       </section>
 
-      <section id="expert" className="border-t border-line">
+      {/* Start CTA */}
+      <section id="start" className="border-t border-line">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <h2 className="font-display text-2xl text-ink">
-            Already answering questions for free?
+            Set up your page in five minutes
           </h2>
           <p className="mx-auto mt-3 max-w-md text-ink-soft">
-            Set up your profile in five minutes and get paid for the
-            expertise people already ask you for.
+            No website needed. No invoicing. Just a link you can share
+            today.
           </p>
           
-            <a href="#"
+           <a href="#"
             className="mt-6 inline-block rounded-sm bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
           >
-            Register as an Expert
+            Start Your Page
           </a>
         </div>
       </section>
 
+      {/* Small, quiet redirect for the rare asker who lands here directly */}
+      <section id="ask-instead" className="border-t border-line">
+        <div className="mx-auto max-w-3xl px-6 py-10 text-center text-sm text-ink-soft">
+          Have a link to a specific expert&apos;s page? Use that link
+          directly to ask your question.
+        </div>
+      </section>
+
       <footer className="border-t border-line px-6 py-8 text-center text-sm text-ink-soft">
-        © {new Date().getFullYear()} DropMeAQuestion
+        © {new Date().getFullYear()} Drop Me A Question
       </footer>
     </main>
   );
