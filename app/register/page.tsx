@@ -14,12 +14,39 @@ export default function RegisterPage() {
   const [price, setPrice] = useState("10")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [username, setUsername] = useState("")
+  const [usernameError, setUsernameError] = useState("")
 
+  async function checkUsername(value: string) {
+  const clean = value.toLowerCase().replace(/[^a-z0-9-]/g, "")
+  setUsername(clean)
+
+  if (clean.length < 3) {
+    setUsernameError("Username must be at least 3 characters.")
+    return
+  }
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("username", clean)
+    .maybeSingle()
+
+  if (data) {
+    setUsernameError("That username is already taken.")
+  } else {
+    setUsernameError("")
+  }
+}
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError("")
-
+if (usernameError || username.length < 3) {
+    setError("Please choose a valid, available username first.")
+    setLoading(false)
+    return
+  }
     // Step 1: create the auth user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -38,6 +65,7 @@ export default function RegisterPage() {
     const { error: profileError } = await supabase.from("profiles").insert({
       id: userId,
       full_name: fullName,
+      username: username,
       is_expert: true,
     })
 
@@ -83,6 +111,24 @@ export default function RegisterPage() {
             className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
           />
         </div>
+        <div>
+  <label className="block text-sm font-medium text-ink">
+    Choose your link
+  </label>
+  <div className="mt-1 flex items-center rounded-sm border border-line">
+    <span className="pl-3 text-sm text-ink-soft">dropmeaquestion.com/</span>
+    <input
+      type="text"
+      required
+      value={username}
+      onChange={(e) => checkUsername(e.target.value)}
+      className="w-full rounded-sm py-2 pr-2 text-ink outline-none"
+    />
+  </div>
+  {usernameError && (
+    <p className="mt-1 text-sm text-postal-red">{usernameError}</p>
+  )}
+</div>
 
         <div>
           <label className="block text-sm font-medium text-ink">Email</label>
