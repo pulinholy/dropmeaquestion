@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [headline, setHeadline] = useState("")
   const [bio, setBio] = useState("")
   const [price, setPrice] = useState("10")
+  const [responseWindowHours, setResponseWindowHours] = useState("24")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [username, setUsername] = useState("")
@@ -81,6 +82,7 @@ if (usernameError || username.length < 3) {
       headline,
       bio,
       price_cents: Math.round(parseFloat(price) * 100),
+      response_window_hours: parseInt(responseWindowHours, 10),
     })
 
     if (expertError) {
@@ -190,6 +192,20 @@ if (usernameError || username.length < 3) {
             onChange={(e) => setPrice(e.target.value)}
             className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-ink">
+            Answer within
+          </label>
+          <select
+            value={responseWindowHours}
+            onChange={(e) => setResponseWindowHours(e.target.value)}
+            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+          >
+            <option value="24">24 hours</option>
+            <option value="48">48 hours</option>
+          </select>
         </div>
 
         {error && <p className="text-sm text-postal-red">{error}</p>}

@@ -1,21 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { supabase } from "@/lib/supabase"
 
 export default function QuestionForm({
   expertId,
+  username,
   price,
-  responseWindowHours,
 }: {
   expertId: string
+  username: string
   price: string
-  responseWindowHours: number
 }) {
   const [question, setQuestion] = useState("")
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,36 +21,26 @@ export default function QuestionForm({
     setLoading(true)
     setError("")
 
-    const deadline = new Date()
-    deadline.setHours(deadline.getHours() + responseWindowHours)
-
-    const { error: insertError } = await supabase.from("questions").insert({
-      expert_id: expertId,
-      asker_email: email,
-      question_text: question,
-      deadline_at: deadline.toISOString(),
+    const res = await fetch("/api/stripe/create-checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        expertId,
+        question,
+        email,
+        username,
+      }),
     })
 
-    if (insertError) {
-      setError(insertError.message)
+    const data = await res.json()
+
+    if (data.error) {
+      setError(data.error)
       setLoading(false)
       return
     }
 
-    setSubmitted(true)
-    setLoading(false)
-  }
-
-  if (submitted) {
-    return (
-      <div className="mt-4">
-        <p className="font-medium text-ink">Question sent!</p>
-        <p className="mt-1 text-ink-soft">
-          You&apos;ll get an answer at {email} within {responseWindowHours}
-          h.
-        </p>
-      </div>
-    )
+    window.location.href = data.url
   }
 
   return (
@@ -87,8 +75,11 @@ export default function QuestionForm({
         disabled={loading}
         className="w-full rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-postal-blue disabled:opacity-50"
       >
-        {loading ? "Sending..." : `Drop a Question — $${price}`}
+        {loading ? "Redirecting to payment..." : `Drop a Question — $${price}`}
       </button>
+      <p className="text-center text-xs text-ink-soft">
+        You&apos;ll be able to attach a screenshot or PDF after payment.
+      </p>
     </form>
   )
 }
