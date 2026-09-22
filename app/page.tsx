@@ -10,45 +10,90 @@ export default function Home() {
       />
 
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
-        <span className="font-display text-lg tracking-tight text-ink">
-          Drop Me A Question
-        </span>
-        
-       <a   href="#ask-instead"
-          className="text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
-        >
-          Looking to ask a question instead?
+        <a href="/" className="flex items-center">
+          <img
+            src="/brand/logo-lockup.png"
+            alt="Drop Me A Question"
+            className="h-8 w-auto sm:h-9"
+          />
         </a>
+
+        <nav className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <a
+            href="#how"
+            className="hidden text-sm text-ink-soft hover:text-ink sm:inline"
+          >
+            How it works
+          </a>
+          <a
+            href="#how"
+            className="hidden text-sm text-ink-soft hover:text-ink sm:inline"
+          >
+            Pricing
+          </a>
+          <a href="/login" className="text-sm text-ink-soft hover:text-ink">
+            Log in
+          </a>
+          <a
+            href="/register"
+            className="rounded-sm bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
+          >
+            Create page
+          </a>
+        </nav>
       </header>
 
       {/* Hero — written for the expert */}
       <section className="mx-auto max-w-3xl px-6 pt-16 pb-20">
         <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
-          People already have questions.
+          People have questions.
           <br />
-          You already have the answers.
+          You have answers.
         </h1>
         <p className="mt-3 font-display text-2xl italic text-postal-red sm:text-3xl">
-          Now, get paid for them.
+          Now you can get paid for them.
         </p>
         <p className="mt-6 max-w-xl text-lg text-ink-soft">
-          Set a price, share one link, and get paid for the expertise
-          you&apos;re already giving away for free — in DMs, comments, and
-          emails.
+          Set your price. Share one link. Answer when you&apos;re ready.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-4">
-          
-          <a  href="/register"
+          <a
+            href="/register"
             className="rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-postal-blue"
           >
-            Start Your Page
+            Create your page →
           </a>
-          
-         <a     href="#how"
-            className="text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
-          >
-            See how it works
-          </a>
+        </div>
+        <p className="mt-4 text-sm text-ink-soft">
+          No website. No invoices. Just your expertise.
+        </p>
+      </section>
+
+      {/* Example page preview — illustrative only, not a real expert */}
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-md px-6 py-16 text-center">
+          <p className="text-sm font-medium text-ink-soft">
+            What your page could look like
+          </p>
+          <div className="mt-6 rounded-sm border border-line bg-lavender p-8">
+            <p className="font-display text-xl italic text-ink">
+              &ldquo;Ask me anything about building startups.&rdquo;
+            </p>
+            <div className="mx-auto mt-6 h-16 w-16 rounded-full bg-paper" />
+            <p className="mt-4 font-display text-lg text-ink">
+              Sarah Johnson
+            </p>
+            <p className="text-sm text-ink-soft">Startup advisor</p>
+            <p className="mt-3 text-sm text-ink-soft">
+              $25 · 48 hour response
+            </p>
+            <a
+              href="/register"
+              className="mt-6 inline-block rounded-sm bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
+            >
+              Drop me a question →
+            </a>
+          </div>
         </div>
       </section>
 
@@ -95,7 +140,7 @@ export default function Home() {
       <section className="border-t border-line bg-ink text-paper">
         <div className="mx-auto max-w-3xl px-6 py-16">
           <h2 className="font-display text-2xl">
-            Give your audience more than AI can
+            AI has answers. You have experience.
           </h2>
           <p className="mt-4 max-w-xl text-paper/80">
             Your audience can already ask AI anything for free. What they
@@ -107,21 +152,39 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Who this is for */}
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-3xl px-6 py-16">
+          <h2 className="font-display text-2xl text-ink">Who is this for?</h2>
+          <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 text-ink sm:grid-cols-3">
+            <p>Consultants</p>
+            <p>Creators</p>
+            <p>Coaches</p>
+            <p>Designers</p>
+            <p>Developers</p>
+            <p>Advisors</p>
+            <p>Lawyers*</p>
+            <p>Marketers</p>
+            <p>Experts</p>
+          </div>
+          <p className="mt-6 text-sm text-ink-soft">
+            * Check that paid Q&amp;A fits your profession&apos;s licensing
+            rules before you start.
+          </p>
+        </div>
+      </section>
+
       {/* Start CTA */}
       <section id="start" className="border-t border-line">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <h2 className="font-display text-2xl text-ink">
-            Set up your page in five minutes
+            Your knowledge shouldn&apos;t have to live in your DMs.
           </h2>
-          <p className="mx-auto mt-3 max-w-md text-ink-soft">
-            No website needed. No invoicing. Just a link you can share
-            today.
-          </p>
-          
-           <a href="#"
+          <a
+            href="/register"
             className="mt-6 inline-block rounded-sm bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
           >
-            Start Your Page
+            Create your page →
           </a>
         </div>
       </section>
