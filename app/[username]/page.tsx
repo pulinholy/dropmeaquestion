@@ -79,8 +79,8 @@ export default async function ExpertPage({
 
                 <ul className="mt-3 space-y-1 text-left text-xs text-ink-soft">
                   <li>
-                    &bull; Your card is authorized for ${price} now, but not
-                    charged yet.
+                    &bull; When you ask, your card is authorized for ${price}
+                    — not charged yet.
                   </li>
                   <li>
                     &bull; {firstName} has {expert.response_window_hours}{" "}
