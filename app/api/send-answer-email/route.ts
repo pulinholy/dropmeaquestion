@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
 
 export async function POST(request: Request) {
-  const { askerEmail, questionText, answerText, expertName } = await request.json()
+  const { askerEmail, questionText, answerText, expertName, questionId } = await request.json()
 
   if (!askerEmail || !answerText) {
     return NextResponse.json({ error: 'Missing askerEmail or answerText' }, { status: 400 })
   }
 
   const expertFirstName = expertName?.split(' ')[0] || expertName
+  const feedbackUrl = questionId
+    ? `${process.env.NEXT_PUBLIC_SITE_URL}/feedback/${questionId}`
+    : null
 
   try {
     const { data, error } = await resend.emails.send({
@@ -22,6 +25,7 @@ export async function POST(request: Request) {
             ${questionText}
           </blockquote>
           <p style="white-space: pre-wrap;">${answerText}</p>
+          ${feedbackUrl ? `<p style="margin-top: 24px;"><a href="${feedbackUrl}" style="color: #e45b4f;">Was this helpful? Let ${expertFirstName} know &rarr;</a></p>` : ''}
           <p style="margin-top: 32px; font-size: 13px; color: #888;">Sent via Drop Me A Question</p>
         </div>
       `,

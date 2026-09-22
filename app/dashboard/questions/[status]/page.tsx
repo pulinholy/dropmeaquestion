@@ -15,6 +15,8 @@ type Question = {
   answer_text: string | null
   stripe_payment_intent_id: string | null
   attachment_path: string | null
+  feedback_rating: "up" | "down" | null
+  feedback_comment: string | null
 }
 
 const labels: Record<string, string> = {
@@ -167,6 +169,7 @@ export default function QuestionsByStatusPage() {
         questionText: question?.question_text,
         answerText,
         expertName,
+        questionId,
       }),
     })
 
@@ -291,6 +294,21 @@ export default function QuestionsByStatusPage() {
                     )}
                     {status === "expired" && (
                       <p>Expired unanswered — the payment hold was released.</p>
+                    )}
+                    {q.feedback_rating && (
+                      <div className="border-t border-line pt-2">
+                        <p className="text-xs font-medium text-ink">
+                          Asker feedback:{" "}
+                          {q.feedback_rating === "up"
+                            ? "Helpful"
+                            : "Not quite what they needed"}
+                        </p>
+                        {q.feedback_comment && (
+                          <p className="mt-1 italic text-ink-soft">
+                            &ldquo;{q.feedback_comment}&rdquo;
+                          </p>
+                        )}
+                      </div>
                     )}
                     {q.attachment_path && (
                       <button
