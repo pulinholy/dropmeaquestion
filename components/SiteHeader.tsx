@@ -16,7 +16,7 @@ export default function SiteHeader({
         }}
       />
 
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
         <a href="/" className="flex items-center">
           <img
             src="/brand/logo-lockup.png"
