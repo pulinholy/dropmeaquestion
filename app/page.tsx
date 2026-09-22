@@ -118,7 +118,7 @@ export default function Home() {
       {/* Who this is for */}
       <section className="border-t border-line">
         <div className="mx-auto max-w-3xl px-6 py-16">
-          <h2 className="font-display text-2xl text-ink">Who is this for?</h2>
+          <h2 className="font-display text-2xl text-ink">Who is this for?*</h2>
           <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 text-ink sm:grid-cols-3">
             <p>Consultants</p>
             <p>Creators</p>
@@ -126,7 +126,6 @@ export default function Home() {
             <p>Designers</p>
             <p>Developers</p>
             <p>Advisors</p>
-            <p>Lawyers*</p>
             <p>Marketers</p>
             <p>Experts</p>
           </div>
