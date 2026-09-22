@@ -1,20 +1,13 @@
+import SiteHeader from "@/components/SiteHeader"
+import SiteFooter from "@/components/SiteFooter"
+
 export default function TermsPage() {
   return (
     <main className="min-h-screen">
-      <div
-        className="h-2 w-full"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(-45deg, var(--color-postal-red) 0 16px, var(--color-paper) 16px 24px, var(--color-postal-blue) 24px 40px, var(--color-paper) 40px 48px)",
-        }}
-      />
+      <SiteHeader />
 
       <div className="mx-auto max-w-2xl px-6 py-16">
-        <a href="/" className="text-sm text-ink-soft hover:text-ink">
-          ← Back to Drop Me A Question
-        </a>
-
-        <h1 className="mt-4 font-display text-3xl text-ink">
+        <h1 className="font-display text-3xl text-ink">
           Terms of Service
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
@@ -266,13 +259,7 @@ export default function TermsPage() {
         </div>
       </div>
 
-      <footer className="border-t border-line px-6 py-8 text-center text-sm text-ink-soft">
-        <a href="/privacy" className="hover:text-ink">
-          Privacy Policy
-        </a>
-        <span className="mx-2">·</span>
-        © {new Date().getFullYear()} Drop Me A Question
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

@@ -2,6 +2,8 @@ import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { notFound } from "next/navigation"
 import QuestionForm from "@/components/QuestionForm"
+import SiteHeader from "@/components/SiteHeader"
+import SiteFooter from "@/components/SiteFooter"
 
 export default async function ExpertPage({
   params,
@@ -34,13 +36,7 @@ if (!expert) {
 
   return (
     <main className="min-h-screen">
-      <div
-        className="h-2 w-full"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(-45deg, var(--color-postal-red) 0 16px, var(--color-paper) 16px 24px, var(--color-postal-blue) 24px 40px, var(--color-paper) 40px 48px)",
-        }}
-      />
+      <SiteHeader />
 
       <div className="mx-auto max-w-xl px-6 py-16">
         <div className="flex items-center gap-4">
@@ -93,6 +89,8 @@ if (!expert) {
 )}
         </div>
       </div>
+
+      <SiteFooter />
     </main>
   )
 }

@@ -2,6 +2,8 @@
 
 import { Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import SiteHeader from "@/components/SiteHeader"
+import SiteFooter from "@/components/SiteFooter"
 
 type QuestionInfo = {
   questionId: string
@@ -12,15 +14,17 @@ type QuestionInfo = {
 
 export default function ThankYouPage() {
   return (
-    <Suspense
-      fallback={
-        <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 text-center">
-          <p className="text-ink-soft">Confirming your payment...</p>
-        </main>
-      }
-    >
-      <ThankYouContent />
-    </Suspense>
+    <main className="flex min-h-screen flex-col">
+      <SiteHeader />
+
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-6 text-center">
+        <Suspense fallback={<p className="text-ink-soft">Confirming your payment...</p>}>
+          <ThankYouContent />
+        </Suspense>
+      </div>
+
+      <SiteFooter />
+    </main>
   )
 }
 
@@ -95,7 +99,7 @@ function ThankYouContent() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 text-center">
+    <>
       {status === "loading" && (
         <p className="text-ink-soft">Confirming your payment...</p>
       )}
@@ -168,6 +172,6 @@ function ThankYouContent() {
           </div>
         </>
       )}
-    </main>
+    </>
   )
 }

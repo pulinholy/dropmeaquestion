@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import SiteHeader from "@/components/SiteHeader"
+import SiteFooter from "@/components/SiteFooter"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -96,7 +98,10 @@ if (usernameError || username.length < 3) {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-md px-6 py-16">
+    <main className="min-h-screen">
+      <SiteHeader />
+
+      <div className="mx-auto max-w-md px-6 py-16">
       <h1 className="font-display text-3xl text-ink">Start your page</h1>
       <p className="mt-2 text-ink-soft">
         A few basics — you can add more later.
@@ -218,6 +223,9 @@ if (usernameError || username.length < 3) {
           {loading ? "Creating your page..." : "Create My Page"}
         </button>
       </form>
+      </div>
+
+      <SiteFooter />
     </main>
   )
 }
