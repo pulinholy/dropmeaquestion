@@ -203,11 +203,11 @@ export default function QuestionsByStatusPage() {
                 </span>
               </div>
 
-              <p className="mt-2 text-ink">{q.question_text}</p>
-              <p className="mt-1 text-sm text-ink-soft">
+              <p className="mt-2 text-sm text-ink-soft">
                 {truncateEmail(q.asker_email)} &middot;{" "}
                 {formatRelativeTime(q.created_at)}
               </p>
+              <p className="mt-1 text-ink">{q.question_text}</p>
 
               {answering === q.id ? (
                 <div className="mt-3 space-y-2">
@@ -272,11 +272,11 @@ export default function QuestionsByStatusPage() {
             const expanded = expandedId === q.id
             return (
               <div key={q.id} className="rounded-sm border border-line p-4">
-                <p className="text-ink">{q.question_text}</p>
-                <p className="mt-1 text-sm text-ink-soft">
+                <p className="text-sm text-ink-soft">
                   {truncateEmail(q.asker_email)} &middot;{" "}
                   {formatShortDate(q.created_at)}
                 </p>
+                <p className="mt-1 text-ink">{q.question_text}</p>
                 <button
                   onClick={() => setExpandedId(expanded ? null : q.id)}
                   className="mt-1 text-sm text-ink-soft hover:text-ink"
