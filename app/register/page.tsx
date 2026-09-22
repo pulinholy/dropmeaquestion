@@ -124,11 +124,10 @@ if (usernameError || username.length < 3) {
           </div>
           <div>
             <label className="block text-sm font-medium text-ink">
-              Last name
+              Last name <span className="text-ink-soft">(optional)</span>
             </label>
             <input
               type="text"
-              required
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"

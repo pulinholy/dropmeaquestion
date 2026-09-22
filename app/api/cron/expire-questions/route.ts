@@ -57,14 +57,15 @@ export async function GET(request: Request) {
         .maybeSingle()
 
       const expertName = profile?.full_name ?? expert?.headline ?? 'The expert'
+      const expertFirstName = expertName.split(' ')[0]
 
       const { error: emailError } = await resend.emails.send({
         from: 'Drop Me A Question <hello@dropmeaquestion.com>',
         to: question.asker_email,
-        subject: `Your question to ${expertName} has expired`,
+        subject: `Your question to ${expertFirstName} has expired`,
         html: `
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-            <p>${expertName} didn't answer your question in time, so it's expired:</p>
+            <p>${expertFirstName} didn't answer your question in time, so it's expired:</p>
             <blockquote style="border-left: 3px solid #ddd; margin: 16px 0; padding-left: 12px; color: #555;">
               ${question.question_text}
             </blockquote>

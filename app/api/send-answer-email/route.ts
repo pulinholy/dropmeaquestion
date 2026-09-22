@@ -8,14 +8,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing askerEmail or answerText' }, { status: 400 })
   }
 
+  const expertFirstName = expertName?.split(' ')[0] || expertName
+
   try {
     const { data, error } = await resend.emails.send({
       from: 'Drop Me A Question <hello@dropmeaquestion.com>',
       to: askerEmail,
-      subject: `${expertName} answered your question`,
+      subject: `${expertFirstName} answered your question`,
       html: `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-          <p>${expertName} answered the question you dropped:</p>
+          <p>${expertFirstName} answered the question you dropped:</p>
           <blockquote style="border-left: 3px solid #ddd; margin: 16px 0; padding-left: 12px; color: #555;">
             ${questionText}
           </blockquote>
