@@ -77,7 +77,7 @@ export default async function ExpertPage({
                   response
                 </p>
 
-                <ul className="mx-auto mt-3 max-w-xs space-y-1 text-left text-xs text-ink-soft">
+                <ul className="mt-3 space-y-1 text-left text-xs text-ink-soft">
                   <li>
                     &bull; Your card is authorized for ${price} now, but not
                     charged yet.
@@ -86,11 +86,7 @@ export default async function ExpertPage({
                     &bull; {firstName} has {expert.response_window_hours}{" "}
                     hours to answer.
                   </li>
-                  <li>
-                    &bull; Answered — you&apos;re charged and get your answer
-                    by email. Not answered in time — you&apos;re never
-                    charged.
-                  </li>
+                  <li>&bull; Answered — you&apos;re charged. No answer — no charge.</li>
                 </ul>
 
                 {expert.stripe_onboarded ? (
