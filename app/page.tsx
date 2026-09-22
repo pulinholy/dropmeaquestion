@@ -50,7 +50,7 @@ export default function Home() {
           <br />
           You have answers.
         </h1>
-        <p className="mt-3 font-display text-2xl italic text-postal-red sm:text-3xl">
+        <p className="mt-3 font-display text-2xl font-medium text-postal-red sm:text-3xl">
           Now you can get paid for them.
         </p>
         <p className="mx-auto mt-6 max-w-xl text-lg text-ink-soft">
