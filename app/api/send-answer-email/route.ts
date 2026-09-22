@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
-import { renderEmailLayout, renderEmailButton, renderEmailQuote } from '@/lib/email-layout'
+import { renderEmailLayout, renderEmailButton, renderEmailQuote, EMAIL_BASE_URL } from '@/lib/email-layout'
 
 export async function POST(request: Request) {
   const { askerEmail, questionText, answerText, expertName, questionId } = await request.json()
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
   const expertFirstName = expertName?.split(' ')[0] || expertName
   const feedbackUrl = questionId
-    ? `${process.env.NEXT_PUBLIC_SITE_URL}/feedback/${questionId}`
+    ? `${EMAIL_BASE_URL}/feedback/${questionId}`
     : null
 
   const body = `
