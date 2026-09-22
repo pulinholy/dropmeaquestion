@@ -1,5 +1,11 @@
+import type { Metadata } from "next"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+
+export const metadata: Metadata = {
+  title: "Privacy Policy — Drop Me A Question",
+  description: "What Drop Me A Question collects, how it's used, and who it's shared with.",
+}
 
 export default function PrivacyPage() {
   return (

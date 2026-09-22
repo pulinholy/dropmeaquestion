@@ -1,5 +1,11 @@
+import type { Metadata } from "next"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+
+export const metadata: Metadata = {
+  title: "Terms of Service — Drop Me A Question",
+  description: "The terms that govern using Drop Me A Question, for both Experts and Askers.",
+}
 
 export default function TermsPage() {
   return (

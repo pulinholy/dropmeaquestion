@@ -1,9 +1,50 @@
+import type { Metadata } from "next"
 import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { notFound } from "next/navigation"
 import QuestionForm from "@/components/QuestionForm"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import { PUBLIC_SITE_URL } from "@/lib/site"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>
+}): Promise<Metadata> {
+  const { username } = await params
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, full_name, avatar_url")
+    .eq("username", username)
+    .maybeSingle()
+
+  if (!profile) {
+    return { title: "Drop Me A Question" }
+  }
+
+  const { data: expert } = await supabaseAdmin
+    .from("experts")
+    .select("headline")
+    .eq("id", profile.id)
+    .maybeSingle()
+
+  const firstName = profile.full_name?.split(" ")[0] || profile.full_name
+  const title = `Ask ${firstName} a question — Drop Me A Question`
+  const description = expert?.headline
+    ? `${expert.headline} — get a real, accountable answer from ${firstName} on Drop Me A Question.`
+    : `Get a real, accountable answer from ${firstName} on Drop Me A Question.`
+  const image = profile.avatar_url || `${PUBLIC_SITE_URL}/brand/logo-lockup.png`
+  const url = `${PUBLIC_SITE_URL}/${username}`
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, images: [image], url, siteName: "Drop Me A Question" },
+    twitter: { card: "summary", title, description, images: [image] },
+  }
+}
 
 export default async function ExpertPage({
   params,

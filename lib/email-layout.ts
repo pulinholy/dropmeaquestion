@@ -1,7 +1,9 @@
+import { PUBLIC_SITE_URL } from './site'
+
 // Emails are always opened from a real inbox, never from the machine that
 // triggered the send -- so this must be a publicly reachable URL even when
 // NEXT_PUBLIC_SITE_URL is set to localhost for local dev checkout testing.
-export const EMAIL_BASE_URL = process.env.EMAIL_BASE_URL || 'https://www.dropmeaquestion.com'
+export const EMAIL_BASE_URL = PUBLIC_SITE_URL
 const SITE_URL = EMAIL_BASE_URL
 
 // Table-based layout with inline styles throughout -- email clients (Outlook
