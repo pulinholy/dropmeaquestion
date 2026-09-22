@@ -4,12 +4,13 @@
   --font-display: var(--font-display);
   --font-body: var(--font-body);
 
-  --color-paper: #fbfaf7;
-  --color-ink: #1b2a3d;
-  --color-ink-soft: #4a5a6d;
-  --color-postal-red: #c1443c;
-  --color-postal-blue: #2f5d8a;
-  --color-line: #ddd8cc;
+  --color-paper: #f8f6f1;
+  --color-ink: #17243a;
+  --color-ink-soft: #4a5568;
+  --color-postal-red: #e45b4f;
+  --color-postal-blue: #0e1826;
+  --color-line: #ddd6c8;
+  --color-lavender: #e9e5f4;
 }
 
 body {

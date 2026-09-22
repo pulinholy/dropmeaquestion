@@ -24,8 +24,13 @@ export default function Home() {
       {/* Hero — written for the expert */}
       <section className="mx-auto max-w-3xl px-6 pt-16 pb-20">
         <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
-          Turn the questions people already ask you into income.
+          People already have questions.
+          <br />
+          You already have the answers.
         </h1>
+        <p className="mt-3 font-display text-2xl italic text-postal-red sm:text-3xl">
+          Now, get paid for them.
+        </p>
         <p className="mt-6 max-w-xl text-lg text-ink-soft">
           Set a price, share one link, and get paid for the expertise
           you&apos;re already giving away for free — in DMs, comments, and
@@ -51,10 +56,10 @@ export default function Home() {
       <section id="how" className="border-t border-line">
         <div className="mx-auto max-w-3xl px-6 py-16">
           <h2 className="font-display text-2xl text-ink">How it works</h2>
-          <ol className="mt-8 space-y-8">
-            <li className="flex gap-5">
+          <ol className="mt-8 grid gap-5 sm:grid-cols-3">
+            <li className="rounded-sm bg-lavender p-5">
               <span className="font-display text-2xl text-postal-red">1</span>
-              <div>
+              <div className="mt-2">
                 <p className="font-medium text-ink">Set your price</p>
                 <p className="mt-1 text-ink-soft">
                   Decide what a question is worth and how fast you&apos;ll
@@ -62,9 +67,9 @@ export default function Home() {
                 </p>
               </div>
             </li>
-            <li className="flex gap-5">
+            <li className="rounded-sm bg-lavender p-5">
               <span className="font-display text-2xl text-postal-red">2</span>
-              <div>
+              <div className="mt-2">
                 <p className="font-medium text-ink">Share your link</p>
                 <p className="mt-1 text-ink-soft">
                   Drop it in your bio, newsletter, or wherever your audience
@@ -72,9 +77,9 @@ export default function Home() {
                 </p>
               </div>
             </li>
-            <li className="flex gap-5">
+            <li className="rounded-sm bg-lavender p-5">
               <span className="font-display text-2xl text-postal-red">3</span>
-              <div>
+              <div className="mt-2">
                 <p className="font-medium text-ink">Answer and get paid</p>
                 <p className="mt-1 text-ink-soft">
                   Reply in your own words, on your own time. You keep most of

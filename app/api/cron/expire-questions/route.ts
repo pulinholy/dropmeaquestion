@@ -59,7 +59,7 @@ export async function GET(request: Request) {
       const expertName = profile?.full_name ?? expert?.headline ?? 'The expert'
 
       const { error: emailError } = await resend.emails.send({
-        from: 'Drop Me A Question <onboarding@resend.dev>',
+        from: 'Drop Me A Question <hello@dropmeaquestion.com>',
         to: question.asker_email,
         subject: `Your question to ${expertName} has expired`,
         html: `
