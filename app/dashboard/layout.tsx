@@ -6,6 +6,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { QuestionCountsContext, type QuestionCounts } from "./questions-context"
 import { ProfileContext, type ProfileInfo } from "./profile-context"
+import { ActiveStatusContext } from "./active-status-context"
 import SiteFooter from "@/components/SiteFooter"
 
 const questionTabs = [
@@ -41,6 +42,9 @@ export default function DashboardLayout({
     username: null,
     avatarUrl: null,
   })
+  const [isActive, setIsActive] = useState(true)
+  const [activeStatusLoading, setActiveStatusLoading] = useState(true)
+  const [togglingActive, setTogglingActive] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -51,6 +55,7 @@ export default function DashboardLayout({
       setCheckingSession(false)
       loadCounts()
       loadProfile()
+      loadActiveStatus()
     })
   }, [router])
 
@@ -78,6 +83,42 @@ export default function DashboardLayout({
   async function handleLogout() {
     await supabase.auth.signOut()
     router.push("/login")
+  }
+
+  async function loadActiveStatus() {
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) return
+
+    const userId = sessionData.session.user.id
+
+    const { data } = await supabase
+      .from("experts")
+      .select("is_active")
+      .eq("id", userId)
+      .single()
+
+    if (data) setIsActive(data.is_active)
+    setActiveStatusLoading(false)
+  }
+
+  async function toggleActive() {
+    setTogglingActive(true)
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setTogglingActive(false)
+      return
+    }
+
+    const userId = sessionData.session.user.id
+    const newValue = !isActive
+
+    const { error } = await supabase
+      .from("experts")
+      .update({ is_active: newValue })
+      .eq("id", userId)
+
+    if (!error) setIsActive(newValue)
+    setTogglingActive(false)
   }
 
   async function loadCounts() {
@@ -112,6 +153,14 @@ export default function DashboardLayout({
   return (
     <QuestionCountsContext.Provider value={{ counts, refreshCounts: loadCounts }}>
       <ProfileContext.Provider value={{ profile, refreshProfile: loadProfile }}>
+      <ActiveStatusContext.Provider
+        value={{
+          isActive,
+          loading: activeStatusLoading,
+          toggling: togglingActive,
+          toggleActive,
+        }}
+      >
       <div className="flex min-h-screen flex-col">
         <div
           className="h-2 w-full"
@@ -151,21 +200,43 @@ export default function DashboardLayout({
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 gap-12 px-6 py-16">
         <nav className="w-48 flex-shrink-0">
-          <div className="mb-6 flex items-center gap-2 border-b border-line pb-6">
-            {profile.avatarUrl ? (
-              <img
-                src={profile.avatarUrl}
-                alt={profile.fullName}
-                className="h-9 w-9 flex-shrink-0 rounded-full border border-line object-cover"
-              />
-            ) : (
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-line bg-line/40 text-sm font-medium text-ink-soft">
-                {profile.fullName.charAt(0).toUpperCase() || "?"}
-              </div>
+          <div className="mb-6 border-b border-line pb-4">
+            <div className="flex items-center gap-2">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt={profile.fullName}
+                  className="h-9 w-9 flex-shrink-0 rounded-full border border-line object-cover"
+                />
+              ) : (
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-line bg-line/40 text-sm font-medium text-ink-soft">
+                  {profile.fullName.charAt(0).toUpperCase() || "?"}
+                </div>
+              )}
+              <p className="truncate text-sm font-medium text-ink">
+                {profile.fullName}
+              </p>
+            </div>
+
+            {!activeStatusLoading && (
+              <button
+                onClick={toggleActive}
+                disabled={togglingActive}
+                className="mt-3 flex w-full items-center justify-between rounded-sm px-1 py-1 text-left hover:bg-line/30 disabled:opacity-50"
+              >
+                <span className="flex items-center gap-1.5 text-xs text-ink-soft">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      isActive ? "bg-green-500" : "bg-ink-soft/40"
+                    }`}
+                  />
+                  {isActive ? "Accepting questions" : "Paused"}
+                </span>
+                <span className="text-xs font-medium text-postal-red">
+                  {isActive ? "Pause" : "Resume"}
+                </span>
+              </button>
             )}
-            <p className="truncate text-sm font-medium text-ink">
-              {profile.fullName}
-            </p>
           </div>
 
           <p className="px-3 text-sm font-medium text-ink">Questions</p>
@@ -213,6 +284,7 @@ export default function DashboardLayout({
 
         <SiteFooter />
       </div>
+      </ActiveStatusContext.Provider>
       </ProfileContext.Provider>
     </QuestionCountsContext.Provider>
   )

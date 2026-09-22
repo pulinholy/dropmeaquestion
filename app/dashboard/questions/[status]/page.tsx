@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { useQuestionCounts } from "../../questions-context"
-import ActiveStatusBanner from "../../active-status-banner"
 
 type Question = {
   id: string
@@ -183,8 +182,6 @@ export default function QuestionsByStatusPage() {
 
   return (
     <section>
-      {status === "pending" && <ActiveStatusBanner />}
-
       <h2 className="font-display text-xl text-ink">
         {label} ({questions.length})
       </h2>
