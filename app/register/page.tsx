@@ -197,7 +197,8 @@ if (usernameError || username.length < 3) {
             rows={3}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+            placeholder="e.g. I've spent 8 years leading engineering teams at fast-growing startups, and now help founders make smart technical hiring and architecture decisions."
+            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
           />
         </div>
 
