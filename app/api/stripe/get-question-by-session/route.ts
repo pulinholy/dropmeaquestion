@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
     const { data: expert } = await supabaseAdmin
       .from('profiles')
-      .select('full_name')
+      .select('full_name, username')
       .eq('id', question.expert_id)
       .maybeSingle()
 
@@ -48,6 +48,7 @@ export async function GET(request: Request) {
       questionId: question.id,
       questionText: question.question_text,
       expertName: expert?.full_name ?? 'the expert',
+      expertUsername: expert?.username ?? null,
       responseWindowHours: expertDetails?.response_window_hours ?? null,
       hasAttachment: Boolean(question.attachment_path),
     })

@@ -9,6 +9,7 @@ type QuestionInfo = {
   questionId: string
   questionText: string
   expertName: string
+  expertUsername: string | null
   responseWindowHours: number | null
   hasAttachment: boolean
 }
@@ -39,6 +40,8 @@ function ThankYouContent() {
   const [uploaded, setUploaded] = useState(false)
   const [uploadError, setUploadError] = useState("")
   const attemptsRef = useRef(0)
+
+  const expertFirstName = info?.expertName.split(" ")[0] || info?.expertName || "the expert"
 
   useEffect(() => {
     if (!sessionId) {
@@ -134,8 +137,7 @@ function ThankYouContent() {
             You&apos;re all set!
           </h1>
           <p className="mt-3 text-ink-soft">
-            Your question has been sent to{" "}
-            {info.expertName.split(" ")[0] || info.expertName}.{" "}
+            Your question has been sent to {expertFirstName}.{" "}
             {info.responseWindowHours
               ? `They'll reply by email within ${info.responseWindowHours} hours.`
               : "They'll reply by email."}{" "}
@@ -176,6 +178,15 @@ function ThankYouContent() {
               </>
             )}
           </div>
+
+          {info.expertUsername && (
+            <a
+              href={`/${info.expertUsername}`}
+              className="mt-6 text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
+            >
+              Ask {expertFirstName} another question
+            </a>
+          )}
         </>
       )}
     </>
