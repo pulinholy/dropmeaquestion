@@ -8,7 +8,8 @@ import SiteFooter from "@/components/SiteFooter"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [fullName, setFullName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [headline, setHeadline] = useState("")
@@ -67,7 +68,7 @@ if (usernameError || username.length < 3) {
     // Step 2: create their profile
     const { error: profileError } = await supabase.from("profiles").insert({
       id: userId,
-      full_name: fullName,
+      full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
       username: username,
       is_expert: true,
     })
@@ -108,15 +109,31 @@ if (usernameError || username.length < 3) {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-        <div>
-          <label className="block text-sm font-medium text-ink">Full name</label>
-          <input
-            type="text"
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-ink">
+              First name
+            </label>
+            <input
+              type="text"
+              required
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-ink">
+              Last name
+            </label>
+            <input
+              type="text"
+              required
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+            />
+          </div>
         </div>
         <div>
   <label className="block text-sm font-medium text-ink">
