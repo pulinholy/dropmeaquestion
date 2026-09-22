@@ -36,7 +36,7 @@ export default function Home() {
           </a>
           <a
             href="/register"
-            className="rounded-sm bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
+            className="rounded-full bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
           >
             Create page
           </a>
@@ -59,7 +59,7 @@ export default function Home() {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
             href="/register"
-            className="rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-postal-blue"
+            className="rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-paper transition-colors hover:bg-postal-blue"
           >
             Create your page →
           </a>
@@ -89,7 +89,7 @@ export default function Home() {
             </p>
             <a
               href="/register"
-              className="mt-6 inline-block rounded-sm bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
+              className="mt-6 inline-block rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
             >
               Drop me a question →
             </a>
@@ -182,7 +182,7 @@ export default function Home() {
           </h2>
           <a
             href="/register"
-            className="mt-6 inline-block rounded-sm bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
+            className="mt-6 inline-block rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
           >
             Create your page →
           </a>
