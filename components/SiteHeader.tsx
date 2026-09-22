@@ -1,4 +1,11 @@
-export default function SiteHeader() {
+export default function SiteHeader({
+  variant = "default",
+}: {
+  // "default" is for expert-facing pages (home, register, login, etc).
+  // "asker" is for pages an asker lands on (an expert's page, thank-you) —
+  // they have no account and don't need the expert-focused nav.
+  variant?: "default" | "asker"
+}) {
   return (
     <>
       <div
@@ -19,21 +26,31 @@ export default function SiteHeader() {
         </a>
 
         <nav className="flex flex-wrap items-center gap-4 sm:gap-6">
-          <a
-            href="/#how"
-            className="hidden text-sm text-ink-soft hover:text-ink sm:inline"
-          >
-            How it works
-          </a>
-          <a href="/login" className="text-sm text-ink-soft hover:text-ink">
-            Log in
-          </a>
-          <a
-            href="/register"
-            className="rounded-full bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
-          >
-            Create page
-          </a>
+          {variant === "default" && (
+            <>
+              <a
+                href="/#how"
+                className="hidden text-sm text-ink-soft hover:text-ink sm:inline"
+              >
+                How it works
+              </a>
+              <a href="/login" className="text-sm text-ink-soft hover:text-ink">
+                Log in
+              </a>
+              <a
+                href="/register"
+                className="rounded-full bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
+              >
+                Create page
+              </a>
+            </>
+          )}
+
+          {variant === "asker" && (
+            <a href="/register" className="text-sm text-ink-soft hover:text-ink">
+              Create your own page
+            </a>
+          )}
         </nav>
       </header>
     </>

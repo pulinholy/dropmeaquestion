@@ -33,10 +33,11 @@ export default async function ExpertPage({
   }
 
   const price = (expert.price_cents / 100).toFixed(2)
+  const firstName = profile.full_name?.split(" ")[0] || profile.full_name
 
   return (
     <main className="min-h-screen">
-      <SiteHeader />
+      <SiteHeader variant="asker" />
 
       <section className="border-t border-line">
         <div className="mx-auto max-w-md px-6 py-16 text-center">
@@ -75,6 +76,22 @@ export default async function ExpertPage({
                   ${price} &middot; {expert.response_window_hours} hour
                   response
                 </p>
+
+                <ul className="mx-auto mt-3 max-w-xs space-y-1 text-left text-xs text-ink-soft">
+                  <li>
+                    &bull; Your card is authorized for ${price} now, but not
+                    charged yet.
+                  </li>
+                  <li>
+                    &bull; {firstName} has {expert.response_window_hours}{" "}
+                    hours to answer.
+                  </li>
+                  <li>
+                    &bull; Answered — you&apos;re charged and get your answer
+                    by email. Not answered in time — you&apos;re never
+                    charged.
+                  </li>
+                </ul>
 
                 {expert.stripe_onboarded ? (
                   <QuestionForm
