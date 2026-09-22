@@ -196,6 +196,10 @@ export default function Home() {
           Terms of Service
         </a>
         <span className="mx-2">·</span>
+        <a href="/privacy" className="hover:text-ink">
+          Privacy Policy
+        </a>
+        <span className="mx-2">·</span>
         © {new Date().getFullYear()} Drop Me A Question
       </footer>
     </main>
