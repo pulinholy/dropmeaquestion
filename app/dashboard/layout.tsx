@@ -222,17 +222,21 @@ export default function DashboardLayout({
               <button
                 onClick={toggleActive}
                 disabled={togglingActive}
-                className="mt-3 flex w-full items-center justify-between rounded-sm px-1 py-1 text-left hover:bg-line/30 disabled:opacity-50"
+                className="mt-3 flex w-full flex-col gap-1 rounded-sm px-1 py-1 text-left hover:bg-line/30 disabled:opacity-50"
               >
-                <span className="flex items-center gap-1.5 text-xs text-ink-soft">
+                <span className="flex items-start gap-1.5 text-xs text-ink-soft">
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${
+                    className={`mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full ${
                       isActive ? "bg-green-500" : "bg-ink-soft/40"
                     }`}
                   />
-                  {isActive ? "Accepting questions" : "Paused"}
+                  <span>
+                    {isActive
+                      ? "Accepting questions"
+                      : "Paused- not accepting questions"}
+                  </span>
                 </span>
-                <span className="text-xs font-medium text-postal-red">
+                <span className="pl-3 text-xs font-medium text-postal-red">
                   {isActive ? "Pause" : "Resume"}
                 </span>
               </button>
