@@ -54,7 +54,7 @@ export default function Home() {
           Now you can get paid for them.
         </p>
         <p className="mx-auto mt-6 max-w-xl text-lg text-ink-soft">
-          Set your price. Share one link. Answer by the deadline you set.
+          Set your price. Share one link. Answer by the time you set.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
