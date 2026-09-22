@@ -6,6 +6,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { QuestionCountsContext, type QuestionCounts } from "./questions-context"
 import { ProfileContext, type ProfileInfo } from "./profile-context"
+import SiteFooter from "@/components/SiteFooter"
 
 const questionTabs = [
   { href: "/dashboard/questions/pending", label: "Pending", key: "pending" as const },
@@ -37,6 +38,7 @@ export default function DashboardLayout({
   })
   const [profile, setProfile] = useState<ProfileInfo>({
     fullName: "",
+    username: null,
     avatarUrl: null,
   })
 
@@ -60,13 +62,22 @@ export default function DashboardLayout({
 
     const { data } = await supabase
       .from("profiles")
-      .select("full_name, avatar_url")
+      .select("full_name, username, avatar_url")
       .eq("id", userId)
       .single()
 
     if (data) {
-      setProfile({ fullName: data.full_name, avatarUrl: data.avatar_url })
+      setProfile({
+        fullName: data.full_name,
+        username: data.username,
+        avatarUrl: data.avatar_url,
+      })
     }
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push("/login")
   }
 
   async function loadCounts() {
@@ -101,7 +112,44 @@ export default function DashboardLayout({
   return (
     <QuestionCountsContext.Provider value={{ counts, refreshCounts: loadCounts }}>
       <ProfileContext.Provider value={{ profile, refreshProfile: loadProfile }}>
-      <main className="mx-auto flex max-w-4xl gap-12 px-6 py-16">
+      <div className="flex min-h-screen flex-col">
+        <div
+          className="h-2 w-full"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(-45deg, var(--color-postal-red) 0 16px, var(--color-paper) 16px 24px, var(--color-postal-blue) 24px 40px, var(--color-paper) 40px 48px)",
+          }}
+        />
+
+        <header className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-6">
+          <a href="/" className="flex items-center">
+            <img
+              src="/brand/logo-lockup.png"
+              alt="Drop Me A Question"
+              className="h-8 w-auto sm:h-9"
+            />
+          </a>
+          <nav className="flex items-center gap-4">
+            {profile.username && (
+              <a
+                href={`/${profile.username}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-ink-soft hover:text-ink"
+              >
+                View my page
+              </a>
+            )}
+            <button
+              onClick={handleLogout}
+              className="text-sm text-ink-soft hover:text-ink"
+            >
+              Log out
+            </button>
+          </nav>
+        </header>
+
+      <main className="mx-auto flex w-full max-w-4xl flex-1 gap-12 px-6 py-16">
         <nav className="w-48 flex-shrink-0">
           <div className="mb-6 flex items-center gap-2 border-b border-line pb-6">
             {profile.avatarUrl ? (
@@ -162,6 +210,9 @@ export default function DashboardLayout({
 
         <div className="min-w-0 flex-1">{children}</div>
       </main>
+
+        <SiteFooter />
+      </div>
       </ProfileContext.Provider>
     </QuestionCountsContext.Provider>
   )
