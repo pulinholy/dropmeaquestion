@@ -243,6 +243,17 @@ export default function DashboardLayout({
             )}
           </div>
 
+          <Link
+            href="/dashboard"
+            className={`mb-6 block rounded-sm px-3 py-1.5 text-sm font-medium ${
+              pathname === "/dashboard"
+                ? "bg-postal-red/10 text-postal-red"
+                : "text-ink-soft hover:bg-line/50 hover:text-ink"
+            }`}
+          >
+            Home
+          </Link>
+
           <p className="px-3 text-sm font-medium text-ink">Questions</p>
           <div className="mt-1 space-y-0.5">
             {questionTabs.map((tab) => {
