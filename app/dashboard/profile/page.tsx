@@ -10,7 +10,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState("")
-  const [fullName, setFullName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [headline, setHeadline] = useState("")
   const [bio, setBio] = useState("")
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
@@ -40,7 +41,9 @@ export default function ProfilePage() {
       .single()
 
     if (profile) {
-      setFullName(profile.full_name)
+      const [first, ...rest] = (profile.full_name ?? "").split(" ")
+      setFirstName(first ?? "")
+      setLastName(rest.join(" "))
       setAvatarUrl(profile.avatar_url)
     }
     if (expert) {
@@ -108,7 +111,7 @@ export default function ProfilePage() {
 
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({ full_name: fullName })
+      .update({ full_name: `${firstName.trim()} ${lastName.trim()}`.trim() })
       .eq("id", userId)
 
     const { error: expertError } = await supabase
@@ -144,7 +147,7 @@ export default function ProfilePage() {
             />
           ) : (
             <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-line/40 text-lg font-medium text-ink-soft">
-              {fullName.charAt(0).toUpperCase() || "?"}
+              {firstName.charAt(0).toUpperCase() || "?"}
             </div>
           )}
           <label className="cursor-pointer rounded-sm border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-line">
@@ -164,17 +167,30 @@ export default function ProfilePage() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-5">
-        <div>
-          <label className="block text-sm font-medium text-ink">
-            Full name
-          </label>
-          <input
-            type="text"
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-ink">
+              First name
+            </label>
+            <input
+              type="text"
+              required
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-ink">
+              Last name <span className="text-ink-soft">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+            />
+          </div>
         </div>
 
         <div>
