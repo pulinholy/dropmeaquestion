@@ -277,6 +277,25 @@ export default function QuestionsByStatusPage() {
                   {formatShortDate(q.created_at)}
                 </p>
                 <p className="mt-1 text-ink">{q.question_text}</p>
+
+                {q.feedback_rating && (
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        q.feedback_rating === "up"
+                          ? "bg-green-500"
+                          : "bg-ink-soft/40"
+                      }`}
+                    />
+                    <span className="text-xs font-medium text-ink-soft">
+                      Feedback:{" "}
+                      {q.feedback_rating === "up"
+                        ? "Helpful"
+                        : "Not quite what they needed"}
+                    </span>
+                  </div>
+                )}
+
                 <button
                   onClick={() => setExpandedId(expanded ? null : q.id)}
                   className="mt-1 text-sm text-ink-soft hover:text-ink"
@@ -295,20 +314,10 @@ export default function QuestionsByStatusPage() {
                     {status === "expired" && (
                       <p>Expired unanswered — the payment hold was released.</p>
                     )}
-                    {q.feedback_rating && (
-                      <div className="border-t border-line pt-2">
-                        <p className="text-xs font-medium text-ink">
-                          Asker feedback:{" "}
-                          {q.feedback_rating === "up"
-                            ? "Helpful"
-                            : "Not quite what they needed"}
-                        </p>
-                        {q.feedback_comment && (
-                          <p className="mt-1 italic text-ink-soft">
-                            &ldquo;{q.feedback_comment}&rdquo;
-                          </p>
-                        )}
-                      </div>
+                    {q.feedback_comment && (
+                      <p className="border-t border-line pt-2 italic text-ink-soft">
+                        &ldquo;{q.feedback_comment}&rdquo;
+                      </p>
                     )}
                     {q.attachment_path && (
                       <button
