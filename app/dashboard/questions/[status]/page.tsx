@@ -71,6 +71,7 @@ export default function QuestionsByStatusPage() {
   const [loading, setLoading] = useState(true)
   const [answering, setAnswering] = useState<string | null>(null)
   const [answerText, setAnswerText] = useState("")
+  const [processingId, setProcessingId] = useState<string | null>(null)
   const [expertName, setExpertName] = useState("")
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
@@ -118,6 +119,9 @@ export default function QuestionsByStatusPage() {
   }
 
   async function declineQuestion(questionId: string) {
+    if (processingId) return
+    setProcessingId(questionId)
+
     const question = questions.find((q) => q.id === questionId)
 
     const { error } = await supabase
@@ -125,7 +129,10 @@ export default function QuestionsByStatusPage() {
       .update({ status: "declined" })
       .eq("id", questionId)
 
-    if (error) return
+    if (error) {
+      setProcessingId(null)
+      return
+    }
 
     await fetch("/api/stripe/cancel-payment", {
       method: "POST",
@@ -137,9 +144,13 @@ export default function QuestionsByStatusPage() {
 
     loadQuestions()
     refreshCounts()
+    setProcessingId(null)
   }
 
   async function submitAnswer(questionId: string) {
+    if (processingId) return
+    setProcessingId(questionId)
+
     const question = questions.find((q) => q.id === questionId)
 
     const { error } = await supabase
@@ -151,7 +162,10 @@ export default function QuestionsByStatusPage() {
       })
       .eq("id", questionId)
 
-    if (error) return
+    if (error) {
+      setProcessingId(null)
+      return
+    }
 
     await fetch("/api/stripe/capture-payment", {
       method: "POST",
@@ -177,6 +191,7 @@ export default function QuestionsByStatusPage() {
     setAnswerText("")
     loadQuestions()
     refreshCounts()
+    setProcessingId(null)
   }
 
   if (loading) {
@@ -221,13 +236,15 @@ export default function QuestionsByStatusPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => submitAnswer(q.id)}
-                      className="rounded-sm bg-ink px-3 py-1.5 text-sm font-medium text-paper hover:bg-postal-blue"
+                      disabled={processingId === q.id}
+                      className="rounded-sm bg-ink px-3 py-1.5 text-sm font-medium text-paper hover:bg-postal-blue disabled:opacity-50"
                     >
-                      Send Answer
+                      {processingId === q.id ? "Sending..." : "Send Answer"}
                     </button>
                     <button
                       onClick={() => setAnswering(null)}
-                      className="rounded-sm border border-line px-3 py-1.5 text-sm text-ink-soft"
+                      disabled={processingId === q.id}
+                      className="rounded-sm border border-line px-3 py-1.5 text-sm text-ink-soft disabled:opacity-50"
                     >
                       Cancel
                     </button>
@@ -257,9 +274,10 @@ export default function QuestionsByStatusPage() {
                     </button>
                     <button
                       onClick={() => declineQuestion(q.id)}
-                      className="rounded-sm border border-line px-3 py-1.5 text-sm text-ink-soft hover:bg-line"
+                      disabled={processingId === q.id}
+                      className="rounded-sm border border-line px-3 py-1.5 text-sm text-ink-soft hover:bg-line disabled:opacity-50"
                     >
-                      Decline
+                      {processingId === q.id ? "Declining..." : "Decline"}
                     </button>
                   </div>
                 </div>
