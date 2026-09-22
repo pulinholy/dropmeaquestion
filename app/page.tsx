@@ -126,6 +126,7 @@ export default function Home() {
             <p>Designers</p>
             <p>Developers</p>
             <p>Advisors</p>
+            <p>Founders</p>
             <p>Marketers</p>
             <p>Experts</p>
           </div>
