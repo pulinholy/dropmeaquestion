@@ -2,8 +2,17 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
+const MAX_QUESTION_LENGTH = 500
+
 export async function POST(request: Request) {
   const { expertId, question, email, username } = await request.json()
+
+  if (typeof question !== 'string' || question.length > MAX_QUESTION_LENGTH) {
+    return NextResponse.json(
+      { error: `Your question is too long (max ${MAX_QUESTION_LENGTH} characters).` },
+      { status: 400 }
+    )
+  }
 
   try {
     const { data: expert } = await supabaseAdmin

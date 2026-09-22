@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 
+const MAX_QUESTION_LENGTH = 500
+
 export default function QuestionForm({
   expertId,
   username,
@@ -52,10 +54,14 @@ export default function QuestionForm({
         <textarea
           required
           rows={4}
+          maxLength={MAX_QUESTION_LENGTH}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
         />
+        <p className="mt-1 text-right text-xs text-ink-soft">
+          {question.length}/{MAX_QUESTION_LENGTH}
+        </p>
       </div>
       <div>
         <label className="block text-sm font-medium text-ink">
