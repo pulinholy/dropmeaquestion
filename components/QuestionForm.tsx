@@ -44,7 +44,7 @@ export default function QuestionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+    <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-left">
       <div>
         <label className="block text-sm font-medium text-ink">
           Your question
@@ -54,7 +54,7 @@ export default function QuestionForm({
           rows={4}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+          className="mt-1 w-full rounded-sm border border-line bg-paper px-3 py-2 text-ink"
         />
       </div>
       <div>
@@ -66,16 +66,16 @@ export default function QuestionForm({
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+          className="mt-1 w-full rounded-sm border border-line bg-paper px-3 py-2 text-ink"
         />
       </div>
       {error && <p className="text-sm text-postal-red">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-postal-blue disabled:opacity-50"
+        className="w-full rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink disabled:opacity-50"
       >
-        {loading ? "Redirecting to payment..." : `Drop a Question — $${price}`}
+        {loading ? "Redirecting to payment..." : `Drop me a question — $${price}`}
       </button>
       <p className="text-center text-xs text-ink-soft">
         You&apos;ll be able to attach a screenshot or PDF after payment.

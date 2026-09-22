@@ -28,9 +28,9 @@ export default async function ExpertPage({
     .eq("id", profile.id)
     .maybeSingle()
 
-if (!expert) {
-  notFound()
-}
+  if (!expert) {
+    notFound()
+  }
 
   const price = (expert.price_cents / 100).toFixed(2)
 
@@ -38,57 +38,63 @@ if (!expert) {
     <main className="min-h-screen">
       <SiteHeader />
 
-      <div className="mx-auto max-w-xl px-6 py-16">
-        <div className="flex items-center gap-4">
-          {profile.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt={profile.full_name}
-              className="h-16 w-16 flex-shrink-0 rounded-full border border-line object-cover"
-            />
-          ) : (
-            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border border-line bg-line/40 text-lg font-medium text-ink-soft">
-              {profile.full_name?.charAt(0).toUpperCase() || "?"}
-            </div>
-          )}
-          <div>
-            <p className="text-sm text-ink-soft">@{profile.username}</p>
-            <h1 className="mt-1 font-display text-3xl text-ink">
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-md px-6 py-16">
+          <div className="rounded-sm border border-line bg-lavender p-8 text-center">
+            {profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.full_name}
+                className="mx-auto h-20 w-20 flex-shrink-0 rounded-full border border-line object-cover"
+              />
+            ) : (
+              <div className="mx-auto flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border border-line bg-paper text-xl font-medium text-ink-soft">
+                {profile.full_name?.charAt(0).toUpperCase() || "?"}
+              </div>
+            )}
+
+            <p className="mt-4 font-display text-2xl text-ink">
               {profile.full_name}
-            </h1>
+            </p>
+            <p className="text-sm text-ink-soft">@{profile.username}</p>
+            {expert.headline && (
+              <p className="mt-2 text-ink-soft">{expert.headline}</p>
+            )}
+            {expert.bio && (
+              <p className="mt-4 text-sm text-ink">{expert.bio}</p>
+            )}
+
+            <div className="mt-6 border-t border-ink/10 pt-6">
+              {!expert.is_active ? (
+                <p className="text-sm text-ink-soft">
+                  I&apos;m not taking new questions right now — check back
+                  soon!
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm text-ink-soft">
+                    ${price} &middot; {expert.response_window_hours} hour
+                    response
+                  </p>
+
+                  {expert.stripe_onboarded ? (
+                    <QuestionForm
+                      expertId={profile.id}
+                      username={profile.username}
+                      price={price}
+                    />
+                  ) : (
+                    <p className="mt-4 text-sm text-ink-soft">
+                      This expert hasn&apos;t finished setting up payments
+                      yet — check back soon.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
-        <p className="mt-1 text-ink-soft">{expert.headline}</p>
-        <p className="mt-4 text-ink">{expert.bio}</p>
-
-        <div className="mt-8 rounded-sm border border-line p-6">
-        {!expert.is_active ? (
-  <p className="text-sm text-ink-soft">
-    I&apos;m not taking new questions right now — check back soon!
-  </p>
-) : (
-  <>
-    <p className="text-sm text-ink-soft">
-      ${price} per question &middot; answered within{" "}
-      {expert.response_window_hours}h
-    </p>
-
-    {expert.stripe_onboarded ? (
-      <QuestionForm
-        expertId={profile.id}
-        username={profile.username}
-        price={price}
-      />
-    ) : (
-      <p className="mt-4 text-sm text-ink-soft">
-        This expert hasn&apos;t finished setting up payments yet — check back
-        soon.
-      </p>
-    )}
-  </>
-)}
-        </div>
-      </div>
+      </section>
 
       <SiteFooter />
     </main>
