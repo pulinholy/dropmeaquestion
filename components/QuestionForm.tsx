@@ -54,7 +54,7 @@ export default function QuestionForm({
           rows={4}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          className="mt-1 w-full rounded-sm border border-line bg-paper px-3 py-2 text-ink"
+          className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
         />
       </div>
       <div>
@@ -66,7 +66,7 @@ export default function QuestionForm({
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-sm border border-line bg-paper px-3 py-2 text-ink"
+          className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
         />
       </div>
       {error && <p className="text-sm text-postal-red">{error}</p>}
