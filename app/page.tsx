@@ -121,8 +121,8 @@ export default function Home() {
               <div className="mt-2">
                 <p className="font-medium text-ink">Answer and get paid</p>
                 <p className="mt-1 text-ink-soft">
-                  Reply in your own words, on your own time. You keep most of
-                  every payment.
+                  Reply in your own words, within the time you set. You keep
+                  most of every payment.
                 </p>
               </div>
             </li>
