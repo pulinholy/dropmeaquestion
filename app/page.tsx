@@ -25,12 +25,6 @@ export default function Home() {
           >
             How it works
           </a>
-          <a
-            href="#how"
-            className="hidden text-sm text-ink-soft hover:text-ink sm:inline"
-          >
-            Pricing
-          </a>
           <a href="/login" className="text-sm text-ink-soft hover:text-ink">
             Log in
           </a>
