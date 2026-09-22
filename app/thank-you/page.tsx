@@ -9,6 +9,7 @@ type QuestionInfo = {
   questionId: string
   questionText: string
   expertName: string
+  responseWindowHours: number | null
   hasAttachment: boolean
 }
 
@@ -133,7 +134,12 @@ function ThankYouContent() {
             You&apos;re all set!
           </h1>
           <p className="mt-3 text-ink-soft">
-            Your question has been sent to {info.expertName}.
+            Your question has been sent to{" "}
+            {info.expertName.split(" ")[0] || info.expertName}.{" "}
+            {info.responseWindowHours
+              ? `They'll reply by email within ${info.responseWindowHours} hours.`
+              : "They'll reply by email."}{" "}
+            If they don&apos;t answer in time, you won&apos;t be charged.
           </p>
           <blockquote className="mt-4 w-full rounded-sm border border-line p-4 text-left text-sm text-ink-soft">
             {info.questionText}

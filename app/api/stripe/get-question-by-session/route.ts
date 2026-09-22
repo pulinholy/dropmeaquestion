@@ -37,11 +37,18 @@ export async function GET(request: Request) {
       .eq('id', question.expert_id)
       .maybeSingle()
 
+    const { data: expertDetails } = await supabaseAdmin
+      .from('experts')
+      .select('response_window_hours')
+      .eq('id', question.expert_id)
+      .maybeSingle()
+
     return NextResponse.json({
       pending: false,
       questionId: question.id,
       questionText: question.question_text,
       expertName: expert?.full_name ?? 'the expert',
+      responseWindowHours: expertDetails?.response_window_hours ?? null,
       hasAttachment: Boolean(question.attachment_path),
     })
   } catch (err) {
