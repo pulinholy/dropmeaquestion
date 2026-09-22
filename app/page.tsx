@@ -44,7 +44,7 @@ export default function Home() {
       </header>
 
       {/* Hero — written for the expert */}
-      <section className="mx-auto max-w-3xl px-6 pt-16 pb-20">
+      <section className="mx-auto max-w-3xl px-6 pt-16 pb-20 text-center">
         <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
           People have questions.
           <br />
@@ -53,10 +53,10 @@ export default function Home() {
         <p className="mt-3 font-display text-2xl italic text-postal-red sm:text-3xl">
           Now you can get paid for them.
         </p>
-        <p className="mt-6 max-w-xl text-lg text-ink-soft">
+        <p className="mx-auto mt-6 max-w-xl text-lg text-ink-soft">
           Set your price. Share one link. Answer when you&apos;re ready.
         </p>
-        <div className="mt-8 flex flex-wrap items-center gap-4">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
             href="/register"
             className="rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-postal-blue"
