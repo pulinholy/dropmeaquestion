@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
+import { renderEmailLayout, renderEmailButton, renderEmailQuote } from '@/lib/email-layout'
 
 export async function POST(request: Request) {
   const { askerEmail, questionText, answerText, expertName, questionId } = await request.json()
@@ -13,22 +14,19 @@ export async function POST(request: Request) {
     ? `${process.env.NEXT_PUBLIC_SITE_URL}/feedback/${questionId}`
     : null
 
+  const body = `
+    <p style="margin:0 0 16px;">${expertFirstName} answered the question you dropped:</p>
+    ${renderEmailQuote(questionText)}
+    <p style="margin:0 0 24px; white-space:pre-wrap;">${answerText}</p>
+    ${feedbackUrl ? renderEmailButton(feedbackUrl, 'Was this helpful?') : ''}
+  `
+
   try {
     const { data, error } = await resend.emails.send({
       from: 'Drop Me A Question <hello@dropmeaquestion.com>',
       to: askerEmail,
       subject: `${expertFirstName} answered your question`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-          <p>${expertFirstName} answered the question you dropped:</p>
-          <blockquote style="border-left: 3px solid #ddd; margin: 16px 0; padding-left: 12px; color: #555;">
-            ${questionText}
-          </blockquote>
-          <p style="white-space: pre-wrap;">${answerText}</p>
-          ${feedbackUrl ? `<p style="margin-top: 24px;"><a href="${feedbackUrl}" style="color: #e45b4f;">Was this helpful? Let ${expertFirstName} know &rarr;</a></p>` : ''}
-          <p style="margin-top: 32px; font-size: 13px; color: #888;">Sent via Drop Me A Question</p>
-        </div>
-      `,
+      html: renderEmailLayout(body),
     })
 
     if (error) {

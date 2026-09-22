@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { resend } from '@/lib/resend'
+import { renderEmailLayout, renderEmailQuote } from '@/lib/email-layout'
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
@@ -59,20 +60,17 @@ export async function GET(request: Request) {
       const expertName = profile?.full_name ?? expert?.headline ?? 'The expert'
       const expertFirstName = expertName.split(' ')[0]
 
+      const body = `
+        <p style="margin:0 0 16px;">${expertFirstName} didn't answer your question in time, so it's expired:</p>
+        ${renderEmailQuote(question.question_text)}
+        <p style="margin:0;">No worries — your card was never charged. The payment hold has been released.</p>
+      `
+
       const { error: emailError } = await resend.emails.send({
         from: 'Drop Me A Question <hello@dropmeaquestion.com>',
         to: question.asker_email,
         subject: `Your question to ${expertFirstName} has expired`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-            <p>${expertFirstName} didn't answer your question in time, so it's expired:</p>
-            <blockquote style="border-left: 3px solid #ddd; margin: 16px 0; padding-left: 12px; color: #555;">
-              ${question.question_text}
-            </blockquote>
-            <p>No worries — your card was never charged. The payment hold has been released.</p>
-            <p style="margin-top: 32px; font-size: 13px; color: #888;">Sent via Drop Me A Question</p>
-          </div>
-        `,
+        html: renderEmailLayout(body),
       })
 
       if (emailError) {
