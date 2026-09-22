@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     <p style="margin:0 0 16px;">${expertFirstName} answered the question you dropped:</p>
     ${renderEmailQuote(questionText)}
     <p style="margin:0 0 24px; white-space:pre-wrap;">${answerText}</p>
-    ${feedbackUrl ? renderEmailButton(feedbackUrl, 'Was this helpful?') : ''}
+    ${feedbackUrl ? renderEmailButton(feedbackUrl, `Was this helpful? Let ${expertFirstName} know &rarr;`) : ''}
   `
 
   try {
