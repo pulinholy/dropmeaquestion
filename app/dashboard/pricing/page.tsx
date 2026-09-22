@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 
+const MIN_PRICE = 5
+
 export default function PricingPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -40,6 +42,12 @@ export default function PricingPage() {
     setSaved(false)
     setError("")
 
+    if (parseFloat(price) < MIN_PRICE) {
+      setError(`Price per question must be at least $${MIN_PRICE}.`)
+      setSaving(false)
+      return
+    }
+
     const { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) return
 
@@ -69,12 +77,12 @@ export default function PricingPage() {
     <form onSubmit={handleSave} className="max-w-md space-y-5">
       <div>
         <label className="block text-sm font-medium text-ink">
-          Price per question (USD)
+          {`Price per question (USD, $${MIN_PRICE} minimum)`}
         </label>
         <input
           type="number"
           required
-          min="1"
+          min={MIN_PRICE}
           step="0.01"
           value={price}
           onChange={(e) => setPrice(e.target.value)}

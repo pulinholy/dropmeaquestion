@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 const MAX_QUESTION_LENGTH = 500
+const PLATFORM_FEE_RATE = 0.15
 
 export async function POST(request: Request) {
   const { expertId, question, email, username } = await request.json()
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const platformFee = Math.round(expert.price_cents * 0.1)
+    const platformFee = Math.round(expert.price_cents * PLATFORM_FEE_RATE)
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

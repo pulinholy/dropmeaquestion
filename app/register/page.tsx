@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 
+const MIN_PRICE = 5
+
 export default function RegisterPage() {
   const router = useRouter()
   const [firstName, setFirstName] = useState("")
@@ -48,6 +50,11 @@ export default function RegisterPage() {
     setError("")
 if (usernameError || username.length < 3) {
     setError("Please choose a valid, available username first.")
+    setLoading(false)
+    return
+  }
+  if (parseFloat(price) < MIN_PRICE) {
+    setError(`Price per question must be at least $${MIN_PRICE}.`)
     setLoading(false)
     return
   }
@@ -203,12 +210,12 @@ if (usernameError || username.length < 3) {
 
         <div>
           <label className="block text-sm font-medium text-ink">
-            Price per question (USD)
+            {`Price per question (USD, $${MIN_PRICE} minimum)`}
           </label>
           <input
             type="number"
             required
-            min="1"
+            min={MIN_PRICE}
             step="0.01"
             value={price}
             onChange={(e) => setPrice(e.target.value)}

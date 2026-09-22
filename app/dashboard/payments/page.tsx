@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 
+const EXPERT_NET_RATE = 0.85
+
 type Earning = {
   id: string
   question_text: string
@@ -132,7 +134,7 @@ export default function PaymentsPage() {
   }
 
   const totalNetCents = earnings.reduce(
-    (sum, e) => sum + Math.round((e.price_cents ?? 0) * 0.9),
+    (sum, e) => sum + Math.round((e.price_cents ?? 0) * EXPERT_NET_RATE),
     0
   )
 
@@ -176,8 +178,8 @@ export default function PaymentsPage() {
           </li>
           <li>
             If you answer in time, the card is charged and we transfer{" "}
-            <strong className="text-ink">90%</strong> of that charge to your
-            connected Stripe account — we keep a 10% platform fee. That
+            <strong className="text-ink">85%</strong> of that charge to your
+            connected Stripe account — we keep a 15% platform fee. That
             transfer is what shows as &quot;Earned&quot; below.
           </li>
           <li>
@@ -215,7 +217,7 @@ export default function PaymentsPage() {
 
           {earnings.map((e) => {
             const gross = e.price_cents ?? 0
-            const net = Math.round(gross * 0.9)
+            const net = Math.round(gross * EXPERT_NET_RATE)
             return (
               <div
                 key={e.id}

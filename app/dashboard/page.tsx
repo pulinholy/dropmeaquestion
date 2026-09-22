@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase"
 import { useQuestionCounts } from "./questions-context"
 import { useProfileInfo } from "./profile-context"
 
+const EXPERT_NET_RATE = 0.85
+
 type Stats = {
   totalEarnedCents: number
   helpfulCount: number
@@ -35,7 +37,7 @@ export default function DashboardHomePage() {
       .eq("status", "answered")
 
     const rows = data ?? []
-    const totalEarnedCents = rows.reduce((sum, q) => sum + Math.round((q.price_cents ?? 0) * 0.9), 0)
+    const totalEarnedCents = rows.reduce((sum, q) => sum + Math.round((q.price_cents ?? 0) * EXPERT_NET_RATE), 0)
 
     const feedbackRows = rows.filter((q) => q.feedback_rating)
     const helpfulCount = feedbackRows.filter((q) => q.feedback_rating === "up").length
