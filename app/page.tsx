@@ -192,6 +192,10 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-line px-6 py-8 text-center text-sm text-ink-soft">
+        <a href="/terms" className="hover:text-ink">
+          Terms of Service
+        </a>
+        <span className="mx-2">·</span>
         © {new Date().getFullYear()} Drop Me A Question
       </footer>
     </main>
