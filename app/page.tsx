@@ -118,7 +118,7 @@ export default function Home() {
       {/* Who this is for */}
       <section className="border-t border-line">
         <div className="mx-auto max-w-3xl px-6 py-16">
-          <h2 className="font-display text-2xl text-ink">Who is this for?*</h2>
+          <h2 className="font-display text-2xl text-ink">Who is this for?</h2>
           <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 text-ink sm:grid-cols-3">
             <p>Consultants</p>
             <p>Creators</p>
@@ -130,10 +130,6 @@ export default function Home() {
             <p>Marketers</p>
             <p>Experts</p>
           </div>
-          <p className="mt-6 text-sm text-ink-soft">
-            * Check that paid Q&amp;A fits your profession&apos;s licensing
-            rules before you start.
-          </p>
         </div>
       </section>
 
