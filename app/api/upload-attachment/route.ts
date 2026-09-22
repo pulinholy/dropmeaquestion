@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logError } from '@/lib/log-error'
 
 const MAX_SIZE = 4 * 1024 * 1024
 
@@ -28,9 +29,12 @@ function sniffFileType(bytes: Uint8Array): { ext: string; mimeType: string } | n
 }
 
 export async function POST(request: Request) {
+  let sessionIdForLogging: string | null = null
+
   try {
     const formData = await request.formData()
     const sessionId = formData.get('sessionId')
+    sessionIdForLogging = typeof sessionId === 'string' ? sessionId : null
     const file = formData.get('file')
 
     if (typeof sessionId !== 'string' || !sessionId) {
@@ -83,6 +87,7 @@ export async function POST(request: Request) {
       .upload(path, bytes, { upsert: true, contentType: sniffed.mimeType })
 
     if (uploadError) {
+      await logError('upload-attachment:storage', uploadError, { questionId: question.id })
       return NextResponse.json({ error: uploadError.message }, { status: 500 })
     }
 
@@ -92,11 +97,13 @@ export async function POST(request: Request) {
       .eq('id', question.id)
 
     if (updateError) {
+      await logError('upload-attachment:db', updateError, { questionId: question.id })
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (err) {
+    await logError('upload-attachment', err, { sessionId: sessionIdForLogging })
     return NextResponse.json({ error: (err as Error).message }, { status: 500 })
   }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
+import { logError } from '@/lib/log-error'
 
 export async function POST(request: Request) {
   const { paymentIntentId } = await request.json()
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     await stripe.paymentIntents.capture(paymentIntentId)
     return NextResponse.json({ success: true })
   } catch (err) {
-    console.error('Stripe capture error:', err)
+    await logError('stripe/capture-payment', err, { paymentIntentId })
     return NextResponse.json({ error: (err as Error).message }, { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logError } from '@/lib/log-error'
 
 const MAX_QUESTION_LENGTH = 500
 const PLATFORM_FEE_RATE = 0.15
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url })
   } catch (err) {
+    await logError('stripe/create-checkout', err, { expertId, username })
     return NextResponse.json({ error: (err as Error).message }, { status: 500 })
   }
 }

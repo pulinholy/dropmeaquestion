@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
+import { logError } from '@/lib/log-error'
 
 export async function POST(request: Request) {
   const { paymentIntentId } = await request.json()
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     await stripe.paymentIntents.cancel(paymentIntentId)
     return NextResponse.json({ success: true })
   } catch (err) {
-    console.error('Stripe cancel error:', err)
+    await logError('stripe/cancel-payment', err, { paymentIntentId })
     return NextResponse.json({ error: (err as Error).message }, { status: 500 })
   }
 }

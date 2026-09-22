@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logError } from '@/lib/log-error'
 
 const MAX_COMMENT_LENGTH = 500
 
@@ -44,6 +45,7 @@ export async function POST(request: Request) {
     .eq('id', questionId)
 
   if (error) {
+    await logError('submit-feedback', error, { questionId })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 

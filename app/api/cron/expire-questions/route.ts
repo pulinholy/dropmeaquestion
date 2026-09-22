@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { resend } from '@/lib/resend'
 import { renderEmailLayout, renderEmailQuote } from '@/lib/email-layout'
+import { logError } from '@/lib/log-error'
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     .lt('deadline_at', new Date().toISOString())
 
   if (fetchError) {
-    console.error('Failed to fetch overdue questions:', fetchError)
+    await logError('cron/expire-questions:fetch', fetchError)
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
@@ -74,12 +75,12 @@ export async function GET(request: Request) {
       })
 
       if (emailError) {
-        console.error(`Failed to send expiry email for question ${question.id}:`, emailError)
+        await logError('cron/expire-questions:email', emailError, { questionId: question.id })
       }
 
       results.push({ id: question.id, status: 'expired' })
     } catch (err) {
-      console.error(`Failed to expire question ${question.id}:`, err)
+      await logError('cron/expire-questions:process', err, { questionId: question.id })
       results.push({ id: question.id, status: 'error', message: (err as Error).message })
     }
   }

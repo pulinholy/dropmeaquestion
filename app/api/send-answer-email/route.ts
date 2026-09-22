@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
 import { renderEmailLayout, renderEmailButton, renderEmailQuote, EMAIL_BASE_URL } from '@/lib/email-layout'
+import { logError } from '@/lib/log-error'
 
 export async function POST(request: Request) {
   const { askerEmail, questionText, answerText, expertName, questionId } = await request.json()
@@ -30,13 +31,13 @@ export async function POST(request: Request) {
     })
 
     if (error) {
-      console.error('Resend rejected the email:', error)
+      await logError('send-answer-email:resend', error, { askerEmail, questionId })
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, id: data?.id })
   } catch (err) {
-    console.error('Failed to send answer email:', err)
+    await logError('send-answer-email', err, { askerEmail, questionId })
     return NextResponse.json({ error: (err as Error).message }, { status: 500 })
   }
 }

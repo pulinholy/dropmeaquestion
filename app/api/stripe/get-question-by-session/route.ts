@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logError } from '@/lib/log-error'
 
 export async function GET(request: Request) {
   const sessionId = new URL(request.url).searchParams.get('session_id')
@@ -53,6 +54,7 @@ export async function GET(request: Request) {
       hasAttachment: Boolean(question.attachment_path),
     })
   } catch (err) {
+    await logError('stripe/get-question-by-session', err, { sessionId })
     return NextResponse.json({ error: (err as Error).message }, { status: 500 })
   }
 }

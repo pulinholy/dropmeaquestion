@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
+import { logError } from '@/lib/log-error'
 
 export async function POST(request: Request) {
   const { email } = await request.json()
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ accountId: account.id })
  } catch (err) {
-  console.error('Stripe create-account error:', err)
+  await logError('stripe/create-account', err, { email })
   return NextResponse.json(
     { error: (err as Error).message },
     { status: 500 }

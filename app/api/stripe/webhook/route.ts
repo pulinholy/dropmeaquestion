@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { logError } from '@/lib/log-error'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err) {
-    console.error('Webhook signature verification failed:', err)
+    await logError('stripe/webhook:signature', err)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -41,7 +42,11 @@ export async function POST(request: Request) {
     })
 
     if (error) {
-      console.error('Failed to save question from webhook:', error)
+      await logError('stripe/webhook:checkout.session.completed', error, {
+        sessionId: session.id,
+        paymentIntentId: session.payment_intent,
+        expertId: session.metadata?.expertId,
+      })
     }
   }
 
@@ -55,7 +60,9 @@ export async function POST(request: Request) {
       .eq('stripe_account_id', account.id)
 
     if (error) {
-      console.error('Failed to update stripe_onboarded from webhook:', error)
+      await logError('stripe/webhook:account.updated', error, {
+        stripeAccountId: account.id,
+      })
     }
   }
 
