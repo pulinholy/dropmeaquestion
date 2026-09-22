@@ -179,7 +179,7 @@ if (usernameError || username.length < 3) {
 
         <div>
           <label className="block text-sm font-medium text-ink">
-            Headline (e.g. &quot;Senior iOS Developer, 8 yrs&quot;)
+            Title/Headline (eg. Founder, Startup Adviser)
           </label>
           <input
             type="text"
