@@ -19,9 +19,14 @@ export default function SiteHeader({
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
         <a href="/" className="flex items-center">
           <img
+            src="/brand/logo-icon.png"
+            alt="Drop Me A Question"
+            className="h-8 w-auto sm:hidden"
+          />
+          <img
             src="/brand/logo-lockup.png"
             alt="Drop Me A Question"
-            className="h-8 w-auto sm:h-9"
+            className="hidden h-8 w-auto sm:block sm:h-9"
           />
         </a>
 
