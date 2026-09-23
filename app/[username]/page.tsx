@@ -73,6 +73,12 @@ export default async function ExpertPage({
     notFound()
   }
 
+  const { data: topics } = await supabaseAdmin
+    .from("expert_topics")
+    .select("name")
+    .eq("expert_id", profile.id)
+    .order("sort_order", { ascending: true })
+
   const price = (expert.price_cents / 100).toFixed(2)
   const firstName = profile.full_name?.split(" ")[0] || profile.full_name
 
@@ -103,6 +109,19 @@ export default async function ExpertPage({
           )}
           {expert.bio && (
             <p className="mt-4 text-sm text-ink">{expert.bio}</p>
+          )}
+
+          {topics && topics.length > 0 && (
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {topics.map((topic) => (
+                <span
+                  key={topic.name}
+                  className="rounded-full border border-line bg-lavender/50 px-3 py-1 text-xs text-ink"
+                >
+                  {topic.name}
+                </span>
+              ))}
+            </div>
           )}
 
           <div className="mt-6 border-t border-line pt-6">

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import TopicInput from "@/components/TopicInput"
+import { slugify } from "@/lib/slugify"
 
 const MIN_PRICE = 5
 
@@ -16,6 +18,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [headline, setHeadline] = useState("")
   const [bio, setBio] = useState("")
+  const [topics, setTopics] = useState<string[]>([])
   const [price, setPrice] = useState("10")
   const [responseWindowHours, setResponseWindowHours] = useState("24")
   const [loading, setLoading] = useState(false)
@@ -99,6 +102,24 @@ if (usernameError || username.length < 3) {
       setError(expertError.message)
       setLoading(false)
       return
+    }
+
+    // Step 4: save their "ask me about" topics, if any
+    if (topics.length > 0) {
+      const { error: topicsError } = await supabase.from("expert_topics").insert(
+        topics.map((name, index) => ({
+          expert_id: userId,
+          name,
+          slug: slugify(name),
+          sort_order: index,
+        }))
+      )
+
+      if (topicsError) {
+        setError(topicsError.message)
+        setLoading(false)
+        return
+      }
     }
 
     setLoading(false)
@@ -206,6 +227,18 @@ if (usernameError || username.length < 3) {
             placeholder="e.g. I've spent 8 years leading engineering teams at fast-growing startups, and now help founders make smart technical hiring and architecture decisions."
             className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-ink">
+            What can people ask you about?
+          </label>
+          <p className="mt-1 text-sm text-ink-soft">
+            Add up to 5 topics that describe your expertise.
+          </p>
+          <div className="mt-2">
+            <TopicInput topics={topics} onChange={setTopics} />
+          </div>
         </div>
 
         <div>

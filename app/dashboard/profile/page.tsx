@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { useProfileInfo } from "../profile-context"
+import TopicInput from "@/components/TopicInput"
+import { slugify } from "@/lib/slugify"
 
 export default function ProfilePage() {
   const { refreshProfile } = useProfileInfo()
@@ -14,6 +16,7 @@ export default function ProfilePage() {
   const [lastName, setLastName] = useState("")
   const [headline, setHeadline] = useState("")
   const [bio, setBio] = useState("")
+  const [topics, setTopics] = useState<string[]>([])
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState("")
@@ -50,6 +53,14 @@ export default function ProfilePage() {
       setHeadline(expert.headline ?? "")
       setBio(expert.bio ?? "")
     }
+
+    const { data: topicsData } = await supabase
+      .from("expert_topics")
+      .select("name")
+      .eq("expert_id", userId)
+      .order("sort_order", { ascending: true })
+
+    setTopics(topicsData?.map((t) => t.name) ?? [])
     setLoading(false)
   }
 
@@ -119,8 +130,30 @@ export default function ProfilePage() {
       .update({ headline, bio })
       .eq("id", userId)
 
-    if (profileError || expertError) {
-      setError((profileError ?? expertError)?.message ?? "Something went wrong.")
+    // Replace the topic list wholesale rather than diffing -- simplest
+    // correct approach for a max-5-item tag list.
+    const { error: deleteTopicsError } = await supabase
+      .from("expert_topics")
+      .delete()
+      .eq("expert_id", userId)
+
+    let topicsError = deleteTopicsError
+    if (!topicsError && topics.length > 0) {
+      const { error } = await supabase.from("expert_topics").insert(
+        topics.map((name, index) => ({
+          expert_id: userId,
+          name,
+          slug: slugify(name),
+          sort_order: index,
+        }))
+      )
+      topicsError = error
+    }
+
+    if (profileError || expertError || topicsError) {
+      setError(
+        (profileError ?? expertError ?? topicsError)?.message ?? "Something went wrong."
+      )
     } else {
       setSaved(true)
       refreshProfile()
@@ -217,6 +250,18 @@ export default function ProfilePage() {
             onChange={(e) => setBio(e.target.value)}
             className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-ink">
+            What can people ask you about?
+          </label>
+          <p className="mt-1 text-sm text-ink-soft">
+            Add up to 5 topics that describe your expertise.
+          </p>
+          <div className="mt-2">
+            <TopicInput topics={topics} onChange={setTopics} />
+          </div>
         </div>
 
         {error && <p className="text-sm text-postal-red">{error}</p>}
