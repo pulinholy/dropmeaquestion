@@ -184,14 +184,23 @@ export default async function ExpertPage({
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-3 text-left">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-line/50 text-ink-soft">
-                  <ChatIcon className="h-6 w-6" />
+              <div className="flex items-start gap-4 text-left">
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-line/40 text-ink-soft">
+                  <ChatIcon className="h-7 w-7" />
                 </div>
-                <p className="text-sm text-ink-soft">
-                  I&apos;m not taking new questions right now — check back
-                  soon!
-                </p>
+                <div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-line/50 px-3 py-1 text-xs font-medium text-ink-soft">
+                    <span className="h-1.5 w-1.5 rounded-full bg-ink-soft/60" />
+                    Not accepting questions
+                  </span>
+                  <p className="mt-2 font-display text-xl font-semibold text-ink">
+                    {firstName} isn&apos;t taking questions right now.
+                  </p>
+                  <p className="mt-1 text-sm text-ink-soft">
+                    Check back soon — {firstName} will reopen questions when
+                    available.
+                  </p>
+                </div>
               </div>
             )}
           </div>
