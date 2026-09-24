@@ -1,5 +1,33 @@
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import {
+  TagIcon,
+  LinkIcon,
+  ChatIcon,
+  RobotIcon,
+  PersonIcon,
+  BriefcaseIcon,
+  PaletteIcon,
+  RocketIcon,
+  DocumentIcon,
+  CodeIcon,
+  MegaphoneIcon,
+  UsersIcon,
+  BarChartIcon,
+  StarIcon,
+} from "@/components/icons"
+
+const whoThisIsFor = [
+  { label: "Consultants", icon: BriefcaseIcon },
+  { label: "Creators", icon: DocumentIcon },
+  { label: "Coaches", icon: UsersIcon },
+  { label: "Designers", icon: PaletteIcon },
+  { label: "Developers", icon: CodeIcon },
+  { label: "Advisors", icon: BarChartIcon },
+  { label: "Founders", icon: RocketIcon },
+  { label: "Marketers", icon: MegaphoneIcon },
+  { label: "Experts", icon: StarIcon },
+]
 
 export default function Home() {
   return (
@@ -7,29 +35,56 @@ export default function Home() {
       <SiteHeader />
 
       {/* Hero — written for the expert */}
-      <section className="mx-auto max-w-3xl px-6 pt-16 pb-20 text-center">
-        <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
-          People have questions.
-          <br />
-          You have answers.
-        </h1>
-        <p className="mt-3 font-display text-2xl font-medium text-postal-red sm:text-3xl">
-          Now you can get paid for them.
-        </p>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-ink-soft">
-          Set your price. Share one link. Answer within the time you set.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <a
-            href="/register"
-            className="rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-paper transition-colors hover:bg-postal-blue"
-          >
-            Create your page →
-          </a>
+      <section className="mx-auto max-w-5xl px-6 pt-16 pb-20">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div className="text-center lg:text-left">
+            <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
+              People have questions.
+              <br />
+              You have answers.
+            </h1>
+            <p className="mt-3 font-display text-2xl font-medium text-postal-red sm:text-3xl">
+              Now you can get paid for them.
+            </p>
+            <p className="mx-auto mt-6 max-w-xl text-lg text-ink-soft lg:mx-0">
+              Set your price. Share one link. Answer within the time you set.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
+              <a
+                href="/register"
+                className="rounded-full bg-ink px-7 py-3.5 text-sm font-medium text-paper transition-colors hover:bg-postal-blue"
+              >
+                Create your page →
+              </a>
+            </div>
+            <p className="mt-4 text-sm text-ink-soft">
+              No website. No invoices. Just your expertise.
+            </p>
+          </div>
+
+          <div className="mx-auto w-full max-w-sm rounded-lg border border-line bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender/60 text-lg font-medium text-ink">
+                P
+              </div>
+              <div>
+                <p className="font-display text-lg text-ink">Priya</p>
+                <p className="text-sm text-ink-soft">Marketing Cloud Expert</p>
+              </div>
+            </div>
+            <div className="mt-5 h-2 w-full rounded-full bg-line/60" />
+            <div className="mt-2 h-2 w-2/3 rounded-full bg-line/60" />
+            <a
+              href="/register"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
+            >
+              Ask a question — $5
+            </a>
+            <p className="mt-3 text-center text-xs text-ink-soft">
+              Your own page, ready to share
+            </p>
+          </div>
         </div>
-        <p className="mt-4 text-sm text-ink-soft">
-          No website. No invoices. Just your expertise.
-        </p>
       </section>
 
       {/* Example page preview — illustrative only, not a real expert */}
@@ -65,9 +120,16 @@ export default function Home() {
         <div className="mx-auto max-w-3xl px-6 py-16">
           <h2 className="font-display text-2xl text-ink">How it works</h2>
           <ol className="mt-8 grid gap-5 sm:grid-cols-3">
-            <li className="rounded-sm bg-lavender p-5">
-              <span className="font-display text-2xl text-postal-red">1</span>
-              <div className="mt-2">
+            <li className="rounded-sm bg-lavender/40 p-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/15 font-display text-sm font-semibold text-postal-red">
+                  1
+                </span>
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+                  <TagIcon className="h-4 w-4" />
+                </span>
+              </div>
+              <div className="mt-3">
                 <p className="font-medium text-ink">Set your price</p>
                 <p className="mt-1 text-ink-soft">
                   Decide what a question is worth and how fast you&apos;ll
@@ -75,9 +137,16 @@ export default function Home() {
                 </p>
               </div>
             </li>
-            <li className="rounded-sm bg-lavender p-5">
-              <span className="font-display text-2xl text-postal-red">2</span>
-              <div className="mt-2">
+            <li className="rounded-sm bg-lavender/40 p-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender font-display text-sm font-semibold text-ink">
+                  2
+                </span>
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender/70 text-ink">
+                  <LinkIcon className="h-4 w-4" />
+                </span>
+              </div>
+              <div className="mt-3">
                 <p className="font-medium text-ink">Share your link</p>
                 <p className="mt-1 text-ink-soft">
                   Drop it in your bio, newsletter, or wherever your audience
@@ -85,9 +154,16 @@ export default function Home() {
                 </p>
               </div>
             </li>
-            <li className="rounded-sm bg-lavender p-5">
-              <span className="font-display text-2xl text-postal-red">3</span>
-              <div className="mt-2">
+            <li className="rounded-sm bg-lavender/40 p-5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-500/15 font-display text-sm font-semibold text-green-700">
+                  3
+                </span>
+                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+                  <ChatIcon className="h-4 w-4" />
+                </span>
+              </div>
+              <div className="mt-3">
                 <p className="font-medium text-ink">Answer and get paid</p>
                 <p className="mt-1 text-ink-soft">
                   Reply in your own words, within the time you set. You keep
@@ -101,17 +177,45 @@ export default function Home() {
 
       {/* Why this beats free DMs / beats AI — reframed for the expert's pitch to their audience */}
       <section className="border-t border-line bg-ink text-paper">
-        <div className="mx-auto max-w-3xl px-6 py-16">
-          <h2 className="font-display text-2xl">
-            AI has answers. You have experience.
-          </h2>
-          <p className="mt-4 max-w-xl text-paper/80">
-            Your audience can already ask AI anything for free. What they
-            can&apos;t get from AI is you — your judgment, your experience,
-            your name behind the answer. Drop Me A Question turns that into
-            something you can actually charge for, without building a
-            website or chasing invoices.
-          </p>
+        <div className="mx-auto grid max-w-5xl items-center gap-10 px-6 py-16 lg:grid-cols-2">
+          <div>
+            <h2 className="font-display text-2xl">
+              AI has answers. You have experience.
+            </h2>
+            <p className="mt-4 max-w-xl text-paper/80">
+              Your audience can already ask AI anything for free. What they
+              can&apos;t get from AI is you — your judgment, your experience,
+              your name behind the answer. Drop Me A Question turns that into
+              something you can actually charge for, without building a
+              website or chasing invoices.
+            </p>
+          </div>
+
+          <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
+            <div className="flex items-start gap-2">
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-paper/10 text-paper/70">
+                <RobotIcon className="h-4 w-4" />
+              </span>
+              <div className="rounded-lg rounded-tl-none bg-paper/10 p-3 text-sm text-paper/80">
+                <p className="font-medium text-paper">AI can give information.</p>
+                <p className="mt-1">
+                  Here are 10 general tips about marketing strategies&hellip;
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start justify-end gap-2">
+              <div className="rounded-lg rounded-tr-none bg-postal-red/90 p-3 text-sm text-paper">
+                <p className="font-medium">You give real answers.</p>
+                <p className="mt-1 text-paper/90">
+                  Based on my experience with 20+ companies, here&apos;s what
+                  actually works&hellip;
+                </p>
+              </div>
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/20 text-postal-red">
+                <PersonIcon className="h-4 w-4" />
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -119,22 +223,22 @@ export default function Home() {
       <section className="border-t border-line">
         <div className="mx-auto max-w-3xl px-6 py-16">
           <h2 className="font-display text-2xl text-ink">Who is this for?</h2>
-          <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 text-ink sm:grid-cols-3">
-            <p>Consultants</p>
-            <p>Creators</p>
-            <p>Coaches</p>
-            <p>Designers</p>
-            <p>Developers</p>
-            <p>Advisors</p>
-            <p>Founders</p>
-            <p>Marketers</p>
-            <p>Experts</p>
+          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {whoThisIsFor.map(({ label, icon: Icon }) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 rounded-sm bg-line/30 px-4 py-3"
+              >
+                <Icon className="h-5 w-5 flex-shrink-0 text-postal-blue" />
+                <p className="text-ink">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Start CTA */}
-      <section id="start" className="border-t border-line">
+      <section id="start" className="border-t border-line bg-postal-red/10">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <h2 className="font-display text-2xl text-ink">
             Your knowledge shouldn&apos;t have to live in your DMs.
