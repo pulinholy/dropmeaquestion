@@ -96,16 +96,16 @@ export default async function ExpertPage({
       <section className="border-t border-line">
         <div className="mx-auto max-w-2xl px-6 pb-10 pt-8">
           <div className="text-center">
-            <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
-              <div className="absolute h-24 w-24 rounded-full bg-lavender/40" />
+            <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
+              <div className="absolute h-32 w-32 rounded-full bg-lavender/40" />
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
                   alt={profile.full_name}
-                  className="relative h-20 w-20 flex-shrink-0 rounded-full border-4 border-paper object-cover"
+                  className="relative h-28 w-28 flex-shrink-0 rounded-full border-4 border-paper object-cover"
                 />
               ) : (
-                <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border-4 border-paper bg-paper text-2xl font-medium text-ink-soft">
+                <div className="relative flex h-28 w-28 flex-shrink-0 items-center justify-center rounded-full border-4 border-paper bg-paper text-3xl font-medium text-ink-soft">
                   {profile.full_name?.charAt(0).toUpperCase() || "?"}
                 </div>
               )}
