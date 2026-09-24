@@ -227,7 +227,7 @@ export default async function ExpertPage({
                 Secure payment
               </p>
               <p className="mt-1 text-xs text-ink-soft">
-                Only charged when answered within the response time
+                Only charged if answered in time
               </p>
             </div>
           </div>
