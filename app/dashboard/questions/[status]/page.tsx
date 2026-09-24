@@ -153,12 +153,13 @@ export default function QuestionsByStatusPage() {
 
     const question = questions.find((q) => q.id === questionId)
 
+    // answered_at is set server-side by a trigger, not here -- so it's
+    // never dependent on the expert's own device clock being correct.
     const { error } = await supabase
       .from("questions")
       .update({
         answer_text: answerText,
         status: "answered",
-        answered_at: new Date().toISOString(),
       })
       .eq("id", questionId)
 
