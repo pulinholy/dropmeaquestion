@@ -125,17 +125,17 @@ export default function QuestionForm({
         </div>
 
         {showPaymentDetails && (
-          <ul className="mt-3 space-y-1 border-t border-line/60 pt-3 text-xs text-ink-soft">
-            <li>
-              &bull; When you ask, your card is authorized for ${price} — not
-              charged yet.
-            </li>
-            <li>
-              &bull; {expertFirstName} has {responseWindowHours} hours to
-              answer.
-            </li>
-            <li>&bull; Answered — you&apos;re charged. No answer — no charge.</li>
-          </ul>
+          <div className="mt-3 space-y-1 border-t border-line/60 pt-3 text-xs text-ink-soft">
+            <p className="font-semibold text-ink">
+              Your card is authorized for ${price} when you submit your
+              question.
+            </p>
+            <p>
+              If {expertFirstName} answers within {responseWindowHours} hours,
+              you&apos;ll be charged. If not, the authorization is released
+              and you won&apos;t be charged.
+            </p>
+          </div>
         )}
       </div>
 
