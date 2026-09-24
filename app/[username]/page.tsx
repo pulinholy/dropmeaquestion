@@ -134,7 +134,7 @@ export default async function ExpertPage({
 
             {topicNames.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm text-ink-soft">Ask me about</p>
+                <p className="text-sm font-semibold text-ink">Ask me about</p>
                 <div className="mt-2 flex flex-wrap justify-center gap-2">
                   {topicNames.map((topic, i) => (
                     <span
