@@ -237,7 +237,7 @@ export default async function ExpertPage({
         </div>
       </section>
 
-      <SiteFooter />
+      <SiteFooter variant="asker" />
     </main>
   )
 }
