@@ -133,16 +133,19 @@ export default async function ExpertPage({
             )}
 
             {topicNames.length > 0 && (
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                {topicNames.map((topic, i) => (
-                  <span
-                    key={topic}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink ${TOPIC_STYLES[i % TOPIC_STYLES.length]}`}
-                  >
-                    <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-ink/40" />
-                    {topic}
-                  </span>
-                ))}
+              <div className="mt-4">
+                <p className="text-sm text-ink-soft">Ask me about</p>
+                <div className="mt-2 flex flex-wrap justify-center gap-2">
+                  {topicNames.map((topic, i) => (
+                    <span
+                      key={topic}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink ${TOPIC_STYLES[i % TOPIC_STYLES.length]}`}
+                    >
+                      <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-ink/40" />
+                      {topic}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
