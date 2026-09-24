@@ -109,9 +109,6 @@ export default async function ExpertPage({
                   {profile.full_name?.charAt(0).toUpperCase() || "?"}
                 </div>
               )}
-              {expert.is_active && (
-                <span className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full border-2 border-paper bg-green-500" />
-              )}
             </div>
 
             <p className="mt-3 font-display text-2xl font-semibold text-ink">
