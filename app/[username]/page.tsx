@@ -94,7 +94,7 @@ export default async function ExpertPage({
       <SiteHeader variant="asker" />
 
       <section className="border-t border-line">
-        <div className="mx-auto max-w-lg px-6 py-16">
+        <div className="mx-auto max-w-lg px-6 pb-16 pt-10">
           <div className="text-center">
             <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
               <div className="absolute h-32 w-32 rounded-full bg-lavender/40" />
