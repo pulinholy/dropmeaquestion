@@ -94,31 +94,31 @@ export default async function ExpertPage({
       <SiteHeader variant="asker" />
 
       <section className="border-t border-line">
-        <div className="mx-auto max-w-lg px-6 pb-16 pt-10">
+        <div className="mx-auto max-w-2xl px-6 pb-10 pt-8">
           <div className="text-center">
-            <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
-              <div className="absolute h-32 w-32 rounded-full bg-lavender/40" />
+            <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
+              <div className="absolute h-24 w-24 rounded-full bg-lavender/40" />
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
                   alt={profile.full_name}
-                  className="relative h-28 w-28 flex-shrink-0 rounded-full border-4 border-paper object-cover"
+                  className="relative h-20 w-20 flex-shrink-0 rounded-full border-4 border-paper object-cover"
                 />
               ) : (
-                <div className="relative flex h-28 w-28 flex-shrink-0 items-center justify-center rounded-full border-4 border-paper bg-paper text-3xl font-medium text-ink-soft">
+                <div className="relative flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border-4 border-paper bg-paper text-2xl font-medium text-ink-soft">
                   {profile.full_name?.charAt(0).toUpperCase() || "?"}
                 </div>
               )}
               {expert.is_active && (
-                <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full border-2 border-paper bg-green-500" />
+                <span className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full border-2 border-paper bg-green-500" />
               )}
             </div>
 
-            <p className="mt-5 font-display text-3xl font-semibold text-ink">
+            <p className="mt-3 font-display text-2xl font-semibold text-ink">
               {profile.full_name}
             </p>
             {expert.headline && (
-              <p className="mt-1 text-lg font-semibold text-ink">
+              <p className="mt-1 text-base font-semibold text-ink">
                 {expert.headline}
               </p>
             )}
@@ -127,7 +127,7 @@ export default async function ExpertPage({
             </p>
 
             {expert.bio && (
-              <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-ink">
+              <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink">
                 {expert.bio}
               </p>
             )}
@@ -150,15 +150,15 @@ export default async function ExpertPage({
             )}
           </div>
 
-          <div className="mt-8 rounded-lg border border-line bg-white p-6 shadow-sm sm:p-8">
+          <div className="mt-6 rounded-lg border border-line bg-white p-5 shadow-sm sm:p-6">
             {expert.is_active ? (
               <>
                 <div className="flex items-center gap-3 text-left">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-postal-red text-white">
                     <ChatIcon className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="font-display text-xl text-ink">
+                    <p className="font-display text-xl font-semibold text-ink">
                       Ask {firstName} a question
                     </p>
                     <p className="text-sm text-ink-soft">
@@ -168,7 +168,7 @@ export default async function ExpertPage({
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-4">
                   {expert.stripe_onboarded ? (
                     <QuestionForm
                       expertId={profile.id}
@@ -199,7 +199,7 @@ export default async function ExpertPage({
             )}
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-6 text-center sm:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-4 text-center sm:grid-cols-3">
             <div>
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
                 <ChatIcon className="h-5 w-5" />

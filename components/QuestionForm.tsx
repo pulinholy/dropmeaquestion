@@ -59,19 +59,19 @@ export default function QuestionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 text-left">
+    <form onSubmit={handleSubmit} className="space-y-3 text-left">
       <div>
-        <label className="block text-sm font-medium text-ink">
+        <label className="block text-sm font-semibold text-ink">
           What would you like to ask {expertFirstName}?
         </label>
         <textarea
           required
-          rows={4}
+          rows={3}
           maxLength={MAX_QUESTION_LENGTH}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder={placeholder}
-          className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
+          className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
         />
         <div className="mt-1 flex items-center justify-between gap-3">
           <p className="text-xs text-ink-soft">
@@ -83,7 +83,7 @@ export default function QuestionForm({
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-ink">
+        <label className="block text-sm font-semibold text-ink">
           Your email (to send the answer)
         </label>
         <div className="relative mt-1">
