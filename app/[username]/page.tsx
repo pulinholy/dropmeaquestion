@@ -202,7 +202,7 @@ export default async function ExpertPage({
                 <ChatIcon className="h-5 w-5" />
               </div>
               <p className="mt-2 text-sm font-semibold text-ink">
-                Ask anything
+                Ask directly
               </p>
               <p className="mt-1 text-xs text-ink-soft">
                 Get practical advice and expert insights
