@@ -73,9 +73,14 @@ export default function QuestionForm({
           placeholder={placeholder}
           className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
         />
-        <p className="mt-1 text-right text-xs text-ink-soft">
-          {question.length}/{MAX_QUESTION_LENGTH}
-        </p>
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <p className="text-xs text-ink-soft">
+            You can add a screenshot or PDF in the next step.
+          </p>
+          <p className="flex-shrink-0 text-right text-xs text-ink-soft">
+            {question.length}/{MAX_QUESTION_LENGTH}
+          </p>
+        </div>
       </div>
       <div>
         <label className="block text-sm font-medium text-ink">
@@ -147,10 +152,6 @@ export default function QuestionForm({
           </div>
         )}
       </div>
-
-      <p className="text-center text-xs text-ink-soft">
-        You&apos;ll be able to attach a screenshot or PDF after payment.
-      </p>
     </form>
   )
 }
