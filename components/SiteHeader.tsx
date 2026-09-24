@@ -8,15 +8,9 @@ export default function SiteHeader({
 }) {
   return (
     <>
-      <div
-        className="h-2 w-full"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(-45deg, var(--color-postal-red) 0 16px, var(--color-paper) 16px 24px, var(--color-postal-blue) 24px 40px, var(--color-paper) 40px 48px)",
-        }}
-      />
+      <div className="h-1 w-full bg-postal-red" />
 
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between border-b border-line px-6 py-6">
         <a href="/" className="flex items-center">
           <img
             src="/brand/logo-icon.png"
@@ -52,8 +46,11 @@ export default function SiteHeader({
           )}
 
           {variant === "asker" && (
-            <a href="/register" className="text-sm text-ink-soft hover:text-ink">
-              Create your own page
+            <a
+              href="/register"
+              className="inline-flex items-center gap-1 text-sm text-ink-soft hover:text-ink"
+            >
+              Create your own page <span aria-hidden>→</span>
             </a>
           )}
         </nav>
