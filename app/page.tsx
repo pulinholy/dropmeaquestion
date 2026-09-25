@@ -72,52 +72,58 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="relative mx-auto w-full max-w-sm">
-            <SparkleAccentIcon className="absolute -left-5 -top-5 h-7 w-7 text-postal-red" />
-            <SparkleAccentIcon className="absolute -bottom-5 -right-5 h-7 w-7 rotate-180 text-lavender" />
+          <div className="mx-auto w-full max-w-sm">
+            <p className="mb-5 text-center text-sm font-medium text-ink-soft lg:text-left">
+              Example page
+            </p>
 
-            <div className="rounded-lg border border-line bg-white p-6 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender/60 text-lg font-medium text-ink">
-                  JB
-                </div>
-                <div>
-                  <p className="font-display text-lg text-ink">Jordan Blake</p>
-                  <p className="text-sm text-ink-soft">
-                    Career &amp; Interview Coach
-                  </p>
-                </div>
-              </div>
+            <div className="relative">
+              <SparkleAccentIcon className="absolute -left-5 -top-5 h-7 w-7 text-postal-red" />
+              <SparkleAccentIcon className="absolute -bottom-5 -right-5 h-7 w-7 rotate-180 text-lavender" />
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                {heroTopics.map((topic, i) => (
-                  <span
-                    key={topic}
-                    className={`rounded-full px-3 py-1 text-xs font-medium text-ink ${HERO_TOPIC_STYLES[i % HERO_TOPIC_STYLES.length]}`}
-                  >
-                    {topic}
+              <div className="rounded-lg border border-line bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender/60 text-lg font-medium text-ink">
+                    JB
+                  </div>
+                  <div>
+                    <p className="font-display text-lg text-ink">Jordan Blake</p>
+                    <p className="text-sm text-ink-soft">
+                      Career &amp; Interview Coach
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {heroTopics.map((topic, i) => (
+                    <span
+                      key={topic}
+                      className={`rounded-full px-3 py-1 text-xs font-medium text-ink ${HERO_TOPIC_STYLES[i % HERO_TOPIC_STYLES.length]}`}
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-4 flex items-center gap-3 border-t border-line pt-4 text-sm text-ink-soft">
+                  <span className="flex items-center gap-1.5">
+                    <TagIcon className="h-4 w-4 text-postal-red" />
+                    $10 per question
                   </span>
-                ))}
-              </div>
+                  <span className="h-4 w-px bg-line" />
+                  <span className="flex items-center gap-1.5">
+                    <ClockIcon className="h-4 w-4 text-postal-red" />
+                    24 hour response
+                  </span>
+                </div>
 
-              <div className="mt-4 flex items-center gap-3 border-t border-line pt-4 text-sm text-ink-soft">
-                <span className="flex items-center gap-1.5">
-                  <TagIcon className="h-4 w-4 text-postal-red" />
-                  $10 per question
-                </span>
-                <span className="h-4 w-px bg-line" />
-                <span className="flex items-center gap-1.5">
-                  <ClockIcon className="h-4 w-4 text-postal-red" />
-                  24 hour response
+                <span
+                  aria-hidden="true"
+                  className="mt-5 flex w-full cursor-default select-none items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper"
+                >
+                  Ask a question — $10
                 </span>
               </div>
-
-              <a
-                href="/register"
-                className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
-              >
-                Ask a question — $10
-              </a>
             </div>
           </div>
         </div>
