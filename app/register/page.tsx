@@ -229,7 +229,7 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Priya"
+                  placeholder="e.g. Jordan"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
@@ -241,7 +241,7 @@ export default function RegisterPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Patel"
+                  placeholder="e.g. Blake"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
@@ -267,7 +267,7 @@ export default function RegisterPage() {
                 />
               </div>
               <p className="mt-1 text-xs text-ink-soft">
-                Use letters, numbers or hyphens. e.g. priya-patel
+                Use letters, numbers or hyphens. e.g. jordan-blake
               </p>
               {usernameError && (
                 <p className="mt-1 text-sm text-postal-red">{usernameError}</p>
