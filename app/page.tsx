@@ -24,7 +24,7 @@ const howItWorks = [
   {
     icon: TagIcon,
     title: "Set your price",
-    body: "Pick your price and response time. Takes five minutes.",
+    body: "Choose your price and response time. Your page is ready in minutes.",
     numberBg: "bg-postal-red/15",
     numberText: "text-postal-red",
     iconBg: "bg-postal-red/10",
@@ -33,7 +33,7 @@ const howItWorks = [
   {
     icon: LinkIcon,
     title: "Share your link",
-    body: "Drop it in your bio, DMs, or newsletter — wherever people already find you.",
+    body: "Add your link to your bio, DMs, newsletter, or anywhere you share.",
     numberBg: "bg-lavender",
     numberText: "text-ink",
     iconBg: "bg-lavender/70",
@@ -41,17 +41,17 @@ const howItWorks = [
   },
   {
     icon: ShieldCheckIcon,
-    title: "They ask, you're covered",
-    body: "Payment's authorized the moment they ask — nothing's charged until you reply.",
-    numberBg: "bg-postal-blue/15",
-    numberText: "text-postal-blue",
-    iconBg: "bg-postal-blue/10",
-    iconText: "text-postal-blue",
+    title: "Payment is secured",
+    body: "Their card is authorized when they ask. No answer, no charge.",
+    numberBg: "bg-line",
+    numberText: "text-ink",
+    iconBg: "bg-line/50",
+    iconText: "text-ink",
   },
   {
     icon: ChatIcon,
-    title: "Answer and get paid",
-    body: "Reply in your own words. Get paid the instant you hit send.",
+    title: "Answer & get paid",
+    body: "Reply in your own words. Answer on time, and you get paid.",
     numberBg: "bg-green-500/15",
     numberText: "text-green-700",
     iconBg: "bg-green-500/10",
@@ -171,30 +171,35 @@ export default function Home() {
 
       {/* How it works — from the expert's side */}
       <section id="how" className="border-t border-line">
-        <div className="mx-auto max-w-4xl px-6 py-16">
-          <h2 className="font-display text-2xl text-ink">How it works</h2>
-          <ol className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <h2 className="font-display text-3xl text-ink">How it works</h2>
+          <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {howItWorks.map(
               (
                 { icon: Icon, title, body, numberBg, numberText, iconBg, iconText },
                 i,
               ) => (
-                <li key={title} className="rounded-sm bg-lavender/40 p-5">
-                  <div className="flex items-center gap-2">
+                <li
+                  key={title}
+                  className="rounded-xl border border-line bg-white p-6"
+                >
+                  <div className="flex items-center gap-3">
                     <span
-                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-display text-sm font-semibold ${numberBg} ${numberText}`}
+                      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-display text-base font-semibold ${numberBg} ${numberText}`}
                     >
                       {i + 1}
                     </span>
                     <span
-                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${iconBg} ${iconText}`}
+                      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${iconBg} ${iconText}`}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-5 w-5" />
                     </span>
                   </div>
-                  <div className="mt-3">
-                    <p className="font-medium text-ink">{title}</p>
-                    <p className="mt-1 text-ink-soft">{body}</p>
+                  <div className="mt-6">
+                    <p className="font-display text-xl font-semibold text-ink">
+                      {title}
+                    </p>
+                    <p className="mt-2 text-ink-soft">{body}</p>
                   </div>
                 </li>
               ),
