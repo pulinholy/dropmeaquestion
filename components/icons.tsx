@@ -190,3 +190,31 @@ export function StarIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function ClockIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.5 2" />
+    </svg>
+  )
+}
+
+// A small fan of radiating dashes, used as a light decorative accent
+// (not a labeled annotation) next to illustrative UI mockups.
+export function SparkleAccentIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      className={className}
+    >
+      <line x1="12" y1="1" x2="12" y2="8" />
+      <line x1="3" y1="5" x2="8" y2="10" />
+      <line x1="21" y1="5" x2="16" y2="10" />
+    </svg>
+  )
+}

@@ -3,9 +3,11 @@ import SiteFooter from "@/components/SiteFooter"
 import {
   TagIcon,
   LinkIcon,
+  ClockIcon,
   ChatIcon,
   RobotIcon,
   PersonIcon,
+  SparkleAccentIcon,
   BriefcaseIcon,
   PaletteIcon,
   RocketIcon,
@@ -28,6 +30,14 @@ const whoThisIsFor = [
   { label: "Marketers", icon: MegaphoneIcon },
   { label: "Experts", icon: StarIcon },
 ]
+
+const heroTopics = [
+  "Career Strategy",
+  "Resume Review",
+  "Interview Prep",
+  "Product Management",
+]
+const HERO_TOPIC_STYLES = ["bg-lavender/60", "bg-postal-blue/10", "bg-line/50"]
 
 export default function Home() {
   return (
@@ -62,27 +72,53 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mx-auto w-full max-w-sm rounded-lg border border-line bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender/60 text-lg font-medium text-ink">
-                P
+          <div className="relative mx-auto w-full max-w-sm">
+            <SparkleAccentIcon className="absolute -left-5 -top-5 h-7 w-7 text-postal-red" />
+            <SparkleAccentIcon className="absolute -bottom-5 -right-5 h-7 w-7 rotate-180 text-lavender" />
+
+            <div className="rounded-lg border border-line bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender/60 text-lg font-medium text-ink">
+                  JB
+                </div>
+                <div>
+                  <p className="font-display text-lg text-ink">Jordan Blake</p>
+                  <p className="text-sm text-ink-soft">
+                    Career &amp; Interview Coach
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-display text-lg text-ink">Priya</p>
-                <p className="text-sm text-ink-soft">Marketing Cloud Expert</p>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {heroTopics.map((topic, i) => (
+                  <span
+                    key={topic}
+                    className={`rounded-full px-3 py-1 text-xs font-medium text-ink ${HERO_TOPIC_STYLES[i % HERO_TOPIC_STYLES.length]}`}
+                  >
+                    {topic}
+                  </span>
+                ))}
               </div>
+
+              <div className="mt-4 flex items-center gap-3 border-t border-line pt-4 text-sm text-ink-soft">
+                <span className="flex items-center gap-1.5">
+                  <TagIcon className="h-4 w-4 text-postal-red" />
+                  $10 per question
+                </span>
+                <span className="h-4 w-px bg-line" />
+                <span className="flex items-center gap-1.5">
+                  <ClockIcon className="h-4 w-4 text-postal-red" />
+                  24 hour response
+                </span>
+              </div>
+
+              <a
+                href="/register"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
+              >
+                Ask a question — $10
+              </a>
             </div>
-            <div className="mt-5 h-2 w-full rounded-full bg-line/60" />
-            <div className="mt-2 h-2 w-2/3 rounded-full bg-line/60" />
-            <a
-              href="/register"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
-            >
-              Ask a question — $5
-            </a>
-            <p className="mt-3 text-center text-xs text-ink-soft">
-              Your own page, ready to share
-            </p>
           </div>
         </div>
       </section>
