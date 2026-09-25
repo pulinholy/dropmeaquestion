@@ -17,6 +17,8 @@ import {
 const MIN_PRICE = 5
 const PLATFORM_FEE_RATE = 0.15
 const MAX_BIO_LENGTH = 500
+const MIN_BIO_FOR_AI = 30
+const MAX_AI_IMPROVEMENTS = 3
 
 function FormSection({
   icon: Icon,
@@ -67,6 +69,44 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [username, setUsername] = useState("")
   const [usernameError, setUsernameError] = useState("")
+  const [bioBeforeAi, setBioBeforeAi] = useState<string | null>(null)
+  const [improvingBio, setImprovingBio] = useState(false)
+  const [aiError, setAiError] = useState("")
+  const [aiImproveCount, setAiImproveCount] = useState(0)
+
+  async function handleImproveBio() {
+    setImprovingBio(true)
+    setAiError("")
+    const previousBio = bio
+
+    try {
+      const res = await fetch("/api/improve-bio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bio }),
+      })
+      const data = await res.json()
+
+      if (data.error) {
+        setAiError(data.error)
+      } else {
+        setBio(data.improvedBio)
+        setBioBeforeAi(previousBio)
+        setAiImproveCount((c) => c + 1)
+      }
+    } catch {
+      setAiError("Could not improve this bio right now.")
+    }
+
+    setImprovingBio(false)
+  }
+
+  function handleUndoImprove() {
+    if (bioBeforeAi !== null) {
+      setBio(bioBeforeAi)
+      setBioBeforeAi(null)
+    }
+  }
 
   const priceValue = parseFloat(price)
   const isPriceBelowMinimum = !isNaN(priceValue) && priceValue < MIN_PRICE
@@ -350,9 +390,43 @@ export default function RegisterPage() {
                 placeholder="Tell people about your experience and what they can ask you."
                 className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
               />
-              <p className="mt-1 text-right text-xs text-ink-soft">
-                {bio.length}/{MAX_BIO_LENGTH}
-              </p>
+              <div className="mt-1 flex items-center justify-between gap-3">
+                {bioBeforeAi !== null ? (
+                  <p className="flex items-center gap-2 text-xs">
+                    <span className="text-green-700">✓ Improved with AI</span>
+                    <button
+                      type="button"
+                      onClick={handleUndoImprove}
+                      className="font-medium text-postal-red hover:text-ink"
+                    >
+                      Undo
+                    </button>
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleImproveBio}
+                    disabled={
+                      bio.trim().length < MIN_BIO_FOR_AI ||
+                      improvingBio ||
+                      aiImproveCount >= MAX_AI_IMPROVEMENTS
+                    }
+                    className="text-xs font-medium text-postal-red hover:text-ink disabled:cursor-not-allowed disabled:text-ink-soft/50 disabled:hover:text-ink-soft/50"
+                  >
+                    {improvingBio
+                      ? "✨ Improving..."
+                      : aiImproveCount >= MAX_AI_IMPROVEMENTS
+                        ? "No more AI improvements left"
+                        : "✨ Improve with AI"}
+                  </button>
+                )}
+                <p className="flex-shrink-0 text-right text-xs text-ink-soft">
+                  {bio.length}/{MAX_BIO_LENGTH}
+                </p>
+              </div>
+              {aiError && (
+                <p className="mt-1 text-xs text-postal-red">{aiError}</p>
+              )}
             </div>
 
             <div>
