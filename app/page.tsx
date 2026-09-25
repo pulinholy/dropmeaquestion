@@ -224,10 +224,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
-            <div className="flex items-start gap-2">
-              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-paper/10 text-paper/70">
-                <RobotIcon className="h-4 w-4" />
+          <div className="mx-auto flex w-full max-w-md flex-col gap-3">
+            <div className="flex items-start gap-2.5">
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-paper text-ink">
+                <RobotIcon className="h-5 w-5" />
               </span>
               <div className="rounded-lg rounded-tl-none bg-paper/10 p-3 text-sm text-paper/80">
                 <p className="font-medium text-paper">AI can give information.</p>
@@ -236,7 +236,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="flex items-start justify-end gap-2">
+            <div className="flex items-start justify-end gap-2.5">
               <div className="rounded-lg rounded-tr-none bg-postal-red/90 p-3 text-sm text-paper">
                 <p className="font-medium">You give real answers.</p>
                 <p className="mt-1 text-paper/90">
@@ -244,10 +244,13 @@ export default function Home() {
                   actually works&hellip;
                 </p>
               </div>
-              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/20 text-postal-red">
-                <PersonIcon className="h-4 w-4" />
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-postal-red text-paper">
+                <PersonIcon className="h-5 w-5" />
               </span>
             </div>
+            <p className="mt-1 text-center text-sm font-medium text-paper/60">
+              That&apos;s what people will pay for.
+            </p>
           </div>
         </div>
       </section>
