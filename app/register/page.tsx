@@ -347,7 +347,7 @@ export default function RegisterPage() {
                 maxLength={MAX_BIO_LENGTH}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Share a short bio about your experience and what you can help with. You can update this later."
+                placeholder="Tell people about your experience and what they can ask you."
                 className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
               />
               <p className="mt-1 text-right text-xs text-ink-soft">
