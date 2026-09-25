@@ -296,13 +296,12 @@ export default function Home() {
             Here to ask a question?
           </h2>
           <p className="mt-3 text-sm text-ink-soft">
-            Questions are asked through an expert&apos;s personal page here
-            on Drop Me A Question. Use the link the expert shared with you
-            to ask them directly.
+            Have a Drop Me A Question link from an expert? Open it to ask
+            them directly.
           </p>
           <p className="mt-3 text-sm text-ink-soft">
-            Don&apos;t have their link? Ask the expert to share their page
-            with you.
+            Don&apos;t have one? Ask the expert to share their page with
+            you.
           </p>
         </div>
       </section>
