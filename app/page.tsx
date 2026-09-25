@@ -74,7 +74,7 @@ export default function Home() {
 
           <div className="mx-auto w-full max-w-sm">
             <p className="mb-5 text-center text-sm font-medium text-ink-soft lg:text-left">
-              Example page
+              What your page could look like
             </p>
 
             <div className="relative">
@@ -125,34 +125,6 @@ export default function Home() {
                 </span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Example page preview — illustrative only, not a real expert */}
-      <section className="border-t border-line">
-        <div className="mx-auto max-w-md px-6 py-16 text-center">
-          <p className="text-sm font-medium text-ink-soft">
-            What your page could look like
-          </p>
-          <div className="mt-6 rounded-sm border border-line bg-lavender p-8">
-            <p className="font-display text-xl italic text-ink">
-              &ldquo;Ask me anything about building startups.&rdquo;
-            </p>
-            <div className="mx-auto mt-6 h-16 w-16 rounded-full bg-paper" />
-            <p className="mt-4 font-display text-lg text-ink">
-              Sarah Johnson
-            </p>
-            <p className="text-sm text-ink-soft">Startup advisor</p>
-            <p className="mt-3 text-sm text-ink-soft">
-              $25 · 48 hour response
-            </p>
-            <a
-              href="/register"
-              className="mt-6 inline-block rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
-            >
-              Drop me a question →
-            </a>
           </div>
         </div>
       </section>
