@@ -19,9 +19,12 @@ export default function DashboardHomePage() {
   const { counts } = useQuestionCounts()
   const { profile } = useProfileInfo()
   const [stats, setStats] = useState<Stats | null>(null)
+  const [stripeOnboarded, setStripeOnboarded] = useState(true)
+  const [stripeStatusLoaded, setStripeStatusLoaded] = useState(false)
 
   useEffect(() => {
     loadStats()
+    loadStripeStatus()
   }, [])
 
   async function loadStats() {
@@ -54,6 +57,22 @@ export default function DashboardHomePage() {
     })
   }
 
+  async function loadStripeStatus() {
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) return
+
+    const userId = sessionData.session.user.id
+
+    const { data } = await supabase
+      .from("experts")
+      .select("stripe_onboarded")
+      .eq("id", userId)
+      .single()
+
+    if (data) setStripeOnboarded(data.stripe_onboarded)
+    setStripeStatusLoaded(true)
+  }
+
   const firstName = profile.fullName?.split(" ")[0] || profile.fullName
 
   return (
@@ -61,6 +80,24 @@ export default function DashboardHomePage() {
       <h2 className="font-display text-2xl text-ink">
         Welcome back{firstName ? `, ${firstName}` : ""}
       </h2>
+
+      {stripeStatusLoaded && !stripeOnboarded && (
+        <div className="mt-5 rounded-sm border border-postal-red/30 bg-postal-red/5 p-5">
+          <p className="font-medium text-ink">
+            Your page can&apos;t accept payments yet
+          </p>
+          <p className="mt-1 text-sm text-ink-soft">
+            Connect your bank account so questions people ask can actually
+            pay out to you.
+          </p>
+          <Link
+            href="/dashboard/payments"
+            className="mt-3 inline-block rounded-full bg-postal-red px-5 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
+          >
+            Connect your bank account →
+          </Link>
+        </div>
+      )}
 
       {counts.pending > 0 ? (
         <div className="mt-5 rounded-sm border border-postal-red/30 bg-postal-red/5 p-5">
