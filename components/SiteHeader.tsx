@@ -28,6 +28,12 @@ export default function SiteHeader({
           {variant === "default" && (
             <>
               <a
+                href="/#ask-instead"
+                className="text-sm text-ink-soft hover:text-ink"
+              >
+                Here to ask?
+              </a>
+              <a
                 href="/#how"
                 className="hidden text-sm text-ink-soft hover:text-ink sm:inline"
               >

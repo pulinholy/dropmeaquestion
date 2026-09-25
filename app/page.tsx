@@ -169,16 +169,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Small, quiet redirect for the rare asker who lands here directly --
-          placed right after the hero so it's seen before four sections of
-          expert-focused pitch, not buried at the very bottom */}
-      <section id="ask-instead" className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-6 py-6 text-center text-sm text-ink-soft">
-          Have a link to a specific expert&apos;s page? Use that link
-          directly to ask your question.
-        </div>
-      </section>
-
       {/* How it works — from the expert's side */}
       <section id="how" className="border-t border-line">
         <div className="mx-auto max-w-6xl px-6 py-16">
@@ -295,6 +285,25 @@ export default function Home() {
           >
             Create your page →
           </a>
+        </div>
+      </section>
+
+      {/* Explanation for the asker who lands here directly, not via an
+          expert's link -- reachable via "Here to ask?" in the nav */}
+      <section id="ask-instead" className="border-t border-line">
+        <div className="mx-auto max-w-md px-6 py-16 text-center">
+          <h2 className="font-display text-xl text-ink">
+            Here to ask a question?
+          </h2>
+          <p className="mt-3 text-sm text-ink-soft">
+            Questions on DMQ are asked through an expert&apos;s personal
+            page. Use the DMQ link the expert shared with you to ask them
+            directly.
+          </p>
+          <p className="mt-3 text-sm text-ink-soft">
+            Don&apos;t have their link? Ask the expert to share their DMQ
+            page with you.
+          </p>
         </div>
       </section>
 
