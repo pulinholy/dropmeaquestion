@@ -206,7 +206,7 @@ if (usernameError || username.length < 3) {
 
         <div>
           <label className="block text-sm font-medium text-ink">
-            Title/Headline (eg. Founder, Startup Adviser)
+            Title
           </label>
           <input
             type="text"
@@ -218,7 +218,7 @@ if (usernameError || username.length < 3) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-ink">Short bio</label>
+          <label className="block text-sm font-medium text-ink">Bio</label>
           <textarea
             required
             rows={3}
