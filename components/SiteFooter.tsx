@@ -22,59 +22,63 @@ export default function SiteFooter({
   variant?: "default" | "asker"
 }) {
   return (
-    <footer className="border-t border-line px-6 py-8 text-center text-sm text-ink-soft">
-      {variant === "asker" ? (
-        <a
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-ink-soft/70 hover:text-ink"
-        >
-          Powered by
-          <img
-            src="/brand/logo-lockup.png"
-            alt="Drop Me A Question"
-            className="h-4 w-auto"
-          />
-        </a>
-      ) : (
-        <a href="/" className="inline-flex items-center">
-          <img
-            src="/brand/logo-icon.png"
-            alt="Drop Me A Question"
-            className="mx-auto h-6 w-auto opacity-70"
-          />
-        </a>
-      )}
+    <footer className="border-t border-line px-6 py-6 text-sm text-ink-soft">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
+        <div className="flex items-center gap-2 text-xs text-ink-soft/80">
+          {variant === "asker" ? (
+            <a
+              href="/"
+              className="flex items-center gap-1.5 hover:text-ink"
+            >
+              Powered by
+              <img
+                src="/brand/logo-lockup.png"
+                alt="Drop Me A Question"
+                className="h-4 w-auto"
+              />
+            </a>
+          ) : (
+            <a href="/" className="flex items-center">
+              <img
+                src="/brand/logo-icon.png"
+                alt="Drop Me A Question"
+                className="h-5 w-auto opacity-70"
+              />
+            </a>
+          )}
+          <span>© {new Date().getFullYear()} Drop Me A Question</span>
+        </div>
 
-      <div className="mt-4 flex items-center justify-center gap-4">
-        {socialLinks.map(({ label, href, icon: Icon }) => (
-          <a
-            key={label}
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={label}
-            className="text-ink-soft hover:text-ink"
-          >
-            <Icon className="h-4 w-4" />
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <a href="/terms" className="hover:text-ink">
+            Terms of Service
           </a>
-        ))}
-      </div>
+          <a href="/privacy" className="hover:text-ink">
+            Privacy Policy
+          </a>
+          <a
+            href="mailto:hello@dropmeaquestion.com"
+            className="hover:text-ink"
+          >
+            Contact
+          </a>
+        </div>
 
-      <p className="mt-4">
-        <a href="/terms" className="hover:text-ink">
-          Terms of Service
-        </a>
-        <span className="mx-2">·</span>
-        <a href="/privacy" className="hover:text-ink">
-          Privacy Policy
-        </a>
-        <span className="mx-2">·</span>
-        <a href="mailto:hello@dropmeaquestion.com" className="hover:text-ink">
-          Contact
-        </a>
-        <span className="mx-2">·</span>
-        © {new Date().getFullYear()} Drop Me A Question
-      </p>
+        <div className="flex items-center gap-4">
+          {socialLinks.map(({ label, href, icon: Icon }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={label}
+              className="text-ink-soft hover:text-ink"
+            >
+              <Icon className="h-4 w-4" />
+            </a>
+          ))}
+        </div>
+      </div>
     </footer>
   )
 }
