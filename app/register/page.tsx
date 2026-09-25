@@ -69,8 +69,9 @@ export default function RegisterPage() {
   const [usernameError, setUsernameError] = useState("")
 
   const priceValue = parseFloat(price)
+  const isPriceBelowMinimum = !isNaN(priceValue) && priceValue < MIN_PRICE
   const netEarnings =
-    !isNaN(priceValue) && priceValue > 0
+    !isNaN(priceValue) && priceValue >= MIN_PRICE
       ? (priceValue * (1 - PLATFORM_FEE_RATE)).toFixed(2)
       : null
 
@@ -395,16 +396,19 @@ export default function RegisterPage() {
                   USD
                 </span>
               </div>
-              <p className="mt-1 text-xs text-ink-soft">
-                Minimum ${MIN_PRICE}.{" "}
-                {netEarnings !== null && (
-                  <>
-                    You receive ${netEarnings} on a ${price} question after
-                    the {PLATFORM_FEE_RATE * 100}% platform fee.{" "}
-                  </>
-                )}
-                You can change this anytime.
-              </p>
+              {netEarnings !== null ? (
+                <p className="mt-1 text-xs text-ink-soft">
+                  You receive ${netEarnings} on a ${price} question after
+                  the {PLATFORM_FEE_RATE * 100}% platform fee. You can
+                  change this anytime.
+                </p>
+              ) : (
+                isPriceBelowMinimum && (
+                  <p className="mt-1 text-sm text-postal-red">
+                    Price per question must be at least ${MIN_PRICE}.
+                  </p>
+                )
+              )}
             </div>
 
             <div>
