@@ -15,6 +15,7 @@ import {
 } from "@/components/icons"
 
 const MIN_PRICE = 5
+const PLATFORM_FEE_RATE = 0.15
 const MAX_BIO_LENGTH = 500
 
 function FormSection({
@@ -66,6 +67,12 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [username, setUsername] = useState("")
   const [usernameError, setUsernameError] = useState("")
+
+  const priceValue = parseFloat(price)
+  const netEarnings =
+    !isNaN(priceValue) && priceValue > 0
+      ? (priceValue * (1 - PLATFORM_FEE_RATE)).toFixed(2)
+      : null
 
   async function checkUsername(value: string) {
     const clean = value.toLowerCase().replace(/[^a-z0-9-]/g, "")
@@ -389,7 +396,14 @@ export default function RegisterPage() {
                 </span>
               </div>
               <p className="mt-1 text-xs text-ink-soft">
-                Minimum ${MIN_PRICE}. You can change this anytime.
+                Minimum ${MIN_PRICE}.{" "}
+                {netEarnings !== null && (
+                  <>
+                    You receive ${netEarnings} on a ${price} question after
+                    the {PLATFORM_FEE_RATE * 100}% platform fee.{" "}
+                  </>
+                )}
+                You can change this anytime.
               </p>
             </div>
 
