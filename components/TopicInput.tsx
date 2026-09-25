@@ -43,8 +43,31 @@ export default function TopicInput({
 
   return (
     <div>
+      {topics.length < MAX_TOPICS && (
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          maxLength={MAX_TOPIC_LENGTH}
+          placeholder="Add a topic and press Enter..."
+          className="w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
+        />
+      )}
+
+      <div className="mt-1 flex items-center justify-between text-xs text-ink-soft">
+        <span>
+          {topics.length >= MAX_TOPICS
+            ? `Maximum of ${MAX_TOPICS} topics reached.`
+            : "Examples: Email marketing, Home buying, Photography, College admissions"}
+        </span>
+        <span className="flex-shrink-0 pl-2">
+          {topics.length}/{MAX_TOPICS}
+        </span>
+      </div>
+
       {topics.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {topics.map((topic, i) => (
             <span
               key={i}
@@ -63,29 +86,6 @@ export default function TopicInput({
           ))}
         </div>
       )}
-
-      {topics.length < MAX_TOPICS && (
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          maxLength={MAX_TOPIC_LENGTH}
-          placeholder="Add a topic..."
-          className={`w-full rounded-sm border border-line px-3 py-2 text-ink ${topics.length > 0 ? "mt-2" : ""}`}
-        />
-      )}
-
-      <div className="mt-1 flex items-center justify-between text-xs text-ink-soft">
-        <span>
-          {topics.length >= MAX_TOPICS
-            ? `Maximum of ${MAX_TOPICS} topics reached.`
-            : "Examples: Email marketing, Home buying, Photography, College admissions"}
-        </span>
-        <span className="flex-shrink-0 pl-2">
-          {topics.length}/{MAX_TOPICS}
-        </span>
-      </div>
     </div>
   )
 }

@@ -249,3 +249,32 @@ export function InstagramIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function DollarSignIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <line x1="12" y1="2" x2="12" y2="22" />
+      <path d="M17 6.5c0-1.9-2.2-3-5-3s-5 1.4-5 3.5 2.2 3 5 3.5 5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.1-5-3" />
+    </svg>
+  )
+}
+
+export function EyeIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+export function EyeOffIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9.9 4.6A10.4 10.4 0 0 1 12 4.4c6.5 0 10.5 7 10.5 7a17.3 17.3 0 0 1-3.1 4" />
+      <path d="M6.6 6.6C3.4 8.6 1.5 12 1.5 12s4 7 10.5 7a10.4 10.4 0 0 0 4.4-1" />
+      <path d="M9.5 9.7a3 3 0 0 0 4.2 4.2" />
+      <line x1="2" y1="2" x2="22" y2="22" />
+    </svg>
+  )
+}
