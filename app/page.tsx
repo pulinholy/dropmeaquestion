@@ -295,14 +295,16 @@ export default function Home() {
           <h2 className="font-display text-xl text-ink">
             Here to ask a question?
           </h2>
-          <p className="mt-3 text-sm text-ink-soft">
-            Have a Drop Me A Question link from an expert? Open it to ask
-            them directly.
-          </p>
-          <p className="mt-3 text-sm text-ink-soft">
-            Don&apos;t have one? Ask the expert to share their page with
-            you.
-          </p>
+          <div className="mt-3 space-y-3 text-left text-sm text-ink-soft">
+            <p>
+              Have a Drop Me A Question link from an expert? Open it to ask
+              them directly.
+            </p>
+            <p>
+              Don&apos;t have one? Ask the expert to share their page with
+              you.
+            </p>
+          </div>
         </div>
       </section>
 
