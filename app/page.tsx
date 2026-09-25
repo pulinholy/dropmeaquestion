@@ -8,6 +8,7 @@ import {
   RobotIcon,
   PersonIcon,
   SparkleAccentIcon,
+  ShieldCheckIcon,
   BriefcaseIcon,
   PaletteIcon,
   RocketIcon,
@@ -18,6 +19,45 @@ import {
   BarChartIcon,
   StarIcon,
 } from "@/components/icons"
+
+const howItWorks = [
+  {
+    icon: TagIcon,
+    title: "Set your price",
+    body: "Pick your price and response time. Takes five minutes.",
+    numberBg: "bg-postal-red/15",
+    numberText: "text-postal-red",
+    iconBg: "bg-postal-red/10",
+    iconText: "text-postal-red",
+  },
+  {
+    icon: LinkIcon,
+    title: "Share your link",
+    body: "Drop it in your bio, DMs, or newsletter — wherever people already find you.",
+    numberBg: "bg-lavender",
+    numberText: "text-ink",
+    iconBg: "bg-lavender/70",
+    iconText: "text-ink",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: "They ask, you're covered",
+    body: "Payment's authorized the moment they ask — nothing's charged until you reply.",
+    numberBg: "bg-postal-blue/15",
+    numberText: "text-postal-blue",
+    iconBg: "bg-postal-blue/10",
+    iconText: "text-postal-blue",
+  },
+  {
+    icon: ChatIcon,
+    title: "Answer and get paid",
+    body: "Reply in your own words. Get paid the instant you hit send.",
+    numberBg: "bg-green-500/15",
+    numberText: "text-green-700",
+    iconBg: "bg-green-500/10",
+    iconText: "text-green-700",
+  },
+]
 
 const whoThisIsFor = [
   { label: "Consultants", icon: BriefcaseIcon },
@@ -131,60 +171,34 @@ export default function Home() {
 
       {/* How it works — from the expert's side */}
       <section id="how" className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-6 py-16">
+        <div className="mx-auto max-w-4xl px-6 py-16">
           <h2 className="font-display text-2xl text-ink">How it works</h2>
-          <ol className="mt-8 grid gap-5 sm:grid-cols-3">
-            <li className="rounded-sm bg-lavender/40 p-5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/15 font-display text-sm font-semibold text-postal-red">
-                  1
-                </span>
-                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
-                  <TagIcon className="h-4 w-4" />
-                </span>
-              </div>
-              <div className="mt-3">
-                <p className="font-medium text-ink">Set your price</p>
-                <p className="mt-1 text-ink-soft">
-                  Decide what a question is worth and how fast you&apos;ll
-                  answer. Takes five minutes.
-                </p>
-              </div>
-            </li>
-            <li className="rounded-sm bg-lavender/40 p-5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender font-display text-sm font-semibold text-ink">
-                  2
-                </span>
-                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender/70 text-ink">
-                  <LinkIcon className="h-4 w-4" />
-                </span>
-              </div>
-              <div className="mt-3">
-                <p className="font-medium text-ink">Share your link</p>
-                <p className="mt-1 text-ink-soft">
-                  Drop it in your bio, newsletter, or wherever your audience
-                  already finds you.
-                </p>
-              </div>
-            </li>
-            <li className="rounded-sm bg-lavender/40 p-5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-500/15 font-display text-sm font-semibold text-green-700">
-                  3
-                </span>
-                <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
-                  <ChatIcon className="h-4 w-4" />
-                </span>
-              </div>
-              <div className="mt-3">
-                <p className="font-medium text-ink">Answer and get paid</p>
-                <p className="mt-1 text-ink-soft">
-                  Reply in your own words, within the time you set. You keep
-                  most of every payment.
-                </p>
-              </div>
-            </li>
+          <ol className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {howItWorks.map(
+              (
+                { icon: Icon, title, body, numberBg, numberText, iconBg, iconText },
+                i,
+              ) => (
+                <li key={title} className="rounded-sm bg-lavender/40 p-5">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-display text-sm font-semibold ${numberBg} ${numberText}`}
+                    >
+                      {i + 1}
+                    </span>
+                    <span
+                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${iconBg} ${iconText}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <p className="font-medium text-ink">{title}</p>
+                    <p className="mt-1 text-ink-soft">{body}</p>
+                  </div>
+                </li>
+              ),
+            )}
           </ol>
         </div>
       </section>
