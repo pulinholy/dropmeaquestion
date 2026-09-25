@@ -1,3 +1,19 @@
+import { XIcon, LinkedInIcon, InstagramIcon } from "./icons"
+
+const socialLinks = [
+  { label: "X", href: "https://x.com/dropmeaquestion", icon: XIcon },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/dropmeaquestion",
+    icon: LinkedInIcon,
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/dropmeaquestion",
+    icon: InstagramIcon,
+  },
+]
+
 export default function SiteFooter({
   variant = "default",
 }: {
@@ -28,6 +44,22 @@ export default function SiteFooter({
           />
         </a>
       )}
+
+      <div className="mt-4 flex items-center justify-center gap-4">
+        {socialLinks.map(({ label, href, icon: Icon }) => (
+          <a
+            key={label}
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={label}
+            className="text-ink-soft hover:text-ink"
+          >
+            <Icon className="h-4 w-4" />
+          </a>
+        ))}
+      </div>
+
       <p className="mt-4">
         <a href="/terms" className="hover:text-ink">
           Terms of Service
@@ -35,6 +67,10 @@ export default function SiteFooter({
         <span className="mx-2">·</span>
         <a href="/privacy" className="hover:text-ink">
           Privacy Policy
+        </a>
+        <span className="mx-2">·</span>
+        <a href="mailto:hello@dropmeaquestion.com" className="hover:text-ink">
+          Contact
         </a>
         <span className="mx-2">·</span>
         © {new Date().getFullYear()} Drop Me A Question

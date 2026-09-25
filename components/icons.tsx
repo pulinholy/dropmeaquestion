@@ -218,3 +218,34 @@ export function SparkleAccentIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function XIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <line x1="4" y1="4" x2="20" y2="20" />
+      <line x1="20" y1="4" x2="4" y2="20" />
+    </svg>
+  )
+}
+
+export function LinkedInIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <line x1="7.5" y1="10.5" x2="7.5" y2="17" />
+      <circle cx="7.5" cy="6.8" r="0.6" fill="currentColor" stroke="none" />
+      <path d="M11.5 17v-4a2 2 0 0 1 4 0v4" />
+      <line x1="11.5" y1="17" x2="11.5" y2="10.5" />
+    </svg>
+  )
+}
+
+export function InstagramIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
