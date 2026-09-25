@@ -169,6 +169,16 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Small, quiet redirect for the rare asker who lands here directly --
+          placed right after the hero so it's seen before four sections of
+          expert-focused pitch, not buried at the very bottom */}
+      <section id="ask-instead" className="border-t border-line">
+        <div className="mx-auto max-w-3xl px-6 py-6 text-center text-sm text-ink-soft">
+          Have a link to a specific expert&apos;s page? Use that link
+          directly to ask your question.
+        </div>
+      </section>
+
       {/* How it works — from the expert's side */}
       <section id="how" className="border-t border-line">
         <div className="mx-auto max-w-6xl px-6 py-16">
@@ -285,14 +295,6 @@ export default function Home() {
           >
             Create your page →
           </a>
-        </div>
-      </section>
-
-      {/* Small, quiet redirect for the rare asker who lands here directly */}
-      <section id="ask-instead" className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-6 py-10 text-center text-sm text-ink-soft">
-          Have a link to a specific expert&apos;s page? Use that link
-          directly to ask your question.
         </div>
       </section>
 
