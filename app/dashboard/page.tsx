@@ -25,9 +25,6 @@ const growthTips = [
 
 type Stats = {
   totalEarnedCents: number
-  helpfulCount: number
-  totalFeedback: number
-  recentComment: string | null
 }
 
 type ActivityEvent = {
@@ -75,26 +72,14 @@ export default function DashboardHomePage() {
 
     const { data } = await supabase
       .from("questions")
-      .select("price_cents, feedback_rating, feedback_comment, feedback_submitted_at")
+      .select("price_cents")
       .eq("expert_id", userId)
       .eq("status", "answered")
 
     const rows = data ?? []
     const totalEarnedCents = rows.reduce((sum, q) => sum + Math.round((q.price_cents ?? 0) * EXPERT_NET_RATE), 0)
 
-    const feedbackRows = rows.filter((q) => q.feedback_rating)
-    const helpfulCount = feedbackRows.filter((q) => q.feedback_rating === "up").length
-
-    const recentWithComment = rows
-      .filter((q) => q.feedback_comment)
-      .sort((a, b) => (b.feedback_submitted_at ?? "").localeCompare(a.feedback_submitted_at ?? ""))[0]
-
-    setStats({
-      totalEarnedCents,
-      helpfulCount,
-      totalFeedback: feedbackRows.length,
-      recentComment: recentWithComment?.feedback_comment ?? null,
-    })
+    setStats({ totalEarnedCents })
   }
 
   async function loadRecentActivity() {
@@ -496,13 +481,6 @@ export default function DashboardHomePage() {
           </div>
         </div>
       </div>
-
-      {stats?.recentComment && (
-        <div className="mt-6 rounded-lg border border-line bg-lavender p-5">
-          <p className="text-sm font-medium text-ink">Recent feedback</p>
-          <p className="mt-2 italic text-ink">&ldquo;{stats.recentComment}&rdquo;</p>
-        </div>
-      )}
     </section>
   )
 }
