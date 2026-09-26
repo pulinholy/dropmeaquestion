@@ -10,6 +10,7 @@ import {
   DownloadIcon,
   FacebookBadgeIcon,
   InstagramBadgeIcon,
+  LightbulbIcon,
   LinkedInBadgeIcon,
   LinkIcon,
   MailIcon,
@@ -78,9 +79,10 @@ export default function GetMoreQuestionsPage() {
   const [topics, setTopics] = useState<string[]>([])
   const [headline, setHeadline] = useState("")
   const [copiedLink, setCopiedLink] = useState(false)
-  const [copiedTemplate, setCopiedTemplate] = useState<
-    "professional" | "casual" | null
-  >(null)
+  const [activeTemplate, setActiveTemplate] = useState<"professional" | "casual">(
+    "professional"
+  )
+  const [copiedTemplate, setCopiedTemplate] = useState(false)
 
   useEffect(() => {
     loadTopics()
@@ -117,6 +119,8 @@ export default function GetMoreQuestionsPage() {
 
   const professionalMessage = `I'm now taking questions through Drop Me A Question. If you'd like my perspective on ${topicsPhrase}, you can send me a question here: ${pageUrl}`
   const casualMessage = `Have a question for me about ${topicsPhrase}? You can now ask me directly on Drop Me A Question: ${pageUrl}`
+  const activeMessage =
+    activeTemplate === "professional" ? professionalMessage : casualMessage
 
   async function copyLink() {
     if (!pageUrl) return
@@ -125,11 +129,15 @@ export default function GetMoreQuestionsPage() {
     setTimeout(() => setCopiedLink(false), 2000)
   }
 
-  async function copyTemplate(kind: "professional" | "casual") {
-    const text = kind === "professional" ? professionalMessage : casualMessage
-    await navigator.clipboard.writeText(text)
-    setCopiedTemplate(kind)
-    setTimeout(() => setCopiedTemplate(null), 2000)
+  async function copyTemplate() {
+    await navigator.clipboard.writeText(activeMessage)
+    setCopiedTemplate(true)
+    setTimeout(() => setCopiedTemplate(false), 2000)
+  }
+
+  function selectTemplate(kind: "professional" | "casual") {
+    setActiveTemplate(kind)
+    setCopiedTemplate(false)
   }
 
   const encodedUrl = encodeURIComponent(pageUrl)
@@ -198,11 +206,10 @@ export default function GetMoreQuestionsPage() {
       </h1>
       <p className="mt-1 text-sm text-ink-soft">
         Share your Drop Me A Question page wherever your audience already
-        follows you. The more people who know about your page, the more
-        questions you&apos;ll receive.
+        follows you.
       </p>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px] lg:items-start">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[65fr_35fr] lg:items-start">
         <div className="min-w-0 space-y-4">
           <div className="rounded-lg border border-line bg-white p-4">
             <div className="flex items-start gap-3">
@@ -300,75 +307,93 @@ export default function GetMoreQuestionsPage() {
                   YouTube, Facebook, X, email, or your website.
                 </p>
 
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="rounded-sm border border-line p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-medium text-ink">
-                        Professional
-                      </p>
-                      <button
-                        onClick={() => copyTemplate("professional")}
-                        className="flex-shrink-0 rounded-full border border-postal-red px-2.5 py-1 text-[11px] font-medium text-postal-red hover:bg-postal-red/10"
-                      >
-                        {copiedTemplate === "professional"
-                          ? "Copied!"
-                          : "Copy message"}
-                      </button>
-                    </div>
-                    <p className="mt-1.5 break-words text-xs text-ink-soft">
-                      {professionalMessage}
-                    </p>
-                  </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => selectTemplate("professional")}
+                    className={`rounded-full px-4 py-1.5 text-xs font-medium ${
+                      activeTemplate === "professional"
+                        ? "bg-postal-red text-white"
+                        : "border border-line text-ink-soft hover:border-postal-red hover:text-postal-red"
+                    }`}
+                  >
+                    Professional
+                  </button>
+                  <button
+                    onClick={() => selectTemplate("casual")}
+                    className={`rounded-full px-4 py-1.5 text-xs font-medium ${
+                      activeTemplate === "casual"
+                        ? "bg-postal-red text-white"
+                        : "border border-line text-ink-soft hover:border-postal-red hover:text-postal-red"
+                    }`}
+                  >
+                    Casual
+                  </button>
+                </div>
 
-                  <div className="rounded-sm border border-line p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-medium text-ink">Casual</p>
-                      <button
-                        onClick={() => copyTemplate("casual")}
-                        className="flex-shrink-0 rounded-full border border-postal-red px-2.5 py-1 text-[11px] font-medium text-postal-red hover:bg-postal-red/10"
-                      >
-                        {copiedTemplate === "casual"
-                          ? "Copied!"
-                          : "Copy message"}
-                      </button>
-                    </div>
-                    <p className="mt-1.5 break-words text-xs text-ink-soft">
-                      {casualMessage}
-                    </p>
-                  </div>
+                <div className="mt-2 flex items-end justify-between gap-4 rounded-sm border border-line p-3">
+                  <p className="break-words text-xs text-ink-soft">
+                    {activeMessage}
+                  </p>
+                  <button
+                    onClick={copyTemplate}
+                    className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1.5 text-xs font-medium text-postal-red hover:bg-postal-red/10"
+                  >
+                    {copiedTemplate ? "Copied!" : "Copy message"}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-line bg-white p-4">
-          <h2 className="font-display text-sm text-ink">
-            Example share card
-          </h2>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            You can use an image like this when posting on social media.
-          </p>
-          <img
-            src={shareCardUrl}
-            alt="Example share card preview"
-            className="mt-3 w-full rounded-lg border border-line"
-          />
-          <a
-            href={shareCardUrl}
-            download="drop-me-a-question-share-card.png"
-            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red"
-          >
-            <DownloadIcon className="h-3.5 w-3.5" />
-            Download image
-          </a>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-line bg-white p-4">
+            <h2 className="font-display text-sm text-ink">Your share card</h2>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              You can use this image when posting on social media, in
+              videos, or on your website.
+            </p>
+            <div className="mt-3 rounded-lg bg-postal-red/5 p-3">
+              <img
+                src={shareCardUrl}
+                alt="Your share card preview"
+                className="w-full rounded-lg border border-line"
+              />
+            </div>
+            <a
+              href={shareCardUrl}
+              download="drop-me-a-question-share-card.png"
+              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red"
+            >
+              <DownloadIcon className="h-3.5 w-3.5" />
+              Download image
+            </a>
+          </div>
+
+          <div className="rounded-lg border border-line bg-white p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+                <LightbulbIcon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-medium text-ink">
+                  Where to use it
+                </h3>
+                <p className="mt-1 text-xs text-ink-soft">
+                  Share this card in a post, story, video description,
+                  email, website, or community. It helps people quickly see
+                  your expertise and how to ask you a question.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <h2 className="mt-6 font-display text-lg text-ink">
         More ways to get questions
       </h2>
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {moreWays.map(
           ({ icon: Icon, iconBg, iconText, title, description, cta, href }) => (
             <div

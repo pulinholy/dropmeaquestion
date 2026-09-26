@@ -255,6 +255,16 @@ export function ImageIcon({ className }: IconProps) {
   )
 }
 
+export function LightbulbIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9 18h6" />
+      <path d="M10 21h4" />
+      <path d="M12 3a6 6 0 0 0-3.5 10.9c.6.44 1 .96 1.1 1.6h4.8c.1-.64.5-1.16 1.1-1.6A6 6 0 0 0 12 3Z" />
+    </svg>
+  )
+}
+
 export function CodeIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
