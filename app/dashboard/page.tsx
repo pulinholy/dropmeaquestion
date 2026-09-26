@@ -305,33 +305,6 @@ export default function DashboardHomePage() {
         </div>
       )}
 
-      {onboardingComplete && (
-        <div className="mt-6 rounded-lg border border-line bg-white p-6">
-          <p className="font-display text-lg text-ink">Your page is live 🎉</p>
-          <p className="mt-1 text-sm text-ink-soft">
-            Share your link to start receiving questions.
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button
-              onClick={copyLink}
-              className="rounded-full border border-line px-5 py-2.5 text-sm font-medium text-ink hover:bg-line/40"
-            >
-              {copied ? "Copied!" : "Copy my link"}
-            </button>
-            {profile.username && (
-              <a
-                href={`/${profile.username}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-full bg-postal-red px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink"
-              >
-                View my page <span aria-hidden>↗</span>
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-
       <div className="mt-6 rounded-lg border border-line bg-white p-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
