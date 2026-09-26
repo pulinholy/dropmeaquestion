@@ -13,8 +13,6 @@ const responseOptions = [
   { hours: 12, label: "Within 12 hours" },
   { hours: 24, label: "Within 24 hours" },
   { hours: 48, label: "Within 48 hours" },
-  { hours: 72, label: "Within 3 days" },
-  { hours: 168, label: "Within 7 days" },
 ]
 
 // Rotating background tints for topic pills -- matches the public profile
