@@ -211,7 +211,7 @@ export default function GetMoreQuestionsPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[65fr_35fr] lg:items-start">
         <div className="min-w-0 space-y-4">
-          <div className="rounded-lg border border-line bg-paper p-4">
+          <div className="rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
                 <LinkIcon className="h-4 w-4" />
@@ -238,7 +238,7 @@ export default function GetMoreQuestionsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-paper p-4">
+          <div className="rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
                 <MegaphoneIcon className="h-4 w-4" />
@@ -254,7 +254,7 @@ export default function GetMoreQuestionsPage() {
                 <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-8">
                   {sharePlatforms.map((platform) => {
                     const tile = (
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-paper">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-card">
                         {platform.badge ? (
                           <platform.badge className="h-8 w-8" />
                         ) : platform.icon ? (
@@ -292,7 +292,7 @@ export default function GetMoreQuestionsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-paper p-4">
+          <div className="rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
                 <DocumentIcon className="h-4 w-4" />
@@ -347,7 +347,7 @@ export default function GetMoreQuestionsPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-line bg-paper p-4">
+          <div className="rounded-lg border border-line bg-card p-4">
             <h2 className="font-display text-sm text-ink">Your share card</h2>
             <p className="mt-0.5 text-xs text-ink-soft">
               You can use this image when posting on social media, in
@@ -370,7 +370,7 @@ export default function GetMoreQuestionsPage() {
             </a>
           </div>
 
-          <div className="rounded-lg border border-line bg-paper p-4">
+          <div className="rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
                 <LightbulbIcon className="h-4 w-4" />
@@ -398,7 +398,7 @@ export default function GetMoreQuestionsPage() {
           ({ icon: Icon, iconBg, iconText, title, description, cta, href }) => (
             <div
               key={title}
-              className="rounded-lg border border-line bg-paper p-4"
+              className="rounded-lg border border-line bg-card p-4"
             >
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full ${iconBg} ${iconText}`}

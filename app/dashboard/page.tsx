@@ -201,7 +201,7 @@ export default function DashboardHomePage() {
       </p>
 
       {stripeStatusLoaded && !onboardingComplete && (
-        <div className="mt-6 rounded-lg border border-line bg-paper p-6">
+        <div className="mt-6 rounded-lg border border-line bg-card p-6">
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-lg text-ink">Get your page ready</h2>
             <span className="text-sm text-ink-soft">2 of 3 complete</span>
@@ -254,7 +254,7 @@ export default function DashboardHomePage() {
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link
           href="/dashboard/questions/pending"
-          className="rounded-lg border border-line bg-paper p-4 hover:border-postal-blue/40"
+          className="rounded-lg border border-line bg-card p-4 hover:border-postal-blue/40"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
             <ChatIcon className="h-4 w-4" />
@@ -267,7 +267,7 @@ export default function DashboardHomePage() {
         </Link>
         <Link
           href="/dashboard/questions/answered"
-          className="rounded-lg border border-line bg-paper p-4 hover:border-green-500/40"
+          className="rounded-lg border border-line bg-card p-4 hover:border-green-500/40"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-700">
             <CheckIcon className="h-4 w-4" />
@@ -282,7 +282,7 @@ export default function DashboardHomePage() {
         </Link>
         <Link
           href="/dashboard/payments"
-          className="rounded-lg border border-line bg-paper p-4 hover:border-postal-red/40"
+          className="rounded-lg border border-line bg-card p-4 hover:border-postal-red/40"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
             <DollarSignIcon className="h-4 w-4" />
@@ -299,7 +299,7 @@ export default function DashboardHomePage() {
       </div>
 
       {stripeStatusLoaded && !onboardingComplete && (
-        <div className="mt-6 rounded-lg border border-line bg-paper p-6">
+        <div className="mt-6 rounded-lg border border-line bg-card p-6">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
               <CreditCardIcon className="h-5 w-5" />
@@ -367,7 +367,7 @@ export default function DashboardHomePage() {
         </div>
       )}
 
-      <div className="mt-6 rounded-lg border border-line bg-paper p-6">
+      <div className="mt-6 rounded-lg border border-line bg-card p-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -437,7 +437,7 @@ export default function DashboardHomePage() {
           </Link>
         </div>
 
-        <div className="rounded-lg border border-line bg-paper p-6">
+        <div className="rounded-lg border border-line bg-card p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
