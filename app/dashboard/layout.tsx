@@ -201,7 +201,7 @@ export default function DashboardLayout({
 
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 gap-12 px-8 py-16">
         <nav className="w-52 flex-shrink-0">
-          <div className="mb-6 rounded-lg border border-line bg-white p-4">
+          <div className="mb-6 rounded-lg border border-line bg-paper p-4">
             <div className="flex items-center gap-2">
               {profile.avatarUrl ? (
                 <img

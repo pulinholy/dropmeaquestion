@@ -141,7 +141,7 @@ export default function PaymentsPage() {
   return (
     <div className="max-w-lg">
       {stripeOnboarded ? (
-        <div className="rounded-lg border border-line bg-white p-6">
+        <div className="rounded-lg border border-line bg-paper p-6">
           <p className="text-sm font-medium text-ink">Stripe connected</p>
           <p className="mt-1 text-sm text-ink-soft">
             You&apos;re set up to get paid for answered questions.
@@ -155,7 +155,7 @@ export default function PaymentsPage() {
           </button>
         </div>
       ) : (
-        <div className="rounded-lg border border-line bg-white p-6">
+        <div className="rounded-lg border border-line bg-paper p-6">
           <p className="text-sm font-medium text-ink">
             Connect your bank account
           </p>
@@ -172,7 +172,7 @@ export default function PaymentsPage() {
         </div>
       )}
 
-      <div className="mt-6 rounded-lg border border-line bg-white p-6 text-sm text-ink">
+      <div className="mt-6 rounded-lg border border-line bg-paper p-6 text-sm text-ink">
         <p className="font-medium">How payments work</p>
         <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-ink-soft">
           <li>
@@ -199,7 +199,7 @@ export default function PaymentsPage() {
         </ol>
       </div>
 
-      <div className="mt-6 rounded-lg border border-line bg-white p-6">
+      <div className="mt-6 rounded-lg border border-line bg-paper p-6">
         <div className="flex items-baseline justify-between">
           <h3 className="font-display text-lg text-ink">Earnings</h3>
           <p className="text-sm text-ink-soft">
