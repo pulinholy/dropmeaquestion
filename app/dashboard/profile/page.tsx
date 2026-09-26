@@ -5,6 +5,21 @@ import { supabase } from "@/lib/supabase"
 import { useProfileInfo } from "../profile-context"
 import TopicInput from "@/components/TopicInput"
 import { slugify } from "@/lib/slugify"
+import { CheckIcon, ChatIcon, EyeIcon } from "@/components/icons"
+
+const HEADLINE_MAX = 100
+const BIO_MAX = 500
+
+// Rotating background tints for topic pills -- matches the public profile
+// page, since real topics are free-text with no icon to key off of.
+const TOPIC_STYLES = ["bg-lavender/60", "bg-postal-blue/10", "bg-line/50"]
+
+const profileTips = [
+  "Use a clear, friendly photo",
+  "Write a short, specific headline",
+  "Mention your experience and how you can help",
+  "Add relevant topics (up to 5)",
+]
 
 export default function ProfilePage() {
   const { refreshProfile } = useProfileInfo()
@@ -26,6 +41,10 @@ export default function ProfilePage() {
   }, [])
 
   async function load() {
+    setLoading(true)
+    setError("")
+    setSaved(false)
+
     const { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) return
 
@@ -109,6 +128,25 @@ export default function ProfilePage() {
     setUploadingAvatar(false)
   }
 
+  async function handleRemoveAvatar() {
+    setAvatarError("")
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) return
+    const userId = sessionData.session.user.id
+
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ avatar_url: null })
+      .eq("id", userId)
+
+    if (updateError) {
+      setAvatarError(updateError.message)
+    } else {
+      setAvatarUrl(null)
+      refreshProfile()
+    }
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
@@ -165,116 +203,265 @@ export default function ProfilePage() {
     return <p className="text-ink-soft">Loading...</p>
   }
 
-  return (
-    <div className="max-w-md space-y-8">
-      <div>
-        <label className="block text-sm font-medium text-ink">
-          Profile picture
-        </label>
-        <div className="mt-2 flex items-center gap-4">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt="Your profile picture"
-              className="h-16 w-16 rounded-full border border-line object-cover"
-            />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-line/40 text-lg font-medium text-ink-soft">
-              {firstName.charAt(0).toUpperCase() || "?"}
-            </div>
-          )}
-          <label className="cursor-pointer rounded-sm border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-line">
-            {uploadingAvatar ? "Uploading..." : "Upload photo"}
-            <input
-              type="file"
-              accept="image/png, image/jpeg, image/webp"
-              onChange={handleAvatarChange}
-              disabled={uploadingAvatar}
-              className="hidden"
-            />
-          </label>
-        </div>
-        {avatarError && (
-          <p className="mt-2 text-sm text-postal-red">{avatarError}</p>
-        )}
-      </div>
+  const fullName = `${firstName} ${lastName}`.trim() || "Your Name"
 
-      <form onSubmit={handleSave} className="space-y-5">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-ink">
-              First name
-            </label>
+  return (
+    <section>
+      <p className="text-sm text-ink-soft">Profile</p>
+      <h1 className="mt-1 font-display text-xl text-ink">Your profile</h1>
+      <p className="mt-1 text-sm text-ink-soft">
+        This information will be shown on your public page so people know
+        who you are and what they can ask you.
+      </p>
+
+      <form
+        onSubmit={handleSave}
+        className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[65fr_35fr]"
+      >
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="rounded-lg border border-line bg-card p-5">
+            <h2 className="text-sm font-semibold text-ink">Profile picture</h2>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              A clear, friendly photo helps people recognize you.
+            </p>
+            <div className="mt-3 flex items-center gap-4">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Your profile picture"
+                  className="h-20 w-20 flex-shrink-0 rounded-full border border-line object-cover"
+                />
+              ) : (
+                <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border border-line bg-line/40 text-2xl font-medium text-ink-soft">
+                  {firstName.charAt(0).toUpperCase() || "?"}
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <label className="cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-line/40">
+                  {uploadingAvatar ? "Uploading..." : "Upload photo"}
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg, image/webp"
+                    onChange={handleAvatarChange}
+                    disabled={uploadingAvatar}
+                    className="hidden"
+                  />
+                </label>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    className="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink-soft hover:bg-line/40"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+            {avatarError && (
+              <p className="mt-2 text-sm text-postal-red">{avatarError}</p>
+            )}
+            <p className="mt-3 text-xs text-ink-soft">
+              Recommended: square image, at least 400 × 400 px.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-line bg-card p-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-ink">
+                  First name <span className="text-postal-red">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="mt-2 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-ink">
+                  Last name <span className="text-ink-soft">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="mt-2 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-line bg-card p-5">
+            <div className="flex items-baseline justify-between gap-3">
+              <label className="block text-sm font-semibold text-ink">
+                Headline <span className="text-postal-red">*</span>
+              </label>
+              <span className="flex-shrink-0 text-xs text-ink-soft">
+                {headline.length}/{HEADLINE_MAX}
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              Show people your role or expertise in a few words.
+            </p>
             <input
               type="text"
               required
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
+              maxLength={HEADLINE_MAX}
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
+              className="mt-2 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink"
+            />
+            <p className="mt-1.5 text-xs text-ink-soft">
+              Examples: &quot;Salesforce Developer&quot;, &quot;Marketing
+              Strategist&quot;, &quot;Career Coach&quot;
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-line bg-card p-5">
+            <div className="flex items-baseline justify-between gap-3">
+              <label className="block text-sm font-semibold text-ink">
+                Short bio <span className="text-postal-red">*</span>
+              </label>
+              <span className="flex-shrink-0 text-xs text-ink-soft">
+                {bio.length}/{BIO_MAX}
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              Tell people a bit about yourself and how you can help.
+            </p>
+            <textarea
+              required
+              rows={4}
+              maxLength={BIO_MAX}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="mt-2 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-ink">
-              Last name <span className="text-ink-soft">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
-            />
+
+          <div className="rounded-lg border border-line bg-card p-5">
+            <div className="flex items-baseline justify-between gap-3">
+              <label className="block text-sm font-semibold text-ink">
+                What can people ask you about?{" "}
+                <span className="text-postal-red">*</span>
+              </label>
+            </div>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              Add up to 5 topics that describe your expertise.
+            </p>
+            <div className="mt-2">
+              <TopicInput topics={topics} onChange={setTopics} />
+            </div>
+          </div>
+
+          {error && <p className="text-sm text-postal-red">{error}</p>}
+          {saved && <p className="text-sm text-postal-blue">Saved.</p>}
+
+          <div className="flex items-center gap-4">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-full bg-postal-red px-6 py-2.5 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save changes"}
+            </button>
+            <button
+              type="button"
+              onClick={load}
+              className="text-sm font-medium text-ink-soft hover:text-ink"
+            >
+              Cancel
+            </button>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-ink">
-            Headline (e.g. &quot;Senior iOS Developer, 8 yrs&quot;)
-          </label>
-          <input
-            type="text"
-            required
-            value={headline}
-            onChange={(e) => setHeadline(e.target.value)}
-            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
-          />
-        </div>
+        <div className="flex flex-col gap-4">
+          <div className="rounded-lg border border-line bg-card p-4">
+            <h2 className="text-sm font-semibold text-ink">
+              Preview of your page
+            </h2>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              This is how your profile information will appear to others.
+            </p>
 
-        <div>
-          <label className="block text-sm font-medium text-ink">
-            Short bio
-          </label>
-          <textarea
-            required
-            rows={4}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink"
-          />
-        </div>
+            <div className="mt-3 overflow-hidden rounded-lg border border-line">
+              <div className="h-16 bg-gradient-to-r from-postal-red/20 via-lavender to-postal-blue/10" />
+              <div className="bg-card px-4 pb-5 text-center">
+                <div className="mx-auto -mt-8 flex h-16 w-16 items-center justify-center rounded-full border-4 border-card bg-lavender/40">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={fullName}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg font-medium text-ink-soft">
+                      {firstName.charAt(0).toUpperCase() || "?"}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 font-display text-base font-semibold text-ink">
+                  {fullName}
+                </p>
+                {headline && (
+                  <p className="text-sm text-ink-soft">{headline}</p>
+                )}
 
-        <div>
-          <label className="block text-sm font-medium text-ink">
-            What can people ask you about?
-          </label>
-          <p className="mt-1 text-sm text-ink-soft">
-            Add up to 5 topics that describe your expertise.
-          </p>
-          <div className="mt-2">
-            <TopicInput topics={topics} onChange={setTopics} />
+                {topics.length > 0 && (
+                  <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                    {topics.map((topic, i) => (
+                      <span
+                        key={topic}
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium text-ink ${TOPIC_STYLES[i % TOPIC_STYLES.length]}`}
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {bio && (
+                  <p className="mt-3 text-xs leading-relaxed text-ink-soft">
+                    {bio}
+                  </p>
+                )}
+
+                <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-postal-red px-4 py-2 text-xs font-medium text-white">
+                  <ChatIcon className="h-3.5 w-3.5" />
+                  Ask me a question
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-line bg-lavender/30 p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
+                <EyeIcon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-ink">
+                  Tips for a great profile
+                </h3>
+                <ul className="mt-2 space-y-1.5">
+                  {profileTips.map((tip) => (
+                    <li
+                      key={tip}
+                      className="flex items-start gap-1.5 text-xs text-ink-soft"
+                    >
+                      <CheckIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-600" />
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-
-        {error && <p className="text-sm text-postal-red">{error}</p>}
-        {saved && <p className="text-sm text-postal-blue">Saved.</p>}
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-sm bg-ink px-6 py-3 text-sm font-medium text-paper hover:bg-postal-blue disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Save changes"}
-        </button>
       </form>
-    </div>
+    </section>
   )
 }
