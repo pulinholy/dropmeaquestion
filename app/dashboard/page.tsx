@@ -429,6 +429,12 @@ export default function DashboardHomePage() {
               </li>
             ))}
           </ul>
+          <Link
+            href="/dashboard/get-more-questions"
+            className="mt-4 inline-block text-sm font-medium text-postal-blue hover:text-ink"
+          >
+            See how to get more questions →
+          </Link>
         </div>
 
         <div className="rounded-lg border border-line bg-white p-6">
