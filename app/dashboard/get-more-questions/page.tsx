@@ -209,8 +209,8 @@ export default function GetMoreQuestionsPage() {
         follows you.
       </p>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[65fr_35fr] lg:items-start">
-        <div className="min-w-0 space-y-4">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[65fr_35fr]">
+        <div className="flex min-w-0 flex-col gap-4">
           <div className="rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
@@ -292,7 +292,7 @@ export default function GetMoreQuestionsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-card p-4">
+          <div className="flex-1 rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
                 <DocumentIcon className="h-4 w-4" />
@@ -346,7 +346,7 @@ export default function GetMoreQuestionsPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <div className="rounded-lg border border-line bg-card p-4">
             <h2 className="font-display text-sm text-ink">Your share card</h2>
             <p className="mt-0.5 text-xs text-ink-soft">
@@ -370,7 +370,7 @@ export default function GetMoreQuestionsPage() {
             </a>
           </div>
 
-          <div className="rounded-lg border border-line bg-card p-4">
+          <div className="flex-1 rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
                 <LightbulbIcon className="h-4 w-4" />
