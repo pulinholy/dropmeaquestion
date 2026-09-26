@@ -507,7 +507,7 @@ export default function ProfilePage() {
 
                 <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-postal-red px-4 py-2 text-xs font-medium text-white">
                   <ChatIcon className="h-3.5 w-3.5" />
-                  Ask me a question
+                  Drop me a question
                 </div>
               </div>
             </div>
