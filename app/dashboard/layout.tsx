@@ -14,6 +14,7 @@ import {
   PersonIcon,
   TagIcon,
   SettingsIcon,
+  StarIcon,
   CreditCardIcon,
 } from "@/components/icons"
 
@@ -21,6 +22,7 @@ const yourPageLinks = [
   { href: "/dashboard/profile", label: "Profile", icon: PersonIcon },
   { href: "/dashboard/pricing", label: "Pricing", icon: TagIcon },
   { href: "/dashboard/settings", label: "Page settings", icon: SettingsIcon },
+  { href: "/dashboard/feedback", label: "Feedback", icon: StarIcon },
 ]
 
 export default function DashboardLayout({

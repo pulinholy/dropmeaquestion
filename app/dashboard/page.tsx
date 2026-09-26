@@ -8,7 +8,6 @@ import { useProfileInfo } from "./profile-context"
 import {
   ChatIcon,
   CheckIcon,
-  ClockIcon,
   CreditCardIcon,
   DollarSignIcon,
   LinkIcon,
@@ -27,11 +26,11 @@ type Stats = {
   totalEarnedCents: number
 }
 
-type ActivityEvent = {
+type FeedbackItem = {
   id: string
-  date: string
-  label: string
-  amountCents: number | null
+  rating: "up" | "down"
+  comment: string | null
+  submittedAt: string
 }
 
 // Supabase returns timestamp (no timezone) columns without a "Z" suffix,
@@ -51,7 +50,7 @@ export default function DashboardHomePage() {
   const { counts } = useQuestionCounts()
   const { profile } = useProfileInfo()
   const [stats, setStats] = useState<Stats | null>(null)
-  const [recentActivity, setRecentActivity] = useState<ActivityEvent[]>([])
+  const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([])
   const [stripeOnboarded, setStripeOnboarded] = useState(true)
   const [stripeStatusLoaded, setStripeStatusLoaded] = useState(false)
   const [connectingStripe, setConnectingStripe] = useState(false)
@@ -61,7 +60,7 @@ export default function DashboardHomePage() {
   useEffect(() => {
     loadStats()
     loadStripeStatus()
-    loadRecentActivity()
+    loadRecentFeedback()
   }, [])
 
   async function loadStats() {
@@ -82,7 +81,7 @@ export default function DashboardHomePage() {
     setStats({ totalEarnedCents })
   }
 
-  async function loadRecentActivity() {
+  async function loadRecentFeedback() {
     const { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) return
 
@@ -90,31 +89,20 @@ export default function DashboardHomePage() {
 
     const { data } = await supabase
       .from("questions")
-      .select("id, created_at, answered_at, price_cents")
+      .select("id, feedback_rating, feedback_comment, feedback_submitted_at")
       .eq("expert_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(10)
+      .not("feedback_rating", "is", null)
+      .order("feedback_submitted_at", { ascending: false })
+      .limit(2)
 
-    const events: ActivityEvent[] = []
-    ;(data ?? []).forEach((q) => {
-      events.push({
-        id: `${q.id}-received`,
-        date: q.created_at,
-        label: "Question received",
-        amountCents: null,
-      })
-      if (q.answered_at) {
-        events.push({
-          id: `${q.id}-answered`,
-          date: q.answered_at,
-          label: "Answer submitted",
-          amountCents: Math.round((q.price_cents ?? 0) * EXPERT_NET_RATE),
-        })
-      }
-    })
-
-    events.sort((a, b) => b.date.localeCompare(a.date))
-    setRecentActivity(events.slice(0, 5))
+    setRecentFeedback(
+      (data ?? []).map((q) => ({
+        id: q.id,
+        rating: q.feedback_rating,
+        comment: q.feedback_comment,
+        submittedAt: q.feedback_submitted_at,
+      }))
+    )
   }
 
   async function loadStripeStatus() {
@@ -438,53 +426,58 @@ export default function DashboardHomePage() {
         </div>
 
         <div className="rounded-lg border border-line bg-card p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
-                <ClockIcon className="h-5 w-5" />
-              </div>
-              <h2 className="font-display text-lg text-ink">
-                Recent activity
-              </h2>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+              <ChatIcon className="h-5 w-5" />
             </div>
-            <Link
-              href="/dashboard/questions/answered"
-              className="text-sm font-medium text-postal-blue hover:text-ink"
-            >
-              View all →
-            </Link>
+            <div>
+              <h2 className="font-display text-lg text-ink">
+                Recent feedback
+              </h2>
+              <p className="text-sm text-ink-soft">
+                See what people are saying about your answers.
+              </p>
+            </div>
           </div>
           <div className="mt-4 space-y-3">
-            {recentActivity.length === 0 ? (
+            {recentFeedback.length === 0 ? (
               <p className="text-sm text-ink-soft">
-                Your activity will show up here once someone asks you a
-                question.
+                Feedback from askers will show up here once they respond.
               </p>
             ) : (
-              recentActivity.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center justify-between gap-3 text-sm"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs text-ink-soft">
-                      {formatEventDate(event.date)}
-                    </p>
-                    <p className="text-ink">{event.label}</p>
+              recentFeedback.map((item) => (
+                <div key={item.id} className="text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                        item.rating === "up"
+                          ? "bg-green-500/10 text-green-700"
+                          : "bg-postal-red/10 text-postal-red"
+                      }`}
+                    >
+                      {item.rating === "up"
+                        ? "Helpful"
+                        : "Not quite what they needed"}
+                    </span>
+                    <span className="flex-shrink-0 text-xs text-ink-soft">
+                      {formatEventDate(item.submittedAt)}
+                    </span>
                   </div>
-                  <p
-                    className={`flex-shrink-0 font-medium ${
-                      event.amountCents ? "text-green-700" : "text-ink-soft"
-                    }`}
-                  >
-                    {event.amountCents
-                      ? `$${(event.amountCents / 100).toFixed(2)}`
-                      : "—"}
-                  </p>
+                  {item.comment && (
+                    <p className="mt-1.5 text-ink">
+                      &ldquo;{item.comment}&rdquo;
+                    </p>
+                  )}
                 </div>
               ))
             )}
           </div>
+          <Link
+            href="/dashboard/feedback"
+            className="mt-4 inline-block text-sm font-medium text-postal-blue hover:text-ink"
+          >
+            View all feedback →
+          </Link>
         </div>
       </div>
     </section>
