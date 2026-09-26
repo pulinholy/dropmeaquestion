@@ -154,10 +154,10 @@ export default function DashboardHomePage() {
         <div className="mt-6 rounded-lg border border-line bg-white p-6">
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-lg text-ink">Get your page ready</h2>
-            <span className="text-sm text-ink-soft">2 of 4 complete</span>
+            <span className="text-sm text-ink-soft">2 of 3 complete</span>
           </div>
           <div className="mt-3 h-1.5 w-full rounded-full bg-line/50">
-            <div className="h-1.5 w-1/2 rounded-full bg-green-500" />
+            <div className="h-1.5 w-2/3 rounded-full bg-green-500" />
           </div>
 
           <ul className="mt-4 space-y-3">
@@ -196,27 +196,6 @@ export default function DashboardHomePage() {
               >
                 {connectingStripe ? "Connecting..." : "Connect Stripe"}
               </button>
-            </li>
-            <li className="flex items-center justify-between gap-3 text-sm">
-              <div className="flex items-center gap-3">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border border-line text-xs text-ink-soft">
-                  4
-                </span>
-                <div>
-                  <p className="text-ink">Preview &amp; share your page</p>
-                  <p className="text-xs text-ink-soft">See how your page looks and start sharing it.</p>
-                </div>
-              </div>
-              {profile.username && (
-                <a
-                  href={`/${profile.username}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-shrink-0 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:bg-line/40"
-                >
-                  View my page ↗
-                </a>
-              )}
             </li>
           </ul>
         </div>
