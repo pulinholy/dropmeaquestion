@@ -15,7 +15,6 @@ import {
   TagIcon,
   SettingsIcon,
   CreditCardIcon,
-  LinkIcon,
 } from "@/components/icons"
 
 const yourPageLinks = [
@@ -46,7 +45,6 @@ export default function DashboardLayout({
   const [isActive, setIsActive] = useState(true)
   const [activeStatusLoading, setActiveStatusLoading] = useState(true)
   const [togglingActive, setTogglingActive] = useState(false)
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -144,13 +142,6 @@ export default function DashboardLayout({
     setCounts(next)
   }
 
-  async function copyLink() {
-    if (!profile.username) return
-    await navigator.clipboard.writeText(`${window.location.origin}/${profile.username}`)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   if (checkingSession) {
     return (
       <main className="mx-auto max-w-4xl px-6 py-16">
@@ -229,29 +220,27 @@ export default function DashboardLayout({
             </div>
 
             {!activeStatusLoading && (
-              <span className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
-                <span
-                  className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
-                    isActive ? "bg-green-500" : "bg-ink-soft/40"
-                  }`}
-                />
-                {isActive ? "Accepting questions" : "Paused"}
-              </span>
-            )}
-
-            {profile.username && (
-              <>
-                <p className="mt-3 truncate text-xs text-ink-soft">
-                  dropmeaquestion.com/{profile.username}
-                </p>
-                <button
-                  onClick={copyLink}
-                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-sm border border-line px-2 py-1.5 text-xs font-medium text-ink hover:bg-line/40"
-                >
-                  <LinkIcon className="h-3.5 w-3.5" />
-                  {copied ? "Copied!" : "Copy link"}
-                </button>
-              </>
+              <button
+                onClick={toggleActive}
+                disabled={togglingActive}
+                className="mt-3 flex w-full flex-col gap-1 rounded-sm px-1 py-1 text-left hover:bg-line/30 disabled:opacity-50"
+              >
+                <span className="flex items-start gap-1.5 text-xs text-ink-soft">
+                  <span
+                    className={`mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full ${
+                      isActive ? "bg-green-500" : "bg-ink-soft/40"
+                    }`}
+                  />
+                  <span>
+                    {isActive
+                      ? "Accepting questions"
+                      : "Paused- not accepting questions"}
+                  </span>
+                </span>
+                <span className="pl-3 text-xs font-medium text-postal-red">
+                  {isActive ? "Pause" : "Resume"}
+                </span>
+              </button>
             )}
           </div>
 
