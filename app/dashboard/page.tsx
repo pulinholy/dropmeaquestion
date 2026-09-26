@@ -8,12 +8,20 @@ import { useProfileInfo } from "./profile-context"
 import {
   ChatIcon,
   CheckIcon,
+  ClockIcon,
   CreditCardIcon,
   DollarSignIcon,
   LinkIcon,
+  MegaphoneIcon,
 } from "@/components/icons"
 
 const EXPERT_NET_RATE = 0.85
+
+const growthTips = [
+  "Share your link on social media, email, or your website",
+  "Keep your profile and topics up to date",
+  "Respond to questions within your selected time",
+]
 
 type Stats = {
   totalEarnedCents: number
@@ -22,10 +30,31 @@ type Stats = {
   recentComment: string | null
 }
 
+type ActivityEvent = {
+  id: string
+  date: string
+  label: string
+  amountCents: number | null
+}
+
+// Supabase returns timestamp (no timezone) columns without a "Z" suffix,
+// which the Date constructor would otherwise parse as local time instead
+// of UTC. Force UTC interpretation when no timezone is present.
+function formatEventDate(dateStr: string): string {
+  const hasTimezone = /[Zz]|[+-]\d{2}:?\d{2}$/.test(dateStr)
+  const date = new Date(hasTimezone ? dateStr : `${dateStr}Z`)
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
 export default function DashboardHomePage() {
   const { counts } = useQuestionCounts()
   const { profile } = useProfileInfo()
   const [stats, setStats] = useState<Stats | null>(null)
+  const [recentActivity, setRecentActivity] = useState<ActivityEvent[]>([])
   const [stripeOnboarded, setStripeOnboarded] = useState(true)
   const [stripeStatusLoaded, setStripeStatusLoaded] = useState(false)
   const [connectingStripe, setConnectingStripe] = useState(false)
@@ -35,6 +64,7 @@ export default function DashboardHomePage() {
   useEffect(() => {
     loadStats()
     loadStripeStatus()
+    loadRecentActivity()
   }, [])
 
   async function loadStats() {
@@ -65,6 +95,41 @@ export default function DashboardHomePage() {
       totalFeedback: feedbackRows.length,
       recentComment: recentWithComment?.feedback_comment ?? null,
     })
+  }
+
+  async function loadRecentActivity() {
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) return
+
+    const userId = sessionData.session.user.id
+
+    const { data } = await supabase
+      .from("questions")
+      .select("id, created_at, answered_at, price_cents")
+      .eq("expert_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10)
+
+    const events: ActivityEvent[] = []
+    ;(data ?? []).forEach((q) => {
+      events.push({
+        id: `${q.id}-received`,
+        date: q.created_at,
+        label: "Question received",
+        amountCents: null,
+      })
+      if (q.answered_at) {
+        events.push({
+          id: `${q.id}-answered`,
+          date: q.answered_at,
+          label: "Answer submitted",
+          amountCents: Math.round((q.price_cents ?? 0) * EXPERT_NET_RATE),
+        })
+      }
+    })
+
+    events.sort((a, b) => b.date.localeCompare(a.date))
+    setRecentActivity(events.slice(0, 5))
   }
 
   async function loadStripeStatus() {
@@ -211,6 +276,9 @@ export default function DashboardHomePage() {
           </div>
           <p className="mt-2 font-display text-2xl text-ink">{counts.pending}</p>
           <p className="text-sm text-ink-soft">Pending questions</p>
+          <p className="mt-1 text-xs text-ink-soft/70">
+            Questions waiting for your response.
+          </p>
         </Link>
         <Link
           href="/dashboard/questions/answered"
@@ -221,6 +289,11 @@ export default function DashboardHomePage() {
           </div>
           <p className="mt-2 font-display text-2xl text-ink">{counts.answered}</p>
           <p className="text-sm text-ink-soft">Answered questions</p>
+          <p className="mt-1 text-xs text-ink-soft/70">
+            {counts.answered > 0
+              ? `Great work! You've answered ${counts.answered} question${counts.answered === 1 ? "" : "s"}.`
+              : "Your answered questions will show up here."}
+          </p>
         </Link>
         <Link
           href="/dashboard/payments"
@@ -233,6 +306,10 @@ export default function DashboardHomePage() {
             ${((stats?.totalEarnedCents ?? 0) / 100).toFixed(2)}
           </p>
           <p className="text-sm text-ink-soft">Total earnings</p>
+          <p className="mt-1 text-xs text-ink-soft/70">
+            Your earnings will be transferred to your bank account via
+            Stripe.
+          </p>
         </Link>
       </div>
 
@@ -343,6 +420,80 @@ export default function DashboardHomePage() {
               View my page <span aria-hidden>↗</span>
             </a>
           )}
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-lg border border-line bg-lavender/40 p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
+              <MegaphoneIcon className="h-5 w-5" />
+            </div>
+            <h2 className="font-display text-lg text-ink">
+              Keep getting questions
+            </h2>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {growthTips.map((tip) => (
+              <li
+                key={tip}
+                className="flex items-start gap-2 text-sm text-ink-soft"
+              >
+                <CheckIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-600" />
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-lg border border-line bg-white p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+                <ClockIcon className="h-5 w-5" />
+              </div>
+              <h2 className="font-display text-lg text-ink">
+                Recent activity
+              </h2>
+            </div>
+            <Link
+              href="/dashboard/questions/answered"
+              className="text-sm font-medium text-postal-blue hover:text-ink"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="mt-4 space-y-3">
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-ink-soft">
+                Your activity will show up here once someone asks you a
+                question.
+              </p>
+            ) : (
+              recentActivity.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-center justify-between gap-3 text-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs text-ink-soft">
+                      {formatEventDate(event.date)}
+                    </p>
+                    <p className="text-ink">{event.label}</p>
+                  </div>
+                  <p
+                    className={`flex-shrink-0 font-medium ${
+                      event.amountCents ? "text-green-700" : "text-ink-soft"
+                    }`}
+                  >
+                    {event.amountCents
+                      ? `$${(event.amountCents / 100).toFixed(2)}`
+                      : "—"}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
