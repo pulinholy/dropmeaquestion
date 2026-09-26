@@ -185,7 +185,7 @@ export default function GetMoreQuestionsPage() {
   const shareCardUrl = `/api/share-card?${shareCardParams.toString()}`
 
   return (
-    <section className="max-w-6xl">
+    <section>
       <Link
         href="/dashboard"
         className="text-sm text-ink-soft hover:text-ink"
@@ -193,39 +193,36 @@ export default function GetMoreQuestionsPage() {
         ← Back to home
       </Link>
 
-      <h1 className="mt-3 font-display text-2xl text-ink">
+      <h1 className="mt-2 font-display text-xl text-ink">
         Get more questions
       </h1>
-      <p className="mt-1 text-ink-soft">
+      <p className="mt-1 text-sm text-ink-soft">
         Share your Drop Me A Question page wherever your audience already
-        follows you.
-      </p>
-      <p className="text-ink-soft">
-        The more people who know about your page, the more questions
-        you&apos;ll receive.
+        follows you. The more people who know about your page, the more
+        questions you&apos;ll receive.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
-        <div className="min-w-0 space-y-6">
-          <div className="rounded-lg border border-line bg-white p-6">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px] lg:items-start">
+        <div className="min-w-0 space-y-4">
+          <div className="rounded-lg border border-line bg-white p-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
-                <LinkIcon className="h-5 w-5" />
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+                <LinkIcon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="font-display text-lg text-ink">
+                <h2 className="font-display text-base text-ink">
                   Your question link
                 </h2>
-                <p className="mt-1 text-sm text-ink-soft">
+                <p className="mt-0.5 text-xs text-ink-soft">
                   Share this link with your audience.
                 </p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <div className="min-w-0 flex-1 truncate rounded-sm border border-line bg-line/20 px-3 py-2 text-sm text-ink-soft">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <div className="min-w-[160px] flex-1 truncate rounded-sm border border-line bg-line/20 px-3 py-1.5 text-sm text-ink-soft">
                     {pageUrl ? pageUrl.replace(/^https?:\/\//, "") : "..."}
                   </div>
                   <button
                     onClick={copyLink}
-                    className="flex-shrink-0 rounded-full border border-postal-red px-4 py-2 text-sm font-medium text-postal-red hover:bg-postal-red/10"
+                    className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1.5 text-xs font-medium text-postal-red hover:bg-postal-red/10"
                   >
                     {copiedLink ? "Copied!" : "Copy link"}
                   </button>
@@ -234,27 +231,27 @@ export default function GetMoreQuestionsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-white p-6">
+          <div className="rounded-lg border border-line bg-white p-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
-                <MegaphoneIcon className="h-5 w-5" />
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
+                <MegaphoneIcon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="font-display text-lg text-ink">
+                <h2 className="font-display text-base text-ink">
                   Share it with your audience
                 </h2>
-                <p className="mt-1 text-sm text-ink-soft">
+                <p className="mt-0.5 text-xs text-ink-soft">
                   Add your link to your social profiles, posts, videos,
                   website, or email signature.
                 </p>
-                <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-8">
+                <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-8">
                   {sharePlatforms.map((platform) => {
                     const tile = (
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-white">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white">
                         {platform.badge ? (
-                          <platform.badge className="h-9 w-9" />
+                          <platform.badge className="h-8 w-8" />
                         ) : platform.icon ? (
-                          <platform.icon className="h-5 w-5 text-ink-soft" />
+                          <platform.icon className="h-4 w-4 text-ink-soft" />
                         ) : null}
                       </span>
                     )
@@ -264,20 +261,20 @@ export default function GetMoreQuestionsPage() {
                         href={platform.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex flex-col items-center gap-1.5 text-center hover:opacity-80"
+                        className="flex flex-col items-center gap-1 text-center hover:opacity-80"
                       >
                         {tile}
-                        <span className="text-xs text-ink-soft">
+                        <span className="text-[11px] text-ink-soft">
                           {platform.label}
                         </span>
                       </a>
                     ) : (
                       <div
                         key={platform.label}
-                        className="flex flex-col items-center gap-1.5 text-center"
+                        className="flex flex-col items-center gap-1 text-center"
                       >
                         {tile}
-                        <span className="text-xs text-ink-soft">
+                        <span className="text-[11px] text-ink-soft">
                           {platform.label}
                         </span>
                       </div>
@@ -288,54 +285,54 @@ export default function GetMoreQuestionsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-white p-6">
+          <div className="rounded-lg border border-line bg-white p-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
-                <DocumentIcon className="h-5 w-5" />
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+                <DocumentIcon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="font-display text-lg text-ink">
+                <h2 className="font-display text-base text-ink">
                   Ready to share? Copy a message
                 </h2>
-                <p className="mt-1 text-sm text-ink-soft">
+                <p className="mt-0.5 text-xs text-ink-soft">
                   Use one of these templates or edit it to match your style.
                   You can post it on any platform — LinkedIn, Instagram,
                   YouTube, Facebook, X, email, or your website.
                 </p>
 
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-sm border border-line p-4">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="rounded-sm border border-line p-3">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium text-ink">
+                      <p className="text-xs font-medium text-ink">
                         Professional
                       </p>
                       <button
                         onClick={() => copyTemplate("professional")}
-                        className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1 text-xs font-medium text-postal-red hover:bg-postal-red/10"
+                        className="flex-shrink-0 rounded-full border border-postal-red px-2.5 py-1 text-[11px] font-medium text-postal-red hover:bg-postal-red/10"
                       >
                         {copiedTemplate === "professional"
                           ? "Copied!"
                           : "Copy message"}
                       </button>
                     </div>
-                    <p className="mt-2 break-words text-sm text-ink-soft">
+                    <p className="mt-1.5 break-words text-xs text-ink-soft">
                       {professionalMessage}
                     </p>
                   </div>
 
-                  <div className="rounded-sm border border-line p-4">
+                  <div className="rounded-sm border border-line p-3">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium text-ink">Casual</p>
+                      <p className="text-xs font-medium text-ink">Casual</p>
                       <button
                         onClick={() => copyTemplate("casual")}
-                        className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1 text-xs font-medium text-postal-red hover:bg-postal-red/10"
+                        className="flex-shrink-0 rounded-full border border-postal-red px-2.5 py-1 text-[11px] font-medium text-postal-red hover:bg-postal-red/10"
                       >
                         {copiedTemplate === "casual"
                           ? "Copied!"
                           : "Copy message"}
                       </button>
                     </div>
-                    <p className="mt-2 break-words text-sm text-ink-soft">
+                    <p className="mt-1.5 break-words text-xs text-ink-soft">
                       {casualMessage}
                     </p>
                   </div>
@@ -345,50 +342,50 @@ export default function GetMoreQuestionsPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-line bg-white p-5">
-          <h2 className="font-display text-base text-ink">
+        <div className="rounded-lg border border-line bg-white p-4">
+          <h2 className="font-display text-sm text-ink">
             Example share card
           </h2>
-          <p className="mt-1 text-sm text-ink-soft">
+          <p className="mt-0.5 text-xs text-ink-soft">
             You can use an image like this when posting on social media.
           </p>
           <img
             src={shareCardUrl}
             alt="Example share card preview"
-            className="mt-4 w-full rounded-lg border border-line"
+            className="mt-3 w-full rounded-lg border border-line"
           />
           <a
             href={shareCardUrl}
             download="drop-me-a-question-share-card.png"
-            className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink hover:border-postal-red hover:text-postal-red"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red"
           >
-            <DownloadIcon className="h-4 w-4" />
+            <DownloadIcon className="h-3.5 w-3.5" />
             Download image
           </a>
         </div>
       </div>
 
-      <h2 className="mt-8 font-display text-xl text-ink">
+      <h2 className="mt-6 font-display text-lg text-ink">
         More ways to get questions
       </h2>
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {moreWays.map(
           ({ icon: Icon, iconBg, iconText, title, description, cta, href }) => (
             <div
               key={title}
-              className="rounded-lg border border-line bg-white p-5"
+              className="rounded-lg border border-line bg-white p-4"
             >
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full ${iconBg} ${iconText}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${iconBg} ${iconText}`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5" />
               </div>
-              <p className="mt-3 font-medium text-ink">{title}</p>
-              <p className="mt-1 text-sm text-ink-soft">{description}</p>
+              <p className="mt-2 text-sm font-medium text-ink">{title}</p>
+              <p className="mt-1 text-xs text-ink-soft">{description}</p>
               {cta && href && (
                 <Link
                   href={href}
-                  className="mt-2 inline-block text-sm font-medium text-postal-blue hover:text-ink"
+                  className="mt-1.5 inline-block text-xs font-medium text-postal-blue hover:text-ink"
                 >
                   {cta} →
                 </Link>
