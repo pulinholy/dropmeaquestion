@@ -206,7 +206,7 @@ export default function GetMoreQuestionsPage() {
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <div className="rounded-lg border border-line bg-white p-6">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
@@ -247,12 +247,12 @@ export default function GetMoreQuestionsPage() {
                   Add your link to your social profiles, posts, videos,
                   website, or email signature.
                 </p>
-                <div className="mt-4 grid grid-cols-4 gap-4 sm:grid-cols-8">
+                <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-8">
                   {sharePlatforms.map((platform) => {
                     const tile = (
-                      <span className="flex h-14 w-14 items-center justify-center rounded-xl border border-line bg-white">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-white">
                         {platform.badge ? (
-                          <platform.badge className="h-10 w-10" />
+                          <platform.badge className="h-9 w-9" />
                         ) : platform.icon ? (
                           <platform.icon className="h-5 w-5 text-ink-soft" />
                         ) : null}
@@ -318,7 +318,7 @@ export default function GetMoreQuestionsPage() {
                           : "Copy message"}
                       </button>
                     </div>
-                    <p className="mt-2 text-sm text-ink-soft">
+                    <p className="mt-2 break-words text-sm text-ink-soft">
                       {professionalMessage}
                     </p>
                   </div>
@@ -335,7 +335,7 @@ export default function GetMoreQuestionsPage() {
                           : "Copy message"}
                       </button>
                     </div>
-                    <p className="mt-2 text-sm text-ink-soft">
+                    <p className="mt-2 break-words text-sm text-ink-soft">
                       {casualMessage}
                     </p>
                   </div>
