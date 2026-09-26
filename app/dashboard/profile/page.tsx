@@ -9,6 +9,8 @@ import { CheckIcon, ChatIcon, EyeIcon } from "@/components/icons"
 
 const HEADLINE_MAX = 100
 const BIO_MAX = 500
+const MIN_BIO_FOR_AI = 30
+const MAX_AI_IMPROVEMENTS = 3
 
 // Rotating background tints for topic pills -- matches the public profile
 // page, since real topics are free-text with no icon to key off of.
@@ -35,6 +37,10 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState("")
+  const [bioBeforeAi, setBioBeforeAi] = useState<string | null>(null)
+  const [improvingBio, setImprovingBio] = useState(false)
+  const [aiError, setAiError] = useState("")
+  const [aiImproveCount, setAiImproveCount] = useState(0)
 
   useEffect(() => {
     load()
@@ -44,6 +50,8 @@ export default function ProfilePage() {
     setLoading(true)
     setError("")
     setSaved(false)
+    setBioBeforeAi(null)
+    setAiError("")
 
     const { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) return
@@ -144,6 +152,40 @@ export default function ProfilePage() {
     } else {
       setAvatarUrl(null)
       refreshProfile()
+    }
+  }
+
+  async function handleImproveBio() {
+    setImprovingBio(true)
+    setAiError("")
+    const previousBio = bio
+
+    try {
+      const res = await fetch("/api/improve-bio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bio }),
+      })
+      const data = await res.json()
+
+      if (data.error) {
+        setAiError(data.error)
+      } else {
+        setBio(data.improvedBio)
+        setBioBeforeAi(previousBio)
+        setAiImproveCount((c) => c + 1)
+      }
+    } catch {
+      setAiError("Could not improve this bio right now.")
+    }
+
+    setImprovingBio(false)
+  }
+
+  function handleUndoImprove() {
+    if (bioBeforeAi !== null) {
+      setBio(bioBeforeAi)
+      setBioBeforeAi(null)
     }
   }
 
@@ -340,6 +382,40 @@ export default function ProfilePage() {
               onChange={(e) => setBio(e.target.value)}
               className="mt-2 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink"
             />
+            <div className="mt-1.5">
+              {bioBeforeAi !== null ? (
+                <p className="flex items-center gap-2 text-xs">
+                  <span className="text-green-700">✓ Improved with AI</span>
+                  <button
+                    type="button"
+                    onClick={handleUndoImprove}
+                    className="font-medium text-postal-red hover:text-ink"
+                  >
+                    Undo
+                  </button>
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleImproveBio}
+                  disabled={
+                    bio.trim().length < MIN_BIO_FOR_AI ||
+                    improvingBio ||
+                    aiImproveCount >= MAX_AI_IMPROVEMENTS
+                  }
+                  className="text-xs font-medium text-postal-red hover:text-ink disabled:cursor-not-allowed disabled:text-ink-soft/50 disabled:hover:text-ink-soft/50"
+                >
+                  {improvingBio
+                    ? "✨ Improving..."
+                    : aiImproveCount >= MAX_AI_IMPROVEMENTS
+                      ? "No more AI improvements left"
+                      : "✨ Improve with AI"}
+                </button>
+              )}
+            </div>
+            {aiError && (
+              <p className="mt-1 text-xs text-postal-red">{aiError}</p>
+            )}
           </div>
 
           <div className="rounded-lg border border-line bg-card p-5">
