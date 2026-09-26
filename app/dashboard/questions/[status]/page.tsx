@@ -2,8 +2,16 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
+import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { useQuestionCounts } from "../../questions-context"
+
+const statusTabs = [
+  { status: "pending", label: "Pending" },
+  { status: "answered", label: "Answered" },
+  { status: "declined", label: "Declined" },
+  { status: "expired", label: "Expired" },
+] as const
 
 type Question = {
   id: string
@@ -65,7 +73,7 @@ export default function QuestionsByStatusPage() {
   const params = useParams<{ status: string }>()
   const status = params.status
   const label = labels[status] ?? status
-  const { refreshCounts } = useQuestionCounts()
+  const { counts, refreshCounts } = useQuestionCounts()
 
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
@@ -201,9 +209,25 @@ export default function QuestionsByStatusPage() {
 
   return (
     <section>
-      <h2 className="font-display text-xl text-ink">
-        {label} ({questions.length})
-      </h2>
+      <h1 className="font-display text-2xl text-ink">Questions</h1>
+      <div className="mt-4 flex gap-1 border-b border-line">
+        {statusTabs.map((tab) => {
+          const active = tab.status === status
+          return (
+            <Link
+              key={tab.status}
+              href={`/dashboard/questions/${tab.status}`}
+              className={`border-b-2 px-3 py-2 text-sm font-medium ${
+                active
+                  ? "border-postal-red text-postal-red"
+                  : "border-transparent text-ink-soft hover:text-ink"
+              }`}
+            >
+              {tab.label} ({counts[tab.status]})
+            </Link>
+          )
+        })}
+      </div>
       <div className="mt-4 space-y-3">
         {questions.length === 0 && (
           <p className="text-ink-soft">No {label.toLowerCase()} questions.</p>

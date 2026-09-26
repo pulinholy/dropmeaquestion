@@ -8,19 +8,20 @@ import { QuestionCountsContext, type QuestionCounts } from "./questions-context"
 import { ProfileContext, type ProfileInfo } from "./profile-context"
 import { ActiveStatusContext } from "./active-status-context"
 import SiteFooter from "@/components/SiteFooter"
+import {
+  HomeIcon,
+  ChatIcon,
+  PersonIcon,
+  TagIcon,
+  SettingsIcon,
+  CreditCardIcon,
+  LinkIcon,
+} from "@/components/icons"
 
-const questionTabs = [
-  { href: "/dashboard/questions/pending", label: "Pending", key: "pending" as const },
-  { href: "/dashboard/questions/answered", label: "Answered", key: "answered" as const },
-  { href: "/dashboard/questions/declined", label: "Declined", key: "declined" as const },
-  { href: "/dashboard/questions/expired", label: "Expired", key: "expired" as const },
-]
-
-const otherLinks = [
-  { href: "/dashboard/profile", label: "Profile" },
-  { href: "/dashboard/pricing", label: "Pricing" },
-  { href: "/dashboard/payments", label: "Payments" },
-  { href: "/dashboard/settings", label: "Page settings" },
+const yourPageLinks = [
+  { href: "/dashboard/profile", label: "Profile", icon: PersonIcon },
+  { href: "/dashboard/pricing", label: "Pricing", icon: TagIcon },
+  { href: "/dashboard/settings", label: "Page settings", icon: SettingsIcon },
 ]
 
 export default function DashboardLayout({
@@ -45,6 +46,7 @@ export default function DashboardLayout({
   const [isActive, setIsActive] = useState(true)
   const [activeStatusLoading, setActiveStatusLoading] = useState(true)
   const [togglingActive, setTogglingActive] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -142,6 +144,13 @@ export default function DashboardLayout({
     setCounts(next)
   }
 
+  async function copyLink() {
+    if (!profile.username) return
+    await navigator.clipboard.writeText(`${window.location.origin}/${profile.username}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   if (checkingSession) {
     return (
       <main className="mx-auto max-w-4xl px-6 py-16">
@@ -161,10 +170,10 @@ export default function DashboardLayout({
           toggleActive,
         }}
       >
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col bg-paper">
         <div className="h-1 w-full bg-postal-red" />
 
-        <header className="mx-auto flex w-full max-w-4xl items-center justify-between border-b border-line px-6 py-6">
+        <header className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-6">
           <a href="/" className="flex items-center">
             <img
               src="/brand/logo-icon.png"
@@ -183,9 +192,9 @@ export default function DashboardLayout({
                 href={`/${profile.username}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-sm text-ink-soft hover:text-ink"
+                className="inline-flex items-center gap-1 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink hover:border-postal-red hover:text-postal-red"
               >
-                View my page
+                View my page <span aria-hidden>↗</span>
               </a>
             )}
             <button
@@ -197,9 +206,11 @@ export default function DashboardLayout({
           </nav>
         </header>
 
+        <div className="border-t border-line" />
+
       <main className="mx-auto flex w-full max-w-4xl flex-1 gap-12 px-6 py-16">
-        <nav className="w-48 flex-shrink-0">
-          <div className="mb-6 border-b border-line pb-4">
+        <nav className="w-52 flex-shrink-0">
+          <div className="mb-6 rounded-lg border border-line bg-white p-4">
             <div className="flex items-center gap-2">
               {profile.avatarUrl ? (
                 <img
@@ -218,78 +229,94 @@ export default function DashboardLayout({
             </div>
 
             {!activeStatusLoading && (
-              <button
-                onClick={toggleActive}
-                disabled={togglingActive}
-                className="mt-3 flex w-full flex-col gap-1 rounded-sm px-1 py-1 text-left hover:bg-line/30 disabled:opacity-50"
-              >
-                <span className="flex items-start gap-1.5 text-xs text-ink-soft">
-                  <span
-                    className={`mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full ${
-                      isActive ? "bg-green-500" : "bg-ink-soft/40"
-                    }`}
-                  />
-                  <span>
-                    {isActive
-                      ? "Accepting questions"
-                      : "Paused- not accepting questions"}
-                  </span>
-                </span>
-                <span className="pl-3 text-xs font-medium text-postal-red">
-                  {isActive ? "Pause" : "Resume"}
-                </span>
-              </button>
+              <span className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
+                <span
+                  className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
+                    isActive ? "bg-green-500" : "bg-ink-soft/40"
+                  }`}
+                />
+                {isActive ? "Accepting questions" : "Paused"}
+              </span>
+            )}
+
+            {profile.username && (
+              <>
+                <p className="mt-3 truncate text-xs text-ink-soft">
+                  dropmeaquestion.com/{profile.username}
+                </p>
+                <button
+                  onClick={copyLink}
+                  className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-sm border border-line px-2 py-1.5 text-xs font-medium text-ink hover:bg-line/40"
+                >
+                  <LinkIcon className="h-3.5 w-3.5" />
+                  {copied ? "Copied!" : "Copy link"}
+                </button>
+              </>
             )}
           </div>
 
           <Link
             href="/dashboard"
-            className={`mb-6 block rounded-sm px-3 py-1.5 text-sm font-medium ${
+            className={`mb-1 flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium ${
               pathname === "/dashboard"
                 ? "bg-postal-red/10 text-postal-red"
                 : "text-ink-soft hover:bg-line/50 hover:text-ink"
             }`}
           >
+            <HomeIcon className="h-4 w-4" />
             Home
           </Link>
 
-          <p className="px-3 text-sm font-medium text-ink">Questions</p>
+          <Link
+            href="/dashboard/questions/pending"
+            className={`mb-6 flex items-center justify-between rounded-sm px-3 py-1.5 text-sm font-medium ${
+              pathname.startsWith("/dashboard/questions")
+                ? "bg-postal-red/10 text-postal-red"
+                : "text-ink-soft hover:bg-line/50 hover:text-ink"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <ChatIcon className="h-4 w-4" />
+              Questions
+            </span>
+            <span className="text-xs">{counts.pending}</span>
+          </Link>
+
+          <p className="px-3 text-xs font-medium uppercase tracking-wide text-ink-soft/70">
+            Your page
+          </p>
           <div className="mt-1 space-y-0.5">
-            {questionTabs.map((tab) => {
-              const active = pathname === tab.href
+            {yourPageLinks.map(({ href, label, icon: Icon }) => {
+              const active = pathname.startsWith(href)
               return (
                 <Link
-                  key={tab.href}
-                  href={tab.href}
-                  className={`block rounded-sm py-1.5 pl-6 pr-3 text-sm ${
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium ${
                     active
                       ? "bg-postal-red/10 text-postal-red"
                       : "text-ink-soft hover:bg-line/50 hover:text-ink"
                   }`}
                 >
-                  {tab.label} ({counts[tab.key]})
+                  <Icon className="h-4 w-4" />
+                  {label}
                 </Link>
               )
             })}
           </div>
 
-          <div className="mt-6 space-y-0.5 border-t border-line pt-6">
-            {otherLinks.map((link) => {
-              const active = pathname.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`block rounded-sm px-3 py-1.5 text-sm font-medium ${
-                    active
-                      ? "bg-postal-red/10 text-postal-red"
-                      : "text-ink-soft hover:bg-line/50 hover:text-ink"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
+          <div className="mt-6 border-t border-line pt-6">
+            <Link
+              href="/dashboard/payments"
+              className={`flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium ${
+                pathname.startsWith("/dashboard/payments")
+                  ? "bg-postal-red/10 text-postal-red"
+                  : "text-ink-soft hover:bg-line/50 hover:text-ink"
+              }`}
+            >
+              <CreditCardIcon className="h-4 w-4" />
+              Payments
+            </Link>
           </div>
         </nav>
 

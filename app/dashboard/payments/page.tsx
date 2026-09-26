@@ -141,7 +141,7 @@ export default function PaymentsPage() {
   return (
     <div className="max-w-lg">
       {stripeOnboarded ? (
-        <div className="rounded-sm border border-line p-4">
+        <div className="rounded-lg border border-line bg-white p-6">
           <p className="text-sm font-medium text-ink">Stripe connected</p>
           <p className="mt-1 text-sm text-ink-soft">
             You&apos;re set up to get paid for answered questions.
@@ -149,27 +149,30 @@ export default function PaymentsPage() {
           <button
             onClick={openStripeDashboard}
             disabled={connectingStripe}
-            className="mt-3 rounded-sm border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-line disabled:opacity-50"
+            className="mt-3 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-line/40 disabled:opacity-50"
           >
             {connectingStripe ? "Opening..." : "Open Stripe dashboard →"}
           </button>
         </div>
       ) : (
-        <div className="rounded-sm border border-postal-red bg-postal-red/5 p-4">
-          <p className="text-sm text-ink">
+        <div className="rounded-lg border border-line bg-white p-6">
+          <p className="text-sm font-medium text-ink">
+            Connect your bank account
+          </p>
+          <p className="mt-1 text-sm text-ink-soft">
             Connect your bank account to get paid for answered questions.
           </p>
           <button
             onClick={connectStripe}
             disabled={connectingStripe}
-            className="mt-3 rounded-sm bg-postal-red px-4 py-2 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
+            className="mt-3 rounded-full bg-postal-red px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink disabled:opacity-50"
           >
             {connectingStripe ? "Connecting..." : "Connect Stripe to Get Paid"}
           </button>
         </div>
       )}
 
-      <div className="mt-6 rounded-sm border border-line bg-lavender p-4 text-sm text-ink">
+      <div className="mt-6 rounded-lg border border-line bg-white p-6 text-sm text-ink">
         <p className="font-medium">How payments work</p>
         <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-ink-soft">
           <li>
@@ -196,7 +199,7 @@ export default function PaymentsPage() {
         </ol>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-6 rounded-lg border border-line bg-white p-6">
         <div className="flex items-baseline justify-between">
           <h3 className="font-display text-lg text-ink">Earnings</h3>
           <p className="text-sm text-ink-soft">
