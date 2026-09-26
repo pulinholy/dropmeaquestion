@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { MailIcon, ShieldCheckIcon, InfoIcon } from "./icons"
+import { formatResponseWindow } from "@/lib/format"
 
 const MAX_QUESTION_LENGTH = 500
 
@@ -118,7 +119,7 @@ export default function QuestionForm({
           <p className="flex items-center gap-2 text-sm text-ink">
             <ShieldCheckIcon className="h-5 w-5 flex-shrink-0 text-green-600" />
             You&apos;re only charged if {expertFirstName} answers within{" "}
-            {responseWindowHours} hours.
+            {formatResponseWindow(responseWindowHours)}.
           </p>
           <button
             type="button"
@@ -137,13 +138,13 @@ export default function QuestionForm({
             </p>
             <div className="space-y-1">
               <p className="flex items-center justify-between gap-3">
-                <span>Answer within {responseWindowHours} hours</span>
+                <span>Answer within {formatResponseWindow(responseWindowHours)}</span>
                 <span className="flex-shrink-0 font-medium text-ink">
                   → ${price} charged
                 </span>
               </p>
               <p className="flex items-center justify-between gap-3">
-                <span>No answer in {responseWindowHours} hours</span>
+                <span>No answer in {formatResponseWindow(responseWindowHours)}</span>
                 <span className="flex-shrink-0 font-medium text-ink">
                   → No charge
                 </span>

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import { formatResponseWindow } from "@/lib/format"
 
 type QuestionInfo = {
   questionId: string
@@ -139,7 +140,7 @@ function ThankYouContent() {
           <p className="mt-3 text-ink-soft">
             Your question has been sent to {expertFirstName}.{" "}
             {info.responseWindowHours
-              ? `They'll reply by email within ${info.responseWindowHours} hours.`
+              ? `They'll reply by email within ${formatResponseWindow(info.responseWindowHours)}.`
               : "They'll reply by email."}{" "}
             If they don&apos;t answer in time, you won&apos;t be charged.
           </p>

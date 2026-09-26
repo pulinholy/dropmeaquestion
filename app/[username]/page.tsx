@@ -7,6 +7,7 @@ import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import { ChatIcon, LightningIcon, LockIcon } from "@/components/icons"
 import { PUBLIC_SITE_URL } from "@/lib/site"
+import { formatResponseWindow } from "@/lib/format"
 
 // Rotating background tints for topic pills -- real topics are free-text, so
 // there's no reliable way to pick a matching icon per topic. A rotating
@@ -160,7 +161,7 @@ export default async function ExpertPage({
                     </p>
                     <p className="text-sm text-ink-soft">
                       ${price} per question &middot; Replies within{" "}
-                      {expert.response_window_hours} hours
+                      {formatResponseWindow(expert.response_window_hours)}
                     </p>
                   </div>
                 </div>
@@ -225,7 +226,7 @@ export default async function ExpertPage({
                 Fast response
               </p>
               <p className="mt-1 text-xs text-ink-soft">
-                Replies within {expert.response_window_hours} hours
+                Replies within {formatResponseWindow(expert.response_window_hours)}
               </p>
             </div>
             <div>
