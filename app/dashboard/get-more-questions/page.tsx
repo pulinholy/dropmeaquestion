@@ -8,20 +8,21 @@ import {
   ClockIcon,
   DocumentIcon,
   DownloadIcon,
-  FacebookIcon,
-  ImageIcon,
-  InstagramIcon,
+  FacebookBadgeIcon,
+  InstagramBadgeIcon,
+  LinkedInBadgeIcon,
   LinkIcon,
-  LinkedInIcon,
   MailIcon,
   MegaphoneIcon,
   PersonIcon,
   TagIcon,
   TargetIcon,
-  TikTokIcon,
-  XIcon,
-  YouTubeIcon,
+  TikTokBadgeIcon,
+  XBadgeIcon,
+  YouTubeBadgeIcon,
 } from "@/components/icons"
+
+type IconComponent = (props: { className?: string }) => React.ReactElement
 
 function joinWithOr(items: string[]): string {
   if (items.length === 0) return "my area of expertise"
@@ -139,27 +140,32 @@ export default function GetMoreQuestionsPage() {
   // Only platforms with a real web share action get a working link.
   // Instagram, YouTube, TikTok, and "Website" have no such thing -- they're
   // shown as plain icons rather than fake buttons that don't do anything.
-  const sharePlatforms = [
+  const sharePlatforms: {
+    label: string
+    href: string | null
+    badge?: IconComponent
+    icon?: IconComponent
+  }[] = [
     {
       label: "LinkedIn",
-      icon: LinkedInIcon,
+      badge: LinkedInBadgeIcon,
       href: pageUrl
         ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`
         : null,
     },
-    { label: "Instagram", icon: InstagramIcon, href: null },
-    { label: "YouTube", icon: YouTubeIcon, href: null },
-    { label: "TikTok", icon: TikTokIcon, href: null },
+    { label: "Instagram", badge: InstagramBadgeIcon, href: null },
+    { label: "YouTube", badge: YouTubeBadgeIcon, href: null },
+    { label: "TikTok", badge: TikTokBadgeIcon, href: null },
     {
       label: "Facebook",
-      icon: FacebookIcon,
+      badge: FacebookBadgeIcon,
       href: pageUrl
         ? `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
         : null,
     },
     {
       label: "X (Twitter)",
-      icon: XIcon,
+      badge: XBadgeIcon,
       href: pageUrl ? `https://x.com/intent/tweet?text=${encodedShareText}` : null,
     },
     {
@@ -179,7 +185,7 @@ export default function GetMoreQuestionsPage() {
   const shareCardUrl = `/api/share-card?${shareCardParams.toString()}`
 
   return (
-    <section className="max-w-4xl">
+    <section className="max-w-6xl">
       <Link
         href="/dashboard"
         className="text-sm text-ink-soft hover:text-ink"
@@ -199,164 +205,166 @@ export default function GetMoreQuestionsPage() {
         you&apos;ll receive.
       </p>
 
-      <div className="mt-6 rounded-lg border border-line bg-white p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
-            <LinkIcon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-display text-lg text-ink">
-              Your question link
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Share this link with your audience.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <div className="min-w-0 flex-1 truncate rounded-sm border border-line bg-line/20 px-3 py-2 text-sm text-ink-soft">
-                {pageUrl ? pageUrl.replace(/^https?:\/\//, "") : "..."}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+        <div className="space-y-6">
+          <div className="rounded-lg border border-line bg-white p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+                <LinkIcon className="h-5 w-5" />
               </div>
-              <button
-                onClick={copyLink}
-                className="flex-shrink-0 rounded-full border border-postal-red px-4 py-2 text-sm font-medium text-postal-red hover:bg-postal-red/10"
-              >
-                {copiedLink ? "Copied!" : "Copy link"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-line bg-white p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
-            <MegaphoneIcon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-display text-lg text-ink">
-              Share it with your audience
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Add your link to your social profiles, posts, videos, website,
-              or email signature.
-            </p>
-            <div className="mt-4 grid grid-cols-4 gap-4 sm:grid-cols-8">
-              {sharePlatforms.map(({ label, icon: Icon, href }) =>
-                href ? (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex flex-col items-center gap-1.5 text-center"
-                  >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft hover:border-postal-red hover:text-postal-red">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="text-xs text-ink-soft">{label}</span>
-                  </a>
-                ) : (
-                  <div
-                    key={label}
-                    className="flex flex-col items-center gap-1.5 text-center"
-                  >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="text-xs text-ink-soft">{label}</span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display text-lg text-ink">
+                  Your question link
+                </h2>
+                <p className="mt-1 text-sm text-ink-soft">
+                  Share this link with your audience.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <div className="min-w-0 flex-1 truncate rounded-sm border border-line bg-line/20 px-3 py-2 text-sm text-ink-soft">
+                    {pageUrl ? pageUrl.replace(/^https?:\/\//, "") : "..."}
                   </div>
-                )
-              )}
+                  <button
+                    onClick={copyLink}
+                    className="flex-shrink-0 rounded-full border border-postal-red px-4 py-2 text-sm font-medium text-postal-red hover:bg-postal-red/10"
+                  >
+                    {copiedLink ? "Copied!" : "Copy link"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-line bg-white p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
+                <MegaphoneIcon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display text-lg text-ink">
+                  Share it with your audience
+                </h2>
+                <p className="mt-1 text-sm text-ink-soft">
+                  Add your link to your social profiles, posts, videos,
+                  website, or email signature.
+                </p>
+                <div className="mt-4 grid grid-cols-4 gap-4 sm:grid-cols-8">
+                  {sharePlatforms.map((platform) => {
+                    const tile = (
+                      <span className="flex h-14 w-14 items-center justify-center rounded-xl border border-line bg-white">
+                        {platform.badge ? (
+                          <platform.badge className="h-10 w-10" />
+                        ) : platform.icon ? (
+                          <platform.icon className="h-5 w-5 text-ink-soft" />
+                        ) : null}
+                      </span>
+                    )
+                    return platform.href ? (
+                      <a
+                        key={platform.label}
+                        href={platform.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex flex-col items-center gap-1.5 text-center hover:opacity-80"
+                      >
+                        {tile}
+                        <span className="text-xs text-ink-soft">
+                          {platform.label}
+                        </span>
+                      </a>
+                    ) : (
+                      <div
+                        key={platform.label}
+                        className="flex flex-col items-center gap-1.5 text-center"
+                      >
+                        {tile}
+                        <span className="text-xs text-ink-soft">
+                          {platform.label}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-line bg-white p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+                <DocumentIcon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display text-lg text-ink">
+                  Ready to share? Copy a message
+                </h2>
+                <p className="mt-1 text-sm text-ink-soft">
+                  Use one of these templates or edit it to match your style.
+                  You can post it on any platform — LinkedIn, Instagram,
+                  YouTube, Facebook, X, email, or your website.
+                </p>
+
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="rounded-sm border border-line p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium text-ink">
+                        Professional
+                      </p>
+                      <button
+                        onClick={() => copyTemplate("professional")}
+                        className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1 text-xs font-medium text-postal-red hover:bg-postal-red/10"
+                      >
+                        {copiedTemplate === "professional"
+                          ? "Copied!"
+                          : "Copy message"}
+                      </button>
+                    </div>
+                    <p className="mt-2 text-sm text-ink-soft">
+                      {professionalMessage}
+                    </p>
+                  </div>
+
+                  <div className="rounded-sm border border-line p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium text-ink">Casual</p>
+                      <button
+                        onClick={() => copyTemplate("casual")}
+                        className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1 text-xs font-medium text-postal-red hover:bg-postal-red/10"
+                      >
+                        {copiedTemplate === "casual"
+                          ? "Copied!"
+                          : "Copy message"}
+                      </button>
+                    </div>
+                    <p className="mt-2 text-sm text-ink-soft">
+                      {casualMessage}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-6 rounded-lg border border-line bg-white p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
-            <ImageIcon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-display text-lg text-ink">
-              Example share card
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              A ready-made image for posts and stories — the easiest way to
-              share on Instagram, where a link alone won&apos;t post.
-            </p>
-            <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row">
-              <img
-                src={shareCardUrl}
-                alt="Example share card preview"
-                className="h-56 w-56 flex-shrink-0 rounded-lg border border-line object-cover"
-              />
-              <div className="flex flex-col items-start gap-2">
-                <p className="text-sm text-ink-soft">
-                  Includes your name, topics and a link back to your page.
-                  Download it, then post it directly or drop it into your own
-                  design.
-                </p>
-                <a
-                  href={shareCardUrl}
-                  download="drop-me-a-question-share-card.png"
-                  className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-postal-red px-4 py-2 text-sm font-medium text-postal-red hover:bg-postal-red/10"
-                >
-                  <DownloadIcon className="h-4 w-4" />
-                  Download image
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-line bg-white p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
-            <DocumentIcon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-display text-lg text-ink">
-              Ready to share? Copy a message
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Use one of these templates or edit it to match your style. You
-              can post it on any platform — LinkedIn, Instagram, YouTube,
-              Facebook, X, email, or your website.
-            </p>
-
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-sm border border-line p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-ink">Professional</p>
-                  <button
-                    onClick={() => copyTemplate("professional")}
-                    className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1 text-xs font-medium text-postal-red hover:bg-postal-red/10"
-                  >
-                    {copiedTemplate === "professional"
-                      ? "Copied!"
-                      : "Copy message"}
-                  </button>
-                </div>
-                <p className="mt-2 text-sm text-ink-soft">
-                  {professionalMessage}
-                </p>
-              </div>
-
-              <div className="rounded-sm border border-line p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-ink">Casual</p>
-                  <button
-                    onClick={() => copyTemplate("casual")}
-                    className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1 text-xs font-medium text-postal-red hover:bg-postal-red/10"
-                  >
-                    {copiedTemplate === "casual" ? "Copied!" : "Copy message"}
-                  </button>
-                </div>
-                <p className="mt-2 text-sm text-ink-soft">{casualMessage}</p>
-              </div>
-            </div>
-          </div>
+        <div className="rounded-lg border border-line bg-white p-5">
+          <h2 className="font-display text-base text-ink">
+            Example share card
+          </h2>
+          <p className="mt-1 text-sm text-ink-soft">
+            You can use an image like this when posting on social media.
+          </p>
+          <img
+            src={shareCardUrl}
+            alt="Example share card preview"
+            className="mt-4 w-full rounded-lg border border-line"
+          />
+          <a
+            href={shareCardUrl}
+            download="drop-me-a-question-share-card.png"
+            className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink hover:border-postal-red hover:text-postal-red"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            Download image
+          </a>
         </div>
       </div>
 

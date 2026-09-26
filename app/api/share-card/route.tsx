@@ -136,10 +136,10 @@ export async function GET(request: Request) {
                     display: 'flex',
                     padding: '14px 28px',
                     borderRadius: 999,
-                    backgroundColor: '#ffffff',
-                    border: `2px solid ${COLORS.line}`,
+                    backgroundColor: COLORS.lavender,
                     color: COLORS.ink,
                     fontSize: 26,
+                    fontWeight: 600,
                   }}
                 >
                   {topic}

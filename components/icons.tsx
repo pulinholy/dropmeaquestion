@@ -1,5 +1,96 @@
 type IconProps = { className?: string }
 
+// Full-color brand marks (for share buttons) -- unlike the rest of this
+// file, these carry their own fixed fills/gradients rather than
+// currentColor, so they read as recognizable platform badges.
+export function LinkedInBadgeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 40 40" className={className}>
+      <rect width="40" height="40" rx="9" fill="#0A66C2" />
+      <rect x="9" y="16" width="5" height="15" fill="#fff" />
+      <circle cx="11.5" cy="10.5" r="2.8" fill="#fff" />
+      <path
+        d="M18 16h5v2.3c1-1.7 2.9-2.7 5-2.7 4 0 6.5 2.6 6.5 7.4V31h-5v-7.2c0-2.1-.9-3.5-2.9-3.5-1.6 0-2.6 1.1-3 2.1-.2.4-.2 1-.2 1.6V31h-5V16z"
+        fill="#fff"
+      />
+    </svg>
+  )
+}
+
+export function InstagramBadgeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 40 40" className={className}>
+      <defs>
+        <linearGradient id="ig-badge-grad" x1="0" y1="40" x2="40" y2="0">
+          <stop offset="0%" stopColor="#FEE411" />
+          <stop offset="25%" stopColor="#FD5949" />
+          <stop offset="55%" stopColor="#D6249F" />
+          <stop offset="100%" stopColor="#285AEB" />
+        </linearGradient>
+      </defs>
+      <rect width="40" height="40" rx="9" fill="url(#ig-badge-grad)" />
+      <rect
+        x="10"
+        y="10"
+        width="20"
+        height="20"
+        rx="6"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="2.2"
+      />
+      <circle cx="20" cy="20" r="5.2" fill="none" stroke="#fff" strokeWidth="2.2" />
+      <circle cx="26.5" cy="13.5" r="1.4" fill="#fff" />
+    </svg>
+  )
+}
+
+export function YouTubeBadgeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 40 40" className={className}>
+      <rect width="40" height="40" rx="9" fill="#FF0000" />
+      <polygon points="16,13 29,20 16,27" fill="#fff" />
+    </svg>
+  )
+}
+
+export function TikTokBadgeIcon({ className }: IconProps) {
+  const notePath =
+    "M24.8 11.5c.7 2.2 2.3 3.8 4.7 4v3.3c-1.7.1-3.2-.4-4.7-1.3v6.9c0 4-3.2 6.9-6.9 6.9-1.5 0-2.9-.5-4-1.3 3.6.5 6.6-2.3 6.6-5.8v-.2 -12.5h4.3z"
+  return (
+    <svg viewBox="0 0 40 40" className={className}>
+      <rect width="40" height="40" rx="9" fill="#000" />
+      <path d={notePath} fill="#25F4EE" transform="translate(-0.6,-0.6)" />
+      <path d={notePath} fill="#FE2C55" transform="translate(0.6,0.6)" />
+      <path d={notePath} fill="#fff" />
+    </svg>
+  )
+}
+
+export function FacebookBadgeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 40 40" className={className}>
+      <circle cx="20" cy="20" r="20" fill="#1877F2" />
+      <path
+        d="M23.5 20.5h-3V31h-4.4V20.5h-2.1v-3.7h2.1v-2.4c0-3 1.3-4.9 4.9-4.9h3v3.7h-1.9c-1.4 0-1.5.5-1.5 1.5v2.1h3.4l-.5 3.7z"
+        fill="#fff"
+      />
+    </svg>
+  )
+}
+
+export function XBadgeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 40 40" className={className}>
+      <rect width="40" height="40" rx="9" fill="#000" />
+      <path
+        d="M11 11l7.3 9.1L11 29h2.6l6.1-7 4.8 7h5.3l-7.6-9.7L28.9 11h-2.6l-5.7 6.6L16.3 11H11z"
+        fill="#fff"
+      />
+    </svg>
+  )
+}
+
 const base = {
   viewBox: "0 0 24 24",
   fill: "none",
