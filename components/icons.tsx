@@ -144,6 +144,26 @@ export function DocumentIcon({ className }: IconProps) {
   )
 }
 
+export function DownloadIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 4v11" />
+      <path d="m7 11 5 5 5-5" />
+      <path d="M5 19h14" />
+    </svg>
+  )
+}
+
+export function ImageIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="9" cy="10" r="1.6" fill="currentColor" stroke="none" />
+      <path d="m4 17 5-5 4 4 3-3 4 4" />
+    </svg>
+  )
+}
+
 export function CodeIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
@@ -314,6 +334,49 @@ export function CheckIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
       <polyline points="4 12 9 17 20 6" />
+    </svg>
+  )
+}
+
+export function TargetIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function YouTubeIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="2" y="5" width="20" height="14" rx="4" />
+      <polygon
+        points="10 9 16 12 10 15"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+  )
+}
+
+export function TikTokIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M15 3v10.8a3.7 3.7 0 1 1-3.7-3.7" />
+      <path d="M15 3a4.7 4.7 0 0 0 4.7 4.7" />
+    </svg>
+  )
+}
+
+export function FacebookIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M14 8.5h-1.3a1.8 1.8 0 0 0-1.8 1.8V12" />
+      <path d="M9 12h4.5" />
+      <line x1="10.9" y1="12" x2="10.9" y2="18" />
     </svg>
   )
 }
