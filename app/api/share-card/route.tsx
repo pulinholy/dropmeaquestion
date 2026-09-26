@@ -169,7 +169,7 @@ export async function GET(request: Request) {
               fontWeight: 700,
             }}
           >
-            Ask me a question
+            Drop me a question
           </div>
 
           <img

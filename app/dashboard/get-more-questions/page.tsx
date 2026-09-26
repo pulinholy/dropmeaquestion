@@ -142,7 +142,7 @@ export default function GetMoreQuestionsPage() {
 
   const encodedUrl = encodeURIComponent(pageUrl)
   const encodedShareText = encodeURIComponent(
-    `Ask me a question on Drop Me A Question: ${pageUrl}`
+    `Drop me a question here: ${pageUrl}`
   )
 
   // Only platforms with a real web share action get a working link.
@@ -180,7 +180,7 @@ export default function GetMoreQuestionsPage() {
       label: "Email",
       icon: MailIcon,
       href: pageUrl
-        ? `mailto:?subject=${encodeURIComponent("Ask me a question")}&body=${encodedShareText}`
+        ? `mailto:?subject=${encodeURIComponent("Drop me a question")}&body=${encodedShareText}`
         : null,
     },
     { label: "Website", icon: LinkIcon, href: null },
