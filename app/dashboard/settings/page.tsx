@@ -425,10 +425,9 @@ export default function SettingsPage() {
                   <p className="font-display text-2xl font-semibold text-ink">
                     ${price}
                   </p>
-                  <p className="text-xs text-ink-soft">per question</p>
                   <p className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-ink-soft">
                     <ClockIcon className="h-3.5 w-3.5" />
-                    Responds within{" "}
+                    per question &middot; Replies within{" "}
                     {formatResponseWindow(responseWindowHours)}
                   </p>
                 </div>

@@ -153,7 +153,7 @@ export default function Home() {
                   <span className="h-4 w-px bg-line" />
                   <span className="flex items-center gap-1.5">
                     <ClockIcon className="h-4 w-4 text-postal-red" />
-                    24 hour response
+                    Replies within 24 hours
                   </span>
                 </div>
 
