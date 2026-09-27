@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MailIcon, ShieldCheckIcon, InfoIcon } from "./icons"
+import { MailIcon, ShieldCheckIcon, InfoIcon, PaperclipIcon } from "./icons"
 import { formatResponseWindow } from "@/lib/format"
 
 const MAX_QUESTION_LENGTH = 1000
@@ -75,8 +75,9 @@ export default function QuestionForm({
           className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
         />
         <div className="mt-1 flex items-center justify-between gap-3">
-          <p className="text-xs text-ink-soft">
-            You can add a screenshot or PDF in the next step.
+          <p className="flex items-center gap-1.5 text-xs text-ink-soft">
+            <PaperclipIcon className="h-3.5 w-3.5 flex-shrink-0" />
+            You can add an image or PDF after checkout.
           </p>
           <p className="flex-shrink-0 text-right text-xs text-ink-soft">
             {question.length}/{MAX_QUESTION_LENGTH}
@@ -124,7 +125,7 @@ export default function QuestionForm({
           <button
             type="button"
             onClick={() => setShowPaymentDetails((s) => !s)}
-            className="flex flex-shrink-0 items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
+            className="flex flex-shrink-0 items-center gap-1 text-xs text-ink-soft/70 hover:text-ink"
           >
             How payment works <InfoIcon className="h-3.5 w-3.5" />
           </button>

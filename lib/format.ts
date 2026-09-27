@@ -6,3 +6,10 @@ export function formatResponseWindow(hours: number): string {
   }
   return `${hours} hours`
 }
+
+// Drop the trailing ".00" on whole-dollar prices ("$5" not "$5.00"), but
+// keep cents when they're non-zero ("$4.50").
+export function formatPrice(cents: number): string {
+  const dollars = cents / 100
+  return Number.isInteger(dollars) ? `${dollars}` : dollars.toFixed(2)
+}

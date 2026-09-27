@@ -5,9 +5,10 @@ import { notFound } from "next/navigation"
 import QuestionForm from "@/components/QuestionForm"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import ExpertBio from "@/components/ExpertBio"
 import { ChatIcon, LightningIcon, LockIcon } from "@/components/icons"
 import { PUBLIC_SITE_URL } from "@/lib/site"
-import { formatResponseWindow } from "@/lib/format"
+import { formatResponseWindow, formatPrice } from "@/lib/format"
 
 // Rotating background tints for topic pills -- real topics are free-text, so
 // there's no reliable way to pick a matching icon per topic. A rotating
@@ -86,7 +87,7 @@ export default async function ExpertPage({
     .eq("expert_id", profile.id)
     .order("sort_order", { ascending: true })
 
-  const price = (expert.price_cents / 100).toFixed(2)
+  const price = formatPrice(expert.price_cents)
   const firstName = profile.full_name?.split(" ")[0] || profile.full_name
   const topicNames = topics?.map((t) => t.name) ?? []
 
@@ -95,7 +96,7 @@ export default async function ExpertPage({
       <SiteHeader variant="asker" />
 
       <section className="border-t border-line">
-        <div className="mx-auto max-w-2xl px-6 pb-10 pt-8">
+        <div className="mx-auto max-w-[600px] px-6 pb-10 pt-8">
           <div className="text-center">
             <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
               <div className="absolute h-32 w-32 rounded-full bg-lavender/40" />
@@ -124,14 +125,10 @@ export default async function ExpertPage({
               @{profile.username}
             </p>
 
-            {expert.bio && (
-              <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink">
-                {expert.bio}
-              </p>
-            )}
+            {expert.bio && <ExpertBio bio={expert.bio} />}
 
             {topicNames.length > 0 && (
-              <div className="mt-2">
+              <div className="mt-6">
                 <p className="text-sm font-semibold text-ink">Ask me about</p>
                 <div className="mt-2 flex flex-wrap justify-center gap-2">
                   {topicNames.map((topic, i) => (
@@ -148,7 +145,7 @@ export default async function ExpertPage({
             )}
           </div>
 
-          <div className="mt-6 rounded-lg border border-line bg-white p-5 shadow-sm sm:p-6">
+          <div className="mt-8 rounded-lg border border-line bg-white p-5 shadow-sm sm:p-6">
             {expert.is_active ? (
               <>
                 <div className="flex items-center gap-3 text-left">
@@ -156,7 +153,7 @@ export default async function ExpertPage({
                     <ChatIcon className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="font-display text-xl font-semibold text-ink">
+                    <p className="font-display text-2xl font-semibold text-ink">
                       Ask {firstName} a question
                     </p>
                     <p className="text-sm text-ink-soft">
@@ -206,16 +203,16 @@ export default async function ExpertPage({
             )}
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 text-center sm:grid-cols-3">
+          <div className="mt-5 grid grid-cols-1 gap-4 text-center sm:grid-cols-3">
             <div>
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
                 <ChatIcon className="h-5 w-5" />
               </div>
               <p className="mt-2 text-sm font-semibold text-ink">
                 Ask directly
               </p>
               <p className="mt-1 text-xs text-ink-soft">
-                Get practical advice and expert insights
+                Get an answer from {firstName}
               </p>
             </div>
             <div>
@@ -223,21 +220,21 @@ export default async function ExpertPage({
                 <LightningIcon className="h-5 w-5" />
               </div>
               <p className="mt-2 text-sm font-semibold text-ink">
-                Fast response
+                Response time
               </p>
               <p className="mt-1 text-xs text-ink-soft">
-                Replies within {formatResponseWindow(expert.response_window_hours)}
+                Within {formatResponseWindow(expert.response_window_hours)}
               </p>
             </div>
             <div>
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10 text-green-700">
                 <LockIcon className="h-5 w-5" />
               </div>
               <p className="mt-2 text-sm font-semibold text-ink">
-                Secure payment
+                Protected payment
               </p>
               <p className="mt-1 text-xs text-ink-soft">
-                Only charged if answered in time
+                Pay only if answered
               </p>
             </div>
           </div>
