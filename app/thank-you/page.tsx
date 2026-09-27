@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import { formatResponseWindow } from "@/lib/format"
-import { CheckIcon, DocumentIcon, PaperclipIcon, XIcon } from "@/components/icons"
+import { CheckIcon, DocumentIcon, PaperclipIcon, UploadIcon, XIcon } from "@/components/icons"
 
 type QuestionInfo = {
   questionId: string
@@ -233,47 +233,57 @@ function ThankYouContent() {
             respond in time, you won&apos;t be charged.
           </p>
 
-          <div className="mt-8 w-full rounded-sm border border-line bg-card p-4 text-left">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-              Your question
-            </p>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-ink">{displayedQuestion}</p>
-            {isLongQuestion && (
-              <button
-                type="button"
-                onClick={() => setQuestionExpanded((v) => !v)}
-                className="mt-1 text-xs font-medium text-postal-red hover:underline"
-              >
-                {questionExpanded ? "Show less" : "Show more"}
-              </button>
-            )}
-            {formatAskedDate(info.askedAt) && (
-              <p className="mt-3 text-xs text-ink-soft">
-                Asked {expertFirstName} · {formatAskedDate(info.askedAt)}
+          <div className="mt-8 w-full rounded-lg border border-line bg-white p-5 text-left shadow-sm sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                Your question
               </p>
-            )}
+              {formatAskedDate(info.askedAt) && (
+                <p className="flex-shrink-0 text-xs text-ink-soft">
+                  Asked {expertFirstName} · {formatAskedDate(info.askedAt)}
+                </p>
+              )}
+            </div>
+            <div className="mt-3 rounded-md bg-line/25 p-4">
+              <p className="whitespace-pre-wrap text-sm text-ink">{displayedQuestion}</p>
+              {isLongQuestion && (
+                <button
+                  type="button"
+                  onClick={() => setQuestionExpanded((v) => !v)}
+                  className="mt-2 text-xs font-medium text-postal-red hover:underline"
+                >
+                  {questionExpanded ? "Show less" : "Show more"}
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="mt-4 w-full rounded-sm border border-line p-4 text-left">
+          <div className="mt-4 w-full rounded-lg border border-postal-red/20 bg-postal-red/5 p-5 text-left shadow-sm sm:p-6">
             {uploaded || uploading || uploadError ? (
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <DocumentIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-ink-soft" />
+              <div className="flex items-center justify-between gap-3 rounded-md border border-green-600/20 bg-green-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white text-ink-soft shadow-sm">
+                    <DocumentIcon className="h-5 w-5" />
+                  </div>
                   <div>
-                    <p className="text-sm text-ink">{fileMeta?.name ?? "Your attachment"}</p>
-                    {fileMeta && (
-                      <p className="text-xs text-ink-soft">{formatFileSize(fileMeta.size)}</p>
-                    )}
+                    <p className="text-sm font-medium text-ink">
+                      {fileMeta?.name ?? "Your attachment"}
+                    </p>
                     {uploading && (
-                      <p className="mt-1 text-xs text-ink-soft">Uploading...</p>
+                      <p className="text-xs text-ink-soft">
+                        {fileMeta && `${formatFileSize(fileMeta.size)} · `}Uploading...
+                      </p>
                     )}
                     {uploaded && !uploading && (
-                      <p className="mt-1 text-xs font-medium text-green-700">
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-green-700">
+                        <span className="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full bg-green-600 text-white">
+                          <CheckIcon className="h-2.5 w-2.5" />
+                        </span>
                         Attached successfully
                       </p>
                     )}
                     {uploadError && (
-                      <p className="mt-1 text-xs text-postal-red">{uploadError}</p>
+                      <p className="text-xs text-postal-red">{uploadError}</p>
                     )}
                   </div>
                 </div>
@@ -289,16 +299,26 @@ function ThankYouContent() {
               </div>
             ) : (
               <>
-                <p className="flex items-center gap-2 text-sm font-medium text-ink">
-                  <PaperclipIcon className="h-4 w-4 text-ink-soft" />
-                  Want to add more context?
-                </p>
-                <p className="mt-1 text-sm text-ink-soft">
-                  Attach a screenshot, image, or PDF if it would help {expertFirstName} understand
-                  your question.
-                </p>
-                <label className="mt-3 inline-block cursor-pointer rounded-sm border border-dashed border-line px-4 py-2 text-sm font-medium text-postal-red hover:bg-line/30">
-                  + Add a file
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+                    <PaperclipIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">
+                      Want to add more context?{" "}
+                      <span className="font-normal text-ink-soft">(optional)</span>
+                    </p>
+                    <p className="mt-1 text-sm text-ink-soft">
+                      Attach a screenshot, image, or PDF if it would help {expertFirstName}{" "}
+                      better understand your question.
+                    </p>
+                  </div>
+                </div>
+                <label className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-postal-red/30 bg-white/60 px-4 py-6 text-center hover:bg-white">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-postal-red px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-ink">
+                    <UploadIcon className="h-4 w-4" />
+                    Choose a file
+                  </span>
                   <input
                     type="file"
                     accept="image/png, image/jpeg, image/webp, application/pdf"
@@ -306,7 +326,9 @@ function ThankYouContent() {
                     className="hidden"
                   />
                 </label>
-                <p className="mt-2 text-xs text-ink-soft">Image or PDF · Maximum 4MB</p>
+                <p className="mt-2 text-center text-xs text-ink-soft">
+                  Image or PDF · Maximum 4MB · One file only
+                </p>
               </>
             )}
           </div>
@@ -314,9 +336,9 @@ function ThankYouContent() {
           {info.expertUsername && (
             <a
               href={`/${info.expertUsername}`}
-              className="mt-6 text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink"
             >
-              Ask {expertFirstName} another question →
+              Ask {expertFirstName} another question <span aria-hidden>→</span>
             </a>
           )}
         </>

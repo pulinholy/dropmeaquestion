@@ -235,6 +235,16 @@ export function DocumentIcon({ className }: IconProps) {
   )
 }
 
+export function UploadIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 20V9" />
+      <path d="m7 13 5-5 5 5" />
+      <path d="M5 5h14" />
+    </svg>
+  )
+}
+
 export function DownloadIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
