@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
+import { sendNewQuestionEmail } from '@/lib/send-new-question-email'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
 
     const { data: expert } = await supabaseAdmin
       .from('experts')
-      .select('response_window_hours')
+      .select('response_window_hours, email_notifications')
       .eq('id', session.metadata.expertId)
       .maybeSingle()
 
@@ -47,6 +48,25 @@ export async function POST(request: Request) {
         paymentIntentId: session.payment_intent,
         expertId: session.metadata?.expertId,
       })
+    } else if (expert?.email_notifications !== false) {
+      const [{ data: authUser }, { data: profile }] = await Promise.all([
+        supabaseAdmin.auth.admin.getUserById(session.metadata.expertId),
+        supabaseAdmin
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.metadata.expertId)
+          .maybeSingle(),
+      ])
+
+      const expertEmail = authUser?.user?.email
+      if (expertEmail) {
+        await sendNewQuestionEmail({
+          expertEmail,
+          expertFirstName: profile?.full_name?.split(' ')[0] || 'there',
+          questionText: session.metadata.question,
+          priceCents: session.amount_total,
+        })
+      }
     }
   }
 

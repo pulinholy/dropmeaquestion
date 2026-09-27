@@ -72,7 +72,7 @@ export default async function ExpertPage({
 
   const { data: expert } = await supabaseAdmin
     .from("experts")
-    .select("headline, bio, price_cents, response_window_hours, is_active, stripe_onboarded")
+    .select("headline, bio, price_cents, response_window_hours, is_active, stripe_onboarded, pause_message")
     .eq("id", profile.id)
     .maybeSingle()
 
@@ -198,8 +198,8 @@ export default async function ExpertPage({
                     {firstName} isn&apos;t taking questions right now.
                   </p>
                   <p className="mt-1 text-sm text-ink-soft">
-                    Check back soon — {firstName} will reopen questions when
-                    available.
+                    {expert.pause_message ||
+                      `Check back soon — ${firstName} will reopen questions when available.`}
                   </p>
                 </div>
               </div>
