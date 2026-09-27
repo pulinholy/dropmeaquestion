@@ -4,9 +4,9 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 import { confirmQuestionPayment } from '@/lib/confirm-question-payment'
 
-// How long to wait before touching a row at all -- gives the normal webhook
-// path (which usually finishes in well under a minute) room to work first,
-// so this job isn't racing it.
+// This runs once/day (Vercel Hobby plan caps cron jobs at daily) -- it's a
+// backstop for the rare webhook delivery that never fired, not a fast-follow
+// path. MIN_AGE_MINUTES just guards against racing a webhook still in flight.
 const MIN_AGE_MINUTES = 2
 // Past this age with no confirmation, the asker almost certainly isn't
 // coming back to finish checkout.
