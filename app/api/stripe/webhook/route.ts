@@ -49,22 +49,33 @@ export async function POST(request: Request) {
         expertId: session.metadata?.expertId,
       })
     } else if (expert?.email_notifications !== false) {
-      const [{ data: authUser }, { data: profile }] = await Promise.all([
-        supabaseAdmin.auth.admin.getUserById(session.metadata.expertId),
-        supabaseAdmin
-          .from('profiles')
-          .select('full_name')
-          .eq('id', session.metadata.expertId)
-          .maybeSingle(),
-      ])
+      // Isolated from the question-creation path above: a failure here must
+      // never take down the webhook response, or Stripe sees the whole
+      // delivery as failed and the question row above never gets a chance
+      // to stick (Stripe retries the entire event, not just this part).
+      try {
+        const [{ data: authUser }, { data: profile }] = await Promise.all([
+          supabaseAdmin.auth.admin.getUserById(session.metadata.expertId),
+          supabaseAdmin
+            .from('profiles')
+            .select('full_name')
+            .eq('id', session.metadata.expertId)
+            .maybeSingle(),
+        ])
 
-      const expertEmail = authUser?.user?.email
-      if (expertEmail) {
-        await sendNewQuestionEmail({
-          expertEmail,
-          expertFirstName: profile?.full_name?.split(' ')[0] || 'there',
-          questionText: session.metadata.question,
-          priceCents: session.amount_total,
+        const expertEmail = authUser?.user?.email
+        if (expertEmail) {
+          await sendNewQuestionEmail({
+            expertEmail,
+            expertFirstName: profile?.full_name?.split(' ')[0] || 'there',
+            questionText: session.metadata.question,
+            priceCents: session.amount_total,
+          })
+        }
+      } catch (notifyErr) {
+        await logError('stripe/webhook:new-question-notification', notifyErr, {
+          sessionId: session.id,
+          expertId: session.metadata?.expertId,
         })
       }
     }
