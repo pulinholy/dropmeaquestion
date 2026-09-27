@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     // every poll just to find it.
     const { data: question } = await supabaseAdmin
       .from('questions')
-      .select('id, status, question_text, expert_id, attachment_path')
+      .select('id, status, question_text, expert_id, attachment_path, created_at')
       .eq('stripe_checkout_session_id', sessionId)
       .maybeSingle()
 
@@ -57,6 +57,7 @@ export async function GET(request: Request) {
       expertUsername: expert?.username ?? null,
       responseWindowHours: expertDetails?.response_window_hours ?? null,
       hasAttachment: Boolean(question.attachment_path),
+      askedAt: question.created_at,
     })
   } catch (err) {
     await logError('stripe/get-question-by-session', err, { sessionId })

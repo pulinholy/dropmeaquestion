@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import { formatResponseWindow } from "@/lib/format"
+import { CheckIcon, DocumentIcon, PaperclipIcon, XIcon } from "@/components/icons"
 
 type QuestionInfo = {
   questionId: string
@@ -13,17 +14,73 @@ type QuestionInfo = {
   expertUsername: string | null
   responseWindowHours: number | null
   hasAttachment: boolean
+  askedAt: string | null
 }
 
+type FileMeta = { name: string; size: number }
+
 const MAX_POLL_ATTEMPTS = 20 // ~30s at 1.5s intervals
+const QUESTION_PREVIEW_LENGTH = 220
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function formatAskedDate(iso: string | null) {
+  if (!iso) return null
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+// A calm, restrained badge shared by every state -- a spinner while we wait,
+// a checkmark once confirmed. Kept as one component so the hero area doesn't
+// jump around as status changes.
+function StatusBadge({ state }: { state: "pending" | "success" | "error" }) {
+  if (state === "pending") {
+    return (
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-line/40">
+        <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink-soft border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (state === "error") {
+    return (
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-postal-red/10">
+        <XIcon className="h-6 w-6 text-postal-red" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative flex h-16 w-16 items-center justify-center">
+      <span className="absolute -left-3 -top-1 h-3 w-0.5 rotate-45 rounded-full bg-postal-red/40" />
+      <span className="absolute -right-3 -top-1 h-3 w-0.5 -rotate-45 rounded-full bg-line" />
+      <span className="absolute -left-2 bottom-0 h-3 w-0.5 -rotate-45 rounded-full bg-line" />
+      <span className="absolute -right-2 bottom-0 h-3 w-0.5 rotate-45 rounded-full bg-postal-red/40" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
+        <CheckIcon className="h-7 w-7 text-green-700" />
+      </div>
+    </div>
+  )
+}
 
 export default function ThankYouPage() {
   return (
     <main className="flex min-h-screen flex-col">
       <SiteHeader variant="asker" />
 
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-6 text-center">
-        <Suspense fallback={<p className="text-ink-soft">Confirming your payment...</p>}>
+      <div className="mx-auto flex w-full max-w-[540px] flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+        <Suspense
+          fallback={
+            <>
+              <StatusBadge state="pending" />
+              <h1 className="mt-6 font-display text-3xl text-ink">
+                Confirming your question...
+              </h1>
+            </>
+          }
+        >
           <ThankYouContent />
         </Suspense>
       </div>
@@ -46,6 +103,8 @@ function ThankYouContent() {
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState(false)
   const [uploadError, setUploadError] = useState("")
+  const [fileMeta, setFileMeta] = useState<FileMeta | null>(null)
+  const [questionExpanded, setQuestionExpanded] = useState(false)
   const attemptsRef = useRef(0)
 
   const expertFirstName = info?.expertName.split(" ")[0] || info?.expertName || "the expert"
@@ -96,6 +155,7 @@ function ThankYouContent() {
     if (!file || !sessionId) return
 
     setUploadError("")
+    setFileMeta({ name: file.name, size: file.size })
     setUploading(true)
 
     const formData = new FormData()
@@ -110,34 +170,46 @@ function ThankYouContent() {
 
     if (data.error) {
       setUploadError(data.error)
+      setUploaded(false)
     } else {
       setUploaded(true)
     }
     setUploading(false)
   }
 
+  function handleRemove() {
+    setFileMeta(null)
+    setUploaded(false)
+    setUploadError("")
+  }
+
+  const questionText = info?.questionText ?? ""
+  const isLongQuestion = questionText.length > QUESTION_PREVIEW_LENGTH
+  const displayedQuestion =
+    isLongQuestion && !questionExpanded
+      ? `${questionText.slice(0, QUESTION_PREVIEW_LENGTH).trimEnd()}…`
+      : questionText
+
   return (
     <>
-      {status === "loading" && (
-        <p className="text-ink-soft">Confirming your payment...</p>
-      )}
-
-      {status === "confirming" && (
+      {(status === "loading" || status === "confirming") && (
         <>
-          <h1 className="font-display text-3xl text-ink">
-            We&apos;re confirming your payment
+          <StatusBadge state="pending" />
+          <h1 className="mt-6 font-display text-3xl text-ink">
+            Confirming your question...
           </h1>
           <p className="mt-3 text-ink-soft">
             {slow
               ? "This is taking longer than usual, but don't worry — we'll email you as soon as your question is confirmed."
-              : "This usually takes just a moment. We'll email you once your question is confirmed."}
+              : "Your payment was completed. We're confirming your question with DMQ. This usually takes just a moment."}
           </p>
         </>
       )}
 
       {status === "error" && (
         <>
-          <h1 className="font-display text-3xl text-ink">
+          <StatusBadge state="error" />
+          <h1 className="mt-6 font-display text-3xl text-ink">
             We couldn&apos;t confirm your question
           </h1>
           <p className="mt-3 text-ink-soft">{errorMessage}</p>
@@ -146,48 +218,95 @@ function ThankYouContent() {
 
       {status === "ready" && info && (
         <>
-          <h1 className="font-display text-3xl text-ink">
-            Your question has been sent!
+          <StatusBadge state="success" />
+          <h1 className="mt-6 font-display text-3xl text-ink">
+            Your question is sent!
           </h1>
-          <p className="mt-3 text-ink-soft">
-            Your question has been sent to {expertFirstName}.{" "}
+          <p className="mt-3 font-semibold text-ink">
+            {expertFirstName} will respond
             {info.responseWindowHours
-              ? `They'll reply by email within ${formatResponseWindow(info.responseWindowHours)}.`
-              : "They'll reply by email."}{" "}
-            If they don&apos;t answer in time, you won&apos;t be charged.
+              ? ` within ${formatResponseWindow(info.responseWindowHours)}.`
+              : " by email."}
           </p>
-          <blockquote className="mt-4 w-full rounded-sm border border-line p-4 text-left text-sm text-ink-soft">
-            {info.questionText}
-          </blockquote>
+          <p className="mt-1 text-ink-soft">
+            We&apos;ll email you when your answer is ready. If {expertFirstName} doesn&apos;t
+            respond in time, you won&apos;t be charged.
+          </p>
 
-          <div className="mt-8 w-full rounded-sm border border-line p-4 text-left">
-            {uploaded ? (
-              <p className="text-sm text-postal-blue">
-                Attachment added — {info.expertName} will see it with your
-                question.
+          <div className="mt-8 w-full rounded-sm border border-line bg-card p-4 text-left">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+              Your question
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-ink">{displayedQuestion}</p>
+            {isLongQuestion && (
+              <button
+                type="button"
+                onClick={() => setQuestionExpanded((v) => !v)}
+                className="mt-1 text-xs font-medium text-postal-red hover:underline"
+              >
+                {questionExpanded ? "Show less" : "Show more"}
+              </button>
+            )}
+            {formatAskedDate(info.askedAt) && (
+              <p className="mt-3 text-xs text-ink-soft">
+                Asked {expertFirstName} · {formatAskedDate(info.askedAt)}
               </p>
+            )}
+          </div>
+
+          <div className="mt-4 w-full rounded-sm border border-line p-4 text-left">
+            {uploaded || uploading || uploadError ? (
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <DocumentIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-ink-soft" />
+                  <div>
+                    <p className="text-sm text-ink">{fileMeta?.name ?? "Your attachment"}</p>
+                    {fileMeta && (
+                      <p className="text-xs text-ink-soft">{formatFileSize(fileMeta.size)}</p>
+                    )}
+                    {uploading && (
+                      <p className="mt-1 text-xs text-ink-soft">Uploading...</p>
+                    )}
+                    {uploaded && !uploading && (
+                      <p className="mt-1 text-xs font-medium text-green-700">
+                        Attached successfully
+                      </p>
+                    )}
+                    {uploadError && (
+                      <p className="mt-1 text-xs text-postal-red">{uploadError}</p>
+                    )}
+                  </div>
+                </div>
+                {!uploading && (
+                  <button
+                    type="button"
+                    onClick={handleRemove}
+                    className="flex-shrink-0 text-xs text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
             ) : (
               <>
-                <p className="text-sm font-medium text-ink">
-                  Add a file (optional)
+                <p className="flex items-center gap-2 text-sm font-medium text-ink">
+                  <PaperclipIcon className="h-4 w-4 text-ink-soft" />
+                  Want to add more context?
                 </p>
                 <p className="mt-1 text-sm text-ink-soft">
-                  One image or PDF, up to 4MB — a screenshot, resume, or
-                  anything that gives helpful context.
+                  Attach a screenshot, image, or PDF if it would help {expertFirstName} understand
+                  your question.
                 </p>
-                <label className="mt-3 inline-block cursor-pointer rounded-sm border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-line">
-                  {uploading ? "Uploading..." : "Choose file"}
+                <label className="mt-3 inline-block cursor-pointer rounded-sm border border-dashed border-line px-4 py-2 text-sm font-medium text-postal-red hover:bg-line/30">
+                  + Add a file
                   <input
                     type="file"
                     accept="image/png, image/jpeg, image/webp, application/pdf"
                     onChange={handleFileChange}
-                    disabled={uploading}
                     className="hidden"
                   />
                 </label>
-                {uploadError && (
-                  <p className="mt-2 text-sm text-postal-red">{uploadError}</p>
-                )}
+                <p className="mt-2 text-xs text-ink-soft">Image or PDF · Maximum 4MB</p>
               </>
             )}
           </div>
@@ -197,7 +316,7 @@ function ThankYouContent() {
               href={`/${info.expertUsername}`}
               className="mt-6 text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
             >
-              Ask {expertFirstName} another question
+              Ask {expertFirstName} another question →
             </a>
           )}
         </>
