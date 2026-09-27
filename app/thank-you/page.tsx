@@ -15,6 +15,8 @@ type QuestionInfo = {
   hasAttachment: boolean
 }
 
+const MAX_POLL_ATTEMPTS = 20 // ~30s at 1.5s intervals
+
 export default function ThankYouPage() {
   return (
     <main className="flex min-h-screen flex-col">
@@ -35,7 +37,11 @@ function ThankYouContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get("session_id")
 
-  const [status, setStatus] = useState<"loading" | "ready" | "timeout" | "error">("loading")
+  const [status, setStatus] = useState<"loading" | "confirming" | "ready" | "error">(
+    "loading"
+  )
+  const [errorMessage, setErrorMessage] = useState("")
+  const [slow, setSlow] = useState(false)
   const [info, setInfo] = useState<QuestionInfo | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState(false)
@@ -46,6 +52,9 @@ function ThankYouContent() {
 
   useEffect(() => {
     if (!sessionId) {
+      setErrorMessage(
+        "We couldn't find your payment. If you were charged, check your email — you'll still get an answer."
+      )
       setStatus("error")
       return
     }
@@ -60,13 +69,17 @@ function ThankYouContent() {
     const data = await res.json()
 
     if (data.error) {
+      setErrorMessage(data.error)
       setStatus("error")
       return
     }
 
     if (data.pending) {
-      if (attemptsRef.current >= 10) {
-        setStatus("timeout")
+      setStatus("confirming")
+      if (attemptsRef.current >= MAX_POLL_ATTEMPTS) {
+        // Stop polling rather than claim success we can't back up.
+        // Reconciliation will finish confirming it and email the asker.
+        setSlow(true)
         return
       }
       setTimeout(poll, 1500)
@@ -109,33 +122,32 @@ function ThankYouContent() {
         <p className="text-ink-soft">Confirming your payment...</p>
       )}
 
-      {status === "error" && (
+      {status === "confirming" && (
         <>
-          <h1 className="font-display text-3xl text-ink">Something went wrong</h1>
+          <h1 className="font-display text-3xl text-ink">
+            We&apos;re confirming your payment
+          </h1>
           <p className="mt-3 text-ink-soft">
-            We couldn&apos;t confirm your payment. If you were charged, your
-            question is still on its way — check your email.
+            {slow
+              ? "This is taking longer than usual, but don't worry — we'll email you as soon as your question is confirmed."
+              : "This usually takes just a moment. We'll email you once your question is confirmed."}
           </p>
         </>
       )}
 
-      {status === "timeout" && (
+      {status === "error" && (
         <>
           <h1 className="font-display text-3xl text-ink">
-            You&apos;re all set!
+            We couldn&apos;t confirm your question
           </h1>
-          <p className="mt-3 text-ink-soft">
-            Your question is on its way. It&apos;s taking a little longer than
-            usual to confirm, so attachments aren&apos;t available right now —
-            you&apos;ll still get your answer by email.
-          </p>
+          <p className="mt-3 text-ink-soft">{errorMessage}</p>
         </>
       )}
 
       {status === "ready" && info && (
         <>
           <h1 className="font-display text-3xl text-ink">
-            You&apos;re all set!
+            Your question has been sent!
           </h1>
           <p className="mt-3 text-ink-soft">
             Your question has been sent to {expertFirstName}.{" "}

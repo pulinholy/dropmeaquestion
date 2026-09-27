@@ -14,6 +14,13 @@ export function middleware(request: NextRequest) {
 
   const { pathname, searchParams } = request.nextUrl
 
+  // API routes (Stripe webhooks especially) must never be gated by the
+  // coming-soon page: it still returns 200, so a webhook silently never
+  // reaches its handler instead of failing loudly.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next()
+  }
+
   if (pathname === "/coming-soon") {
     return NextResponse.next()
   }

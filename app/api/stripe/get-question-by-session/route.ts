@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 
@@ -11,25 +10,31 @@ export async function GET(request: Request) {
   }
 
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
-    const paymentIntentId =
-      typeof session.payment_intent === 'string'
-        ? session.payment_intent
-        : session.payment_intent?.id
-
-    if (!paymentIntentId) {
-      return NextResponse.json({ error: 'No payment found for this session' }, { status: 400 })
-    }
-
+    // The question already exists before payment, correlated by Stripe's own
+    // (unguessable) checkout session id -- no need to call Stripe's API on
+    // every poll just to find it.
     const { data: question } = await supabaseAdmin
       .from('questions')
-      .select('id, question_text, expert_id, attachment_path')
-      .eq('stripe_payment_intent_id', paymentIntentId)
+      .select('id, status, question_text, expert_id, attachment_path')
+      .eq('stripe_checkout_session_id', sessionId)
       .maybeSingle()
 
     if (!question) {
-      // The Stripe webhook may not have finished creating the row yet
+      return NextResponse.json(
+        { error: 'No question found for this session.' },
+        { status: 400 }
+      )
+    }
+
+    if (question.status === 'awaiting_payment') {
       return NextResponse.json({ pending: true })
+    }
+
+    if (question.status === 'payment_abandoned') {
+      return NextResponse.json(
+        { error: "We couldn't confirm this payment. Your card hasn't been charged." },
+        { status: 400 }
+      )
     }
 
     const { data: expert } = await supabaseAdmin

@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
-import { sendNewQuestionEmail } from '@/lib/send-new-question-email'
+import { confirmQuestionPayment } from '@/lib/confirm-question-payment'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -23,61 +23,22 @@ export async function POST(request: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any
+    const questionId = session.metadata?.questionId
 
-    const { data: expert } = await supabaseAdmin
-      .from('experts')
-      .select('response_window_hours, email_notifications')
-      .eq('id', session.metadata.expertId)
-      .maybeSingle()
-
-    const deadline = new Date()
-    deadline.setHours(deadline.getHours() + (expert?.response_window_hours ?? 24))
-
-    const { error } = await supabaseAdmin.from('questions').insert({
-      expert_id: session.metadata.expertId,
-      asker_email: session.metadata.email,
-      question_text: session.metadata.question,
-      stripe_payment_intent_id: session.payment_intent,
-      price_cents: session.amount_total,
-      deadline_at: deadline.toISOString(),
-    })
-
-    if (error) {
-      await logError('stripe/webhook:checkout.session.completed', error, {
-        sessionId: session.id,
+    if (!questionId) {
+      await logError(
+        'stripe/webhook:checkout.session.completed',
+        new Error('Missing questionId in session metadata'),
+        { sessionId: session.id }
+      )
+    } else {
+      // The question already exists (created before checkout) -- this is a
+      // small, idempotent status transition, not the only place the
+      // question can come into existence.
+      await confirmQuestionPayment({
+        questionId,
         paymentIntentId: session.payment_intent,
-        expertId: session.metadata?.expertId,
       })
-    } else if (expert?.email_notifications !== false) {
-      // Isolated from the question-creation path above: a failure here must
-      // never take down the webhook response, or Stripe sees the whole
-      // delivery as failed and the question row above never gets a chance
-      // to stick (Stripe retries the entire event, not just this part).
-      try {
-        const [{ data: authUser }, { data: profile }] = await Promise.all([
-          supabaseAdmin.auth.admin.getUserById(session.metadata.expertId),
-          supabaseAdmin
-            .from('profiles')
-            .select('full_name')
-            .eq('id', session.metadata.expertId)
-            .maybeSingle(),
-        ])
-
-        const expertEmail = authUser?.user?.email
-        if (expertEmail) {
-          await sendNewQuestionEmail({
-            expertEmail,
-            expertFirstName: profile?.full_name?.split(' ')[0] || 'there',
-            questionText: session.metadata.question,
-            priceCents: session.amount_total,
-          })
-        }
-      } catch (notifyErr) {
-        await logError('stripe/webhook:new-question-notification', notifyErr, {
-          sessionId: session.id,
-          expertId: session.metadata?.expertId,
-        })
-      }
     }
   }
 

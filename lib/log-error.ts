@@ -9,7 +9,18 @@ export async function logError(
   error: unknown,
   context?: Record<string, unknown>
 ) {
-  const message = error instanceof Error ? error.message : String(error)
+  const message =
+    error instanceof Error
+      ? error.message
+      : (() => {
+          // Non-Error objects (e.g. Resend's { name, statusCode, message }
+          // shape) stringify to the useless "[object Object]" otherwise.
+          try {
+            return JSON.stringify(error)
+          } catch {
+            return String(error)
+          }
+        })()
   const stack = error instanceof Error ? error.stack : undefined
 
   console.error(`[${source}]`, message)

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 
@@ -47,27 +46,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File must be 4MB or smaller' }, { status: 400 })
     }
 
-    // Re-derive the question from the Stripe session server-side — never trust
-    // a client-supplied question id, so a stranger can't overwrite someone
-    // else's attachment.
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
-    const paymentIntentId =
-      typeof session.payment_intent === 'string'
-        ? session.payment_intent
-        : session.payment_intent?.id
-
-    if (!paymentIntentId) {
-      return NextResponse.json({ error: 'No payment found for this session' }, { status: 400 })
-    }
-
+    // Re-derive the question from Stripe's own checkout session id,
+    // server-side — never trust a client-supplied question id directly, so
+    // a stranger can't overwrite someone else's attachment. The session id
+    // is Stripe-generated and unguessable, and is resolved against our own
+    // database rather than calling Stripe's API.
     const { data: question } = await supabaseAdmin
       .from('questions')
-      .select('id, expert_id')
-      .eq('stripe_payment_intent_id', paymentIntentId)
+      .select('id, expert_id, status')
+      .eq('stripe_checkout_session_id', sessionId)
       .maybeSingle()
 
     if (!question) {
       return NextResponse.json({ error: 'Question not found for this session' }, { status: 404 })
+    }
+
+    if (question.status === 'awaiting_payment') {
+      return NextResponse.json(
+        { error: 'Payment has not been confirmed for this question yet.' },
+        { status: 400 }
+      )
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer())

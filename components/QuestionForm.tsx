@@ -4,7 +4,7 @@ import { useState } from "react"
 import { MailIcon, ShieldCheckIcon, InfoIcon } from "./icons"
 import { formatResponseWindow } from "@/lib/format"
 
-const MAX_QUESTION_LENGTH = 500
+const MAX_QUESTION_LENGTH = 1000
 
 export default function QuestionForm({
   expertId,
