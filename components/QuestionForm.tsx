@@ -86,7 +86,7 @@ export default function QuestionForm({
       </div>
       <div>
         <label className="block text-sm font-semibold text-ink">
-          Your email (to send the answer)
+          Your email (to receive the answer)
         </label>
         <div className="relative mt-1">
           <MailIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
@@ -99,6 +99,9 @@ export default function QuestionForm({
             className="w-full rounded-sm border border-line py-2 pl-9 pr-3 text-ink placeholder:text-ink-soft/60"
           />
         </div>
+        <p className="mt-1 text-xs text-ink-soft">
+          🔒 Your email stays private and isn&apos;t shared with {expertFirstName}.
+        </p>
       </div>
       {error && <p className="text-sm text-postal-red">{error}</p>}
       <button
