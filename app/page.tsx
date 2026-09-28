@@ -1,5 +1,8 @@
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import { supabase } from "@/lib/supabase"
+import { supabaseAdmin } from "@/lib/supabase-admin"
+import { formatPrice, formatResponseWindow } from "@/lib/format"
 import {
   TagIcon,
   LinkIcon,
@@ -72,15 +75,66 @@ const whoThisIsFor = [
   { label: "Experts", icon: StarIcon },
 ]
 
-const heroTopics = [
-  "Career Strategy",
-  "Resume Review",
-  "Interview Prep",
-  "Product Management",
-]
+// Fallback content for the hero preview card, used only if the live demo
+// account below is ever renamed or removed.
+const FALLBACK_HERO = {
+  name: "Jordan Blake",
+  headline: "Career & Interview Coach",
+  topics: ["Career Strategy", "Resume Review", "Interview Prep", "Product Management"],
+  price: "10",
+  responseWindow: "24 hours",
+}
 const HERO_TOPIC_STYLES = ["bg-lavender/60", "bg-postal-blue/10", "bg-line/50"]
 
-export default function Home() {
+// The hero preview card mirrors a real, live demo profile instead of a
+// hardcoded persona, so it's an actual example visitors can click through to
+// rather than a picture that can drift out of sync with the real product.
+const DEMO_USERNAME = "maya"
+
+export default async function Home() {
+  const { data: demoProfile } = await supabase
+    .from("profiles")
+    .select("id, full_name, avatar_url")
+    .eq("username", DEMO_USERNAME)
+    .maybeSingle()
+
+  let demoHeadline: string | null = null
+  let demoPrice: string | null = null
+  let demoResponseWindow: string | null = null
+  let demoTopics: string[] = []
+
+  if (demoProfile) {
+    const { data: expert } = await supabaseAdmin
+      .from("experts")
+      .select("headline, price_cents, response_window_hours")
+      .eq("id", demoProfile.id)
+      .maybeSingle()
+
+    if (expert) {
+      demoHeadline = expert.headline
+      demoPrice = formatPrice(expert.price_cents)
+      demoResponseWindow = formatResponseWindow(expert.response_window_hours)
+    }
+
+    const { data: topicsData } = await supabaseAdmin
+      .from("expert_topics")
+      .select("name")
+      .eq("expert_id", demoProfile.id)
+      .order("sort_order", { ascending: true })
+
+    demoTopics = topicsData?.map((t) => t.name) ?? []
+  }
+
+  const hero = {
+    name: demoProfile?.full_name ?? FALLBACK_HERO.name,
+    headline: demoHeadline ?? FALLBACK_HERO.headline,
+    topics: demoTopics.length > 0 ? demoTopics : FALLBACK_HERO.topics,
+    price: demoPrice ?? FALLBACK_HERO.price,
+    responseWindow: demoResponseWindow ?? FALLBACK_HERO.responseWindow,
+    avatarUrl: demoProfile?.avatar_url ?? null,
+    href: demoProfile ? `/${DEMO_USERNAME}` : "/register",
+  }
+
   return (
     <main className="min-h-screen">
       <SiteHeader />
@@ -122,21 +176,34 @@ export default function Home() {
               <SparkleAccentIcon className="absolute -left-5 -top-5 h-7 w-7 text-postal-red" />
               <SparkleAccentIcon className="absolute -bottom-5 -right-5 h-7 w-7 rotate-180 text-lavender" />
 
-              <div className="rounded-lg border border-line bg-white p-6 shadow-sm">
+              <a
+                href={hero.href}
+                className="block rounded-lg border border-line bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender/60 text-lg font-medium text-ink">
-                    JB
-                  </div>
+                  {hero.avatarUrl ? (
+                    <img
+                      src={hero.avatarUrl}
+                      alt={hero.name}
+                      className="h-14 w-14 flex-shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-lavender/60 text-lg font-medium text-ink">
+                      {hero.name
+                        .split(" ")
+                        .map((n: string) => n.charAt(0))
+                        .join("")
+                        .toUpperCase()}
+                    </div>
+                  )}
                   <div>
-                    <p className="font-display text-lg text-ink">Jordan Blake</p>
-                    <p className="text-sm text-ink-soft">
-                      Career &amp; Interview Coach
-                    </p>
+                    <p className="font-display text-lg text-ink">{hero.name}</p>
+                    <p className="text-sm text-ink-soft">{hero.headline}</p>
                   </div>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {heroTopics.map((topic, i) => (
+                  {hero.topics.map((topic, i) => (
                     <span
                       key={topic}
                       className={`rounded-full px-3 py-1 text-xs font-medium text-ink ${HERO_TOPIC_STYLES[i % HERO_TOPIC_STYLES.length]}`}
@@ -148,23 +215,20 @@ export default function Home() {
 
                 <div className="mt-4 flex items-center gap-3 border-t border-line pt-4 text-sm text-ink-soft">
                   <span className="flex items-center gap-1.5">
-                    <TagIcon className="h-4 w-4 text-postal-red" />
-                    $10 per question
+                    <TagIcon className="h-4 w-4 text-postal-red" />${hero.price} per
+                    question
                   </span>
                   <span className="h-4 w-px bg-line" />
                   <span className="flex items-center gap-1.5">
                     <ClockIcon className="h-4 w-4 text-postal-red" />
-                    Replies within 24 hours
+                    Replies within {hero.responseWindow}
                   </span>
                 </div>
 
-                <span
-                  aria-hidden="true"
-                  className="mt-5 flex w-full cursor-default select-none items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper"
-                >
-                  Ask a question — $10
+                <span className="mt-5 flex w-full items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper">
+                  Ask a question — ${hero.price}
                 </span>
-              </div>
+              </a>
             </div>
           </div>
         </div>
