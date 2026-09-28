@@ -65,6 +65,10 @@ export default function QuestionForm({
         <label className="block text-sm font-semibold text-ink">
           What would you like to ask {expertFirstName}?
         </label>
+        <p className="mt-0.5 text-xs text-ink-soft">
+          For the best answer, focus on one main question and include any
+          helpful context.
+        </p>
         <textarea
           required
           rows={3}
