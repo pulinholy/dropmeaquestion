@@ -213,11 +213,11 @@ export default function Home() {
             </div>
             <div>
               <p className="text-sm font-semibold text-ink">
-                Your contact information stays private
+                Your email stays private
               </p>
               <p className="mt-0.5 text-sm text-ink-soft">
-                Askers don&apos;t see your email address. Questions and
-                answers are handled through Drop Me A Question.
+                Askers never see your email address. Questions and answers
+                are handled through Drop Me A Question.
               </p>
             </div>
           </div>
