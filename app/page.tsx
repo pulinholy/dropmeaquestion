@@ -5,6 +5,7 @@ import {
   LinkIcon,
   ClockIcon,
   ChatIcon,
+  LockIcon,
   RobotIcon,
   PersonIcon,
   SparkleAccentIcon,
@@ -205,6 +206,21 @@ export default function Home() {
               ),
             )}
           </ol>
+
+          <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-lg border border-line bg-white px-5 py-4 text-left">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+              <LockIcon className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-ink">
+                Your contact information stays private
+              </p>
+              <p className="mt-0.5 text-sm text-ink-soft">
+                Askers don&apos;t see your email address. Questions and
+                answers are handled through Drop Me A Question.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

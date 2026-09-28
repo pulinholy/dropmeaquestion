@@ -9,7 +9,7 @@ const EXPERT_NET_RATE = 0.85
 type Earning = {
   id: string
   question_text: string
-  asker_email: string
+  reference_id: string | null
   price_cents: number | null
   answered_at: string | null
 }
@@ -23,12 +23,6 @@ function formatShortDate(dateStr: string): string {
     day: "numeric",
     year: sameYear ? undefined : "numeric",
   })
-}
-
-function truncateEmail(email: string, maxLocalLength = 15): string {
-  const [local, domain] = email.split("@")
-  if (!domain || local.length <= maxLocalLength) return email
-  return `${local.slice(0, maxLocalLength)}...@${domain}`
 }
 
 export default function PaymentsPage() {
@@ -62,7 +56,7 @@ export default function PaymentsPage() {
 
     const { data: questions } = await supabase
       .from("questions")
-      .select("id, question_text, asker_email, price_cents, answered_at")
+      .select("id, question_text, reference_id, price_cents, answered_at")
       .eq("expert_id", userId)
       .eq("status", "answered")
       .order("answered_at", { ascending: false })
@@ -287,9 +281,11 @@ export default function PaymentsPage() {
                         <p className="truncate font-medium text-ink">
                           {e.question_text}
                         </p>
-                        <p className="mt-0.5 truncate text-xs text-ink-soft">
-                          Questioner: {truncateEmail(e.asker_email)}
-                        </p>
+                        {e.reference_id && (
+                          <p className="mt-0.5 truncate text-xs text-ink-soft">
+                            Question #{e.reference_id}
+                          </p>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 align-top text-ink-soft">
                         {e.answered_at ? formatShortDate(e.answered_at) : "—"}

@@ -14,7 +14,7 @@ export async function confirmQuestionPayment({
 }) {
   const { data: question } = await supabaseAdmin
     .from('questions')
-    .select('id, expert_id, question_text, price_cents')
+    .select('id, expert_id, question_text, price_cents, reference_id')
     .eq('id', questionId)
     .maybeSingle()
 
@@ -81,6 +81,7 @@ export async function confirmQuestionPayment({
         expertFirstName: profile?.full_name?.split(' ')[0] || 'there',
         questionText: question.question_text,
         priceCents: question.price_cents ?? 0,
+        referenceId: question.reference_id,
       })
     }
   } catch (notifyErr) {

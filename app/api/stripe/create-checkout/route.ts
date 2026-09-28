@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
+import { generateReferenceId } from '@/lib/reference-id'
 
 const MAX_QUESTION_LENGTH = 1000
 const PLATFORM_FEE_RATE = 0.15
+const MAX_REFERENCE_ID_ATTEMPTS = 5
 
 export async function POST(request: Request) {
   const { expertId, question, email, username } = await request.json()
@@ -33,19 +35,40 @@ export async function POST(request: Request) {
   // database independent of whether Stripe or its webhook ever come back.
   // Only its ID goes to Stripe -- the webhook's only job is to flip this
   // row to "pending" once payment is confirmed, not to create it.
-  const { data: newQuestion, error: insertError } = await supabaseAdmin
-    .from('questions')
-    .insert({
-      expert_id: expertId,
-      asker_email: email,
-      question_text: question,
-      status: 'awaiting_payment',
-      price_cents: expert.price_cents,
-    })
-    .select('id')
-    .single()
+  //
+  // reference_id is the human-facing "Question #A7K4P2" shown to the expert
+  // instead of the asker's email -- generated client-side with a retry loop
+  // rather than a DB sequence, so it stays unguessable-order and doesn't leak
+  // how many questions an expert has received.
+  let newQuestion: { id: string } | null = null
+  let insertError: unknown = null
 
-  if (insertError || !newQuestion) {
+  for (let attempt = 0; attempt < MAX_REFERENCE_ID_ATTEMPTS; attempt++) {
+    const result = await supabaseAdmin
+      .from('questions')
+      .insert({
+        expert_id: expertId,
+        asker_email: email,
+        question_text: question,
+        status: 'awaiting_payment',
+        price_cents: expert.price_cents,
+        reference_id: generateReferenceId(),
+      })
+      .select('id')
+      .single()
+
+    if (!result.error) {
+      newQuestion = result.data
+      break
+    }
+
+    insertError = result.error
+    // 23505 = unique_violation -- only worth retrying if it was the
+    // reference_id collision, which a fresh random code will clear.
+    if ((result.error as { code?: string }).code !== '23505') break
+  }
+
+  if (!newQuestion) {
     await logError('stripe/create-checkout:insert', insertError, { expertId })
     return NextResponse.json(
       { error: 'Could not start your question. Please try again.' },

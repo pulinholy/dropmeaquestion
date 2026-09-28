@@ -2,12 +2,27 @@ import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
 import { renderEmailLayout, renderEmailButton, renderEmailQuote, EMAIL_BASE_URL } from '@/lib/email-layout'
 import { logError } from '@/lib/log-error'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(request: Request) {
-  const { askerEmail, questionText, answerText, expertName, questionId } = await request.json()
+  const { questionText, answerText, expertName, questionId } = await request.json()
 
-  if (!askerEmail || !answerText) {
-    return NextResponse.json({ error: 'Missing askerEmail or answerText' }, { status: 400 })
+  if (!questionId || !answerText) {
+    return NextResponse.json({ error: 'Missing questionId or answerText' }, { status: 400 })
+  }
+
+  // Looked up server-side, never trusted from the client -- the expert's
+  // browser must never hold the asker's email address at all.
+  const { data: question } = await supabaseAdmin
+    .from('questions')
+    .select('asker_email')
+    .eq('id', questionId)
+    .maybeSingle()
+
+  const askerEmail = question?.asker_email
+  if (!askerEmail) {
+    await logError('send-answer-email:lookup', new Error('Question not found or missing asker_email'), { questionId })
+    return NextResponse.json({ error: 'Could not find the question to notify' }, { status: 404 })
   }
 
   const expertFirstName = expertName?.split(' ')[0] || expertName

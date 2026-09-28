@@ -322,6 +322,11 @@ export default function SettingsPage() {
                     </span>
                   </span>
                 </label>
+
+                <p className="mt-3 text-xs text-ink-soft">
+                  Your contact information stays private — askers never see
+                  your email address.
+                </p>
               </div>
             </div>
           </div>

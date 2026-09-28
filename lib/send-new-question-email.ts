@@ -7,19 +7,23 @@ export async function sendNewQuestionEmail({
   expertFirstName,
   questionText,
   priceCents,
+  referenceId,
 }: {
   expertEmail: string
   expertFirstName: string
   questionText: string
   priceCents: number
+  referenceId?: string | null
 }) {
   const price = (priceCents / 100).toFixed(2)
   const dashboardUrl = `${EMAIL_BASE_URL}/dashboard/questions/pending`
 
   const body = `
     <p style="margin:0 0 16px;">Hi ${expertFirstName}, you&rsquo;ve got a new question on Drop Me A Question &mdash; worth $${price}.</p>
+    ${referenceId ? `<p style="margin:0 0 16px; font-size:13px; color:#4a5568;">Question #${referenceId}</p>` : ''}
     ${renderEmailQuote(questionText)}
-    <p style="margin:0 0 24px;">Answer within your response window to get paid.</p>
+    <p style="margin:0 0 8px;">Answer within your response window to get paid.</p>
+    <p style="margin:0 0 24px; font-size:13px; color:#4a5568;">Your email stays private &mdash; answer securely through Drop Me A Question.</p>
     ${renderEmailButton(dashboardUrl, 'Answer now &rarr;')}
   `
 

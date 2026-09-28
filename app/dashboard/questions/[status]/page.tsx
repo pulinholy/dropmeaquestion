@@ -16,7 +16,7 @@ const statusTabs = [
 type Question = {
   id: string
   question_text: string
-  asker_email: string
+  reference_id: string | null
   status: string
   created_at: string
   deadline_at: string
@@ -63,12 +63,6 @@ function formatShortDate(dateStr: string): string {
   })
 }
 
-function truncateEmail(email: string, maxLocalLength = 15): string {
-  const [local, domain] = email.split("@")
-  if (!domain || local.length <= maxLocalLength) return email
-  return `${local.slice(0, maxLocalLength)}...@${domain}`
-}
-
 export default function QuestionsByStatusPage() {
   const params = useParams<{ status: string }>()
   const status = params.status
@@ -103,9 +97,13 @@ export default function QuestionsByStatusPage() {
 
     if (profileData) setExpertName(profileData.full_name)
 
+    // Explicit column list -- asker_email is deliberately excluded so it
+    // never reaches the expert's browser, not just hidden from the UI.
     const { data, error } = await supabase
       .from("questions")
-      .select("*")
+      .select(
+        "id, question_text, reference_id, status, created_at, deadline_at, answer_text, stripe_payment_intent_id, attachment_path, feedback_rating, feedback_comment"
+      )
       .eq("expert_id", userId)
       .eq("status", status)
       .order("created_at", { ascending: false })
@@ -188,7 +186,6 @@ export default function QuestionsByStatusPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        askerEmail: question?.asker_email,
         questionText: question?.question_text,
         answerText,
         expertName,
@@ -244,7 +241,7 @@ export default function QuestionsByStatusPage() {
               </div>
 
               <p className="mt-2 text-sm text-ink-soft">
-                {truncateEmail(q.asker_email)} &middot;{" "}
+                {q.reference_id && `#${q.reference_id} · `}
                 {formatRelativeTime(q.created_at)}
               </p>
               <p className="mt-1 text-ink">{q.question_text}</p>
@@ -316,7 +313,7 @@ export default function QuestionsByStatusPage() {
             return (
               <div key={q.id} className="rounded-sm border border-line p-4">
                 <p className="text-sm text-ink-soft">
-                  {truncateEmail(q.asker_email)} &middot;{" "}
+                  {q.reference_id && `#${q.reference_id} · `}
                   {formatShortDate(q.created_at)}
                 </p>
                 <p className="mt-1 text-ink">{q.question_text}</p>
