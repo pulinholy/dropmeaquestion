@@ -324,6 +324,9 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-ink placeholder:text-ink-soft/60"
               />
+              <p className="mt-1 text-xs text-ink-soft">
+                🔒 Your email stays private and isn&apos;t shared with askers.
+              </p>
             </div>
 
             <div>

@@ -111,6 +111,40 @@ export default function DashboardHomePage() {
 
     const userId = sessionData.session.user.id
 
+    // Coming back from Stripe onboarding -- verify directly with Stripe
+    // instead of trusting the DB, in case the account.updated webhook that
+    // normally keeps it in sync hasn't arrived yet (or never does).
+    const returningFromStripe =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("stripe") === "return"
+
+    if (returningFromStripe) {
+      const { data: expert } = await supabase
+        .from("experts")
+        .select("stripe_account_id")
+        .eq("id", userId)
+        .single()
+
+      if (expert?.stripe_account_id) {
+        try {
+          const res = await fetch("/api/stripe/sync-account-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accountId: expert.stripe_account_id }),
+          })
+          const data = await res.json()
+          if (typeof data.stripeOnboarded === "boolean") {
+            setStripeOnboarded(data.stripeOnboarded)
+            setStripeStatusLoaded(true)
+            window.history.replaceState(null, "", window.location.pathname)
+            return
+          }
+        } catch {
+          // Fall through to the normal DB read below.
+        }
+      }
+    }
+
     const { data } = await supabase
       .from("experts")
       .select("stripe_onboarded")
