@@ -38,6 +38,12 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState("")
   const [username, setUsername] = useState<string | null>(null)
+
+  const [currentEmail, setCurrentEmail] = useState("")
+  const [emailInput, setEmailInput] = useState("")
+  const [emailSaving, setEmailSaving] = useState(false)
+  const [emailSaved, setEmailSaved] = useState(false)
+  const [emailError, setEmailError] = useState("")
   const [copied, setCopied] = useState(false)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
   const [generatingQr, setGeneratingQr] = useState(false)
@@ -63,6 +69,9 @@ export default function SettingsPage() {
     if (!sessionData.session) return
 
     const userId = sessionData.session.user.id
+    const sessionEmail = sessionData.session.user.email ?? ""
+    setCurrentEmail(sessionEmail)
+    setEmailInput(sessionEmail)
 
     const { data: profileData } = await supabase
       .from("profiles")
@@ -96,6 +105,30 @@ export default function SettingsPage() {
 
     setTopics(topicsData?.map((t) => t.name) ?? [])
     setLoading(false)
+  }
+
+  async function handleUpdateEmail(e: React.FormEvent) {
+    e.preventDefault()
+
+    const trimmed = emailInput.trim()
+    if (!trimmed || trimmed === currentEmail) return
+
+    setEmailSaving(true)
+    setEmailError("")
+    setEmailSaved(false)
+
+    // Supabase emails a confirmation link to the new address before the
+    // change actually takes effect -- this call only starts that flow.
+    const { error: updateError } = await supabase.auth.updateUser({
+      email: trimmed,
+    })
+
+    if (updateError) {
+      setEmailError(updateError.message)
+    } else {
+      setEmailSaved(true)
+    }
+    setEmailSaving(false)
   }
 
   async function copyLink() {
@@ -162,6 +195,58 @@ export default function SettingsPage() {
         Manage your public page link and decide when you want to accept
         questions.
       </p>
+
+      <form
+        onSubmit={handleUpdateEmail}
+        className="mt-4 rounded-lg border border-line bg-card p-5"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+            <MailIcon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-semibold text-ink">Account email</h2>
+            <p className="mt-0.5 text-xs text-ink-soft">
+              Used to log in and to receive your question notifications.
+              Askers never see this.
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <input
+                type="email"
+                required
+                value={emailInput}
+                onChange={(e) => {
+                  setEmailInput(e.target.value)
+                  setEmailSaved(false)
+                  setEmailError("")
+                }}
+                className="min-w-[220px] flex-1 rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
+              />
+              <button
+                type="submit"
+                disabled={
+                  emailSaving || emailInput.trim() === currentEmail || !emailInput.trim()
+                }
+                className="flex-shrink-0 rounded-full bg-postal-red px-4 py-2 text-xs font-medium text-white hover:bg-ink disabled:opacity-50"
+              >
+                {emailSaving ? "Updating..." : "Update email"}
+              </button>
+            </div>
+
+            {emailError && (
+              <p className="mt-2 text-xs text-postal-red">{emailError}</p>
+            )}
+            {emailSaved && (
+              <p className="mt-2 text-xs text-postal-blue">
+                Check {emailInput.trim()} for a confirmation link to finish
+                the change. Your login email stays the same until you
+                confirm.
+              </p>
+            )}
+          </div>
+        </div>
+      </form>
 
       <form
         onSubmit={handleSave}
