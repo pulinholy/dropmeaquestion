@@ -1,7 +1,11 @@
-import { XIcon, LinkedInIcon, InstagramIcon } from "./icons"
+import { YouTubeIcon, LinkedInIcon, InstagramIcon } from "./icons"
 
 const socialLinks = [
-  { label: "X", href: "https://x.com/dropmeaquestion", icon: XIcon },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@Dropmeaquestion",
+    icon: YouTubeIcon,
+  },
   {
     label: "LinkedIn",
     href: "https://www.linkedin.com/company/dropmeaquestion",
