@@ -46,7 +46,7 @@ export default function SiteHeader({
                 href="/register"
                 className="rounded-full bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
               >
-                Create page
+                Create your page
               </a>
             </>
           )}
