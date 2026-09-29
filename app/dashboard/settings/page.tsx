@@ -43,6 +43,7 @@ export default function SettingsPage() {
   const [emailInput, setEmailInput] = useState("")
   const [emailSaving, setEmailSaving] = useState(false)
   const [emailSaved, setEmailSaved] = useState(false)
+  const [emailConfirmed, setEmailConfirmed] = useState(false)
   const [emailError, setEmailError] = useState("")
   const [copied, setCopied] = useState(false)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
@@ -58,6 +59,30 @@ export default function SettingsPage() {
 
   useEffect(() => {
     load()
+
+    // Catch the redirect back from clicking the email-confirmation link --
+    // Supabase puts either the new session or an error in the URL hash and
+    // otherwise leaves it for the page to handle. Without this, a failed or
+    // already-used link just shows a bare, unexplained error in the URL.
+    const hash = window.location.hash
+    if (!hash) return
+
+    const params = new URLSearchParams(hash.slice(1))
+    const errorDescription = params.get("error_description")
+    const type = params.get("type")
+
+    if (errorDescription) {
+      setEmailError(errorDescription)
+      window.history.replaceState(null, "", window.location.pathname)
+    } else if (type === "email_change") {
+      setEmailConfirmed(true)
+      window.history.replaceState(null, "", window.location.pathname)
+      supabase.auth.getSession().then(({ data }) => {
+        const newEmail = data.session?.user.email ?? ""
+        setCurrentEmail(newEmail)
+        setEmailInput(newEmail)
+      })
+    }
   }, [])
 
   async function load() {
@@ -116,12 +141,16 @@ export default function SettingsPage() {
     setEmailSaving(true)
     setEmailError("")
     setEmailSaved(false)
+    setEmailConfirmed(false)
 
     // Supabase emails a confirmation link to the new address before the
     // change actually takes effect -- this call only starts that flow.
-    const { error: updateError } = await supabase.auth.updateUser({
-      email: trimmed,
-    })
+    // Land back here (not Supabase's default Site URL) so the result of
+    // clicking that link is a readable message, not a bare error on /.
+    const { error: updateError } = await supabase.auth.updateUser(
+      { email: trimmed },
+      { emailRedirectTo: `${window.location.origin}/dashboard/settings` }
+    )
 
     if (updateError) {
       setEmailError(updateError.message)
@@ -219,6 +248,7 @@ export default function SettingsPage() {
                 onChange={(e) => {
                   setEmailInput(e.target.value)
                   setEmailSaved(false)
+                  setEmailConfirmed(false)
                   setEmailError("")
                 }}
                 className="min-w-[220px] flex-1 rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
@@ -235,9 +265,25 @@ export default function SettingsPage() {
             </div>
 
             {emailError && (
-              <p className="mt-2 text-xs text-postal-red">{emailError}</p>
+              <p className="mt-2 text-xs text-postal-red">
+                {emailError}{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmailError("")
+                  }}
+                  className="underline"
+                >
+                  Try again
+                </button>
+              </p>
             )}
-            {emailSaved && (
+            {emailConfirmed && (
+              <p className="mt-2 text-xs font-medium text-green-700">
+                Your email has been updated.
+              </p>
+            )}
+            {emailSaved && !emailConfirmed && (
               <p className="mt-2 text-xs text-postal-blue">
                 Check {emailInput.trim()} for a confirmation link to finish
                 the change. Your login email stays the same until you
