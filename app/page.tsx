@@ -24,6 +24,11 @@ import {
   StarIcon,
 } from "@/components/icons"
 
+// The hero card mirrors a live demo profile -- never statically cache this
+// page, or an edit to that profile (or which demo account it points at)
+// won't show up until some unrelated deploy happens to bust the cache.
+export const dynamic = "force-dynamic"
+
 const howItWorks = [
   {
     icon: TagIcon,
