@@ -176,6 +176,10 @@ export default async function Home() {
               <SparkleAccentIcon className="absolute -left-5 -top-5 h-7 w-7 text-postal-red" />
               <SparkleAccentIcon className="absolute -bottom-5 -right-5 h-7 w-7 rotate-180 text-lavender" />
 
+              <span className="absolute -top-3 right-4 z-10 rounded-full border border-line bg-white px-2.5 py-1 text-[11px] font-medium text-ink-soft shadow-sm">
+                Example profile
+              </span>
+
               <a
                 href={hero.href}
                 className="block rounded-lg border border-line bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
