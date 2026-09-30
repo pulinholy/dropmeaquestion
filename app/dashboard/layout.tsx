@@ -49,11 +49,27 @@ export default function DashboardLayout({
   const [togglingActive, setTogglingActive] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
         router.push("/login")
         return
       }
+
+      // An admin deactivation bans the auth account, but an already-open
+      // tab's session can outlive that until its token refreshes -- this
+      // catches it immediately instead of waiting on that.
+      const { data: expertRow } = await supabase
+        .from("experts")
+        .select("deactivated_at")
+        .eq("id", data.session.user.id)
+        .maybeSingle()
+
+      if (expertRow?.deactivated_at) {
+        await supabase.auth.signOut()
+        router.push("/login")
+        return
+      }
+
       setCheckingSession(false)
       loadCounts()
       loadProfile()

@@ -11,6 +11,7 @@ type ExpertRow = {
   email: string | null
   isActive: boolean
   stripeOnboarded: boolean
+  deactivatedAt: string | null
   questionsReceived: number
   questionsAnswered: number
   expertEarnedCents: number
@@ -25,6 +26,7 @@ export default function AdminExpertsPage() {
   const [rows, setRows] = useState<ExpertRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   useEffect(() => {
     load()
@@ -48,6 +50,42 @@ export default function AdminExpertsPage() {
       setRows(data.experts)
     }
     setLoading(false)
+  }
+
+  async function toggleDeactivated(row: ExpertRow) {
+    const deactivate = !row.deactivatedAt
+
+    const confirmed = window.confirm(
+      deactivate
+        ? `Deactivate ${row.fullName}? This blocks them from logging in and hides their public page entirely. This is stronger than pausing -- use it for abuse/ToS situations, not routine availability.`
+        : `Reactivate ${row.fullName}? They'll be able to log in again, but their page stays paused until they (or you) turn it back on.`
+    )
+    if (!confirmed) return
+
+    setUpdatingId(row.id)
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setUpdatingId(null)
+      return
+    }
+
+    const res = await fetch("/api/admin/set-expert-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+      },
+      body: JSON.stringify({ expertId: row.id, deactivate }),
+    })
+    const data = await res.json()
+
+    if (data.error) {
+      alert(data.error)
+    } else {
+      await load()
+    }
+    setUpdatingId(null)
   }
 
   const totals = rows.reduce(
@@ -109,12 +147,13 @@ export default function AdminExpertsPage() {
                 Expert earned
               </th>
               <th className="px-4 py-3 text-right font-medium">DMQ earned</th>
+              <th className="px-4 py-3 text-right font-medium">Admin</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-ink-soft">
+                <td colSpan={7} className="px-4 py-6 text-center text-ink-soft">
                   No experts yet.
                 </td>
               </tr>
@@ -151,15 +190,21 @@ export default function AdminExpertsPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-1.5">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                        r.isActive
-                          ? "bg-green-500/10 text-green-700"
-                          : "bg-line/40 text-ink-soft"
-                      }`}
-                    >
-                      {r.isActive ? "Active" : "Paused"}
-                    </span>
+                    {r.deactivatedAt ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-postal-red/10 px-2.5 py-1 text-xs font-medium text-postal-red">
+                        Deactivated
+                      </span>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                          r.isActive
+                            ? "bg-green-500/10 text-green-700"
+                            : "bg-line/40 text-ink-soft"
+                        }`}
+                      >
+                        {r.isActive ? "Active" : "Paused"}
+                      </span>
+                    )}
                     {!r.stripeOnboarded && (
                       <span className="inline-flex items-center rounded-full bg-postal-red/10 px-2.5 py-1 text-xs font-medium text-postal-red">
                         No payouts
@@ -178,6 +223,24 @@ export default function AdminExpertsPage() {
                 </td>
                 <td className="px-4 py-3 text-right text-ink">
                   {formatCents(r.dmqEarnedCents)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    type="button"
+                    onClick={() => toggleDeactivated(r)}
+                    disabled={updatingId === r.id}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium disabled:opacity-50 ${
+                      r.deactivatedAt
+                        ? "bg-green-600 text-white hover:bg-green-700"
+                        : "border border-postal-red/30 text-postal-red hover:bg-postal-red/10"
+                    }`}
+                  >
+                    {updatingId === r.id
+                      ? "Working..."
+                      : r.deactivatedAt
+                        ? "Reactivate"
+                        : "Deactivate"}
+                  </button>
                 </td>
               </tr>
             ))}
