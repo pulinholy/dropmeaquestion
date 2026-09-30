@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireAdmin } from '@/lib/require-admin'
 import { logError } from '@/lib/log-error'
+import { PUBLIC_SITE_URL } from '@/lib/site'
 
 export async function POST(request: Request) {
   const admin = await requireAdmin(request)
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
     type: 'magiclink',
     email: userRes.user.email,
     options: {
-      redirectTo: `${new URL(request.url).origin}/dashboard?impersonated=1`,
+      redirectTo: `${PUBLIC_SITE_URL}/dashboard?impersonated=1`,
     },
   })
 
