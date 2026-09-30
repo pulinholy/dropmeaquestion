@@ -34,9 +34,13 @@ export async function generateMetadata({
 
   const { data: expert } = await supabaseAdmin
     .from("experts")
-    .select("headline")
+    .select("headline, deactivated_at")
     .eq("id", profile.id)
     .maybeSingle()
+
+  if (!expert || expert.deactivated_at) {
+    return { title: "Drop Me A Question" }
+  }
 
   const firstName = profile.full_name?.split(" ")[0] || profile.full_name
   const title = `Ask ${firstName} a question — Drop Me A Question`
@@ -73,12 +77,37 @@ export default async function ExpertPage({
 
   const { data: expert } = await supabaseAdmin
     .from("experts")
-    .select("headline, bio, price_cents, response_window_hours, is_active, stripe_onboarded, pause_message")
+    .select(
+      "headline, bio, price_cents, response_window_hours, is_active, stripe_onboarded, pause_message, deactivated_at"
+    )
     .eq("id", profile.id)
     .maybeSingle()
 
   if (!expert) {
     notFound()
+  }
+
+  // Admin-deactivated -- unlike pausing (self-service, still shows the full
+  // profile), this hides everything. No bio, no topics, nothing
+  // expert-identifying, regardless of why it was deactivated.
+  if (expert.deactivated_at) {
+    return (
+      <main className="min-h-screen">
+        <SiteHeader variant="asker" />
+        <section className="border-t border-line">
+          <div className="mx-auto max-w-[600px] px-6 py-20 text-center">
+            <h1 className="font-display text-2xl text-ink">
+              This page isn&apos;t available
+            </h1>
+            <p className="mt-2 text-sm text-ink-soft">
+              The page you&apos;re looking for doesn&apos;t exist or is no
+              longer active.
+            </p>
+          </div>
+        </section>
+        <SiteFooter />
+      </main>
+    )
   }
 
   const { data: topics } = await supabaseAdmin

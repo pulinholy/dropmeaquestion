@@ -17,11 +17,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data: profiles } = await supabaseAdmin
     .from("profiles")
-    .select("username")
+    .select("id, username")
     .not("username", "is", null)
 
+  const { data: experts } = await supabaseAdmin
+    .from("experts")
+    .select("id, deactivated_at")
+  const deactivatedIds = new Set(
+    (experts ?? []).filter((e) => e.deactivated_at).map((e) => e.id)
+  )
+
   const expertPages: MetadataRoute.Sitemap = (profiles ?? [])
-    .filter((p) => p.username && !EXCLUDED_USERNAMES.has(p.username))
+    .filter(
+      (p) =>
+        p.username &&
+        !EXCLUDED_USERNAMES.has(p.username) &&
+        !deactivatedIds.has(p.id)
+    )
     .map((p) => ({
       url: `${PUBLIC_SITE_URL}/${p.username}`,
       changeFrequency: "weekly",

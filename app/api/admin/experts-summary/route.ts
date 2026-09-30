@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     const { data: experts, error: expertsErr } = await supabaseAdmin
       .from('experts')
-      .select('id, is_active, stripe_onboarded')
+      .select('id, is_active, stripe_onboarded, deactivated_at')
     if (expertsErr) throw expertsErr
     const expertById = new Map(experts?.map((e) => [e.id, e]) ?? [])
 
@@ -93,6 +93,7 @@ export async function GET(request: Request) {
           email: emailById.get(p.id) ?? null,
           isActive: expert?.is_active ?? false,
           stripeOnboarded: expert?.stripe_onboarded ?? false,
+          deactivatedAt: expert?.deactivated_at ?? null,
           questionsReceived: s.received,
           questionsAnswered: s.answered,
           expertEarnedCents: s.expertEarnedCents,
