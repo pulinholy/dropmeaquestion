@@ -140,8 +140,28 @@ export default async function Home() {
     href: demoProfile ? `/${DEMO_USERNAME}` : "/register",
   }
 
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Drop Me A Question",
+    legalName: "Drop Me A Question LLC",
+    alternateName: "DMQ",
+    url: "https://www.dropmeaquestion.com",
+    logo: "https://www.dropmeaquestion.com/icon.png",
+    sameAs: [
+      "https://www.linkedin.com/company/dropmeaquestion",
+      "https://www.instagram.com/dropmeaquestion",
+      "https://www.youtube.com/@Dropmeaquestion",
+    ],
+  }
+
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+
       <SiteHeader />
 
       {/* Hero — written for the expert */}

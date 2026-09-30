@@ -21,6 +21,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Crawlers need to read these regardless of maintenance mode -- gating
+  // them would either feed Google a fake "coming soon" page in place of
+  // robots.txt/sitemap.xml, or hide the icons entirely.
+  const SEO_PATHS = ["/robots.txt", "/sitemap.xml", "/icon.png", "/apple-icon.png"]
+  if (SEO_PATHS.includes(pathname)) {
+    return NextResponse.next()
+  }
+
   if (pathname === "/coming-soon") {
     return NextResponse.next()
   }
