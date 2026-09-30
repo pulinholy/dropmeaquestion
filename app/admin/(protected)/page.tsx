@@ -88,6 +88,34 @@ export default function AdminExpertsPage() {
     setUpdatingId(null)
   }
 
+  async function handleLoginAs(row: ExpertRow) {
+    setUpdatingId(row.id)
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setUpdatingId(null)
+      return
+    }
+
+    const res = await fetch("/api/admin/impersonate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+      },
+      body: JSON.stringify({ expertId: row.id }),
+    })
+    const data = await res.json()
+
+    if (data.error) {
+      alert(data.error)
+    } else {
+      // New tab -- keeps this admin session intact in the current one.
+      window.open(data.actionLink, "_blank", "noopener")
+    }
+    setUpdatingId(null)
+  }
+
   const totals = rows.reduce(
     (acc, r) => ({
       received: acc.received + r.questionsReceived,
@@ -225,6 +253,17 @@ export default function AdminExpertsPage() {
                   {formatCents(r.dmqEarnedCents)}
                 </td>
                 <td className="px-4 py-3 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    {!r.deactivatedAt && (
+                      <button
+                        type="button"
+                        onClick={() => handleLoginAs(r)}
+                        disabled={updatingId === r.id}
+                        className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink hover:bg-line/40 disabled:opacity-50"
+                      >
+                        Login as
+                      </button>
+                    )}
                   <button
                     type="button"
                     onClick={() => toggleDeactivated(r)}
@@ -241,6 +280,7 @@ export default function AdminExpertsPage() {
                         ? "Reactivate"
                         : "Deactivate"}
                   </button>
+                  </div>
                 </td>
               </tr>
             ))}
