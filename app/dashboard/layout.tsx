@@ -47,8 +47,22 @@ export default function DashboardLayout({
   const [isActive, setIsActive] = useState(true)
   const [activeStatusLoading, setActiveStatusLoading] = useState(true)
   const [togglingActive, setTogglingActive] = useState(false)
+  const [isImpersonating, setIsImpersonating] = useState(false)
 
   useEffect(() => {
+    // The admin's "Login as" link lands here with ?impersonated=1 -- stash
+    // that in sessionStorage (survives client-side navigation within the
+    // dashboard, gone the moment this tab closes) and strip it from the URL.
+    if (typeof window !== "undefined") {
+      if (new URLSearchParams(window.location.search).get("impersonated") === "1") {
+        sessionStorage.setItem("dmq_impersonating", "true")
+        window.history.replaceState(null, "", window.location.pathname)
+      }
+      if (sessionStorage.getItem("dmq_impersonating") === "true") {
+        setIsImpersonating(true)
+      }
+    }
+
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
         router.push("/login")
@@ -181,6 +195,13 @@ export default function DashboardLayout({
       >
       <div className="flex min-h-screen flex-col bg-paper">
         <div className="h-1 w-full bg-postal-red" />
+
+        {isImpersonating && (
+          <div className="bg-amber-400 px-6 py-2 text-center text-sm font-medium text-ink">
+            You&apos;re viewing as {profile.fullName || "this expert"} via
+            admin login-as. Close this tab when you&apos;re done.
+          </div>
+        )}
 
         <header className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-6">
           <a href="/" className="flex items-center">
