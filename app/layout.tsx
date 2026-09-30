@@ -16,14 +16,21 @@ const publicSans = Public_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-const title = "Drop Me A Question — Get a real answer from a real expert";
+const title = "Drop Me A Question | Get Paid for What You Know";
 const description =
-  "Ask one question. Get a personal, accountable answer from someone who actually knows.";
+  "Create your page, set your price and response time, and get paid for answering questions from people who value your expertise.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(PUBLIC_SITE_URL),
   title,
   description,
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title,
     description,
