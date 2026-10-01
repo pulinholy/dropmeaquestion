@@ -72,7 +72,10 @@ export default function PaymentsPage() {
     if (!sessionData.session) return
 
     const userId = sessionData.session.user.id
-    const userEmail = sessionData.session.user.email
+    const authHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${sessionData.session.access_token}`,
+    }
 
     const { data: expertData } = await supabase
       .from("experts")
@@ -85,8 +88,7 @@ export default function PaymentsPage() {
     if (!accountId) {
       const res = await fetch("/api/stripe/create-account", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: userEmail }),
+        headers: authHeaders,
       })
       const data = await res.json()
 
@@ -100,8 +102,7 @@ export default function PaymentsPage() {
 
     const linkRes = await fetch("/api/stripe/create-account-link", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId }),
+      headers: authHeaders,
     })
     const linkData = await linkRes.json()
 
@@ -112,10 +113,18 @@ export default function PaymentsPage() {
     if (!stripeAccountId) return
     setConnectingStripe(true)
 
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setConnectingStripe(false)
+      return
+    }
+
     const res = await fetch("/api/stripe/create-login-link", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId: stripeAccountId }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+      },
     })
     const data = await res.json()
 

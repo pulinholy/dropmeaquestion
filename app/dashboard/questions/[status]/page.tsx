@@ -74,7 +74,6 @@ export default function QuestionsByStatusPage() {
   const [answering, setAnswering] = useState<string | null>(null)
   const [answerText, setAnswerText] = useState("")
   const [processingId, setProcessingId] = useState<string | null>(null)
-  const [expertName, setExpertName] = useState("")
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -88,14 +87,6 @@ export default function QuestionsByStatusPage() {
     if (!sessionData.session) return
 
     const userId = sessionData.session.user.id
-
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", userId)
-      .single()
-
-    if (profileData) setExpertName(profileData.full_name)
 
     // Explicit column list -- asker_email is deliberately excluded so it
     // never reaches the expert's browser, not just hidden from the UI.
@@ -128,7 +119,11 @@ export default function QuestionsByStatusPage() {
     if (processingId) return
     setProcessingId(questionId)
 
-    const question = questions.find((q) => q.id === questionId)
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setProcessingId(null)
+      return
+    }
 
     const { error } = await supabase
       .from("questions")
@@ -142,10 +137,11 @@ export default function QuestionsByStatusPage() {
 
     await fetch("/api/stripe/cancel-payment", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        paymentIntentId: question?.stripe_payment_intent_id,
-      }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+      },
+      body: JSON.stringify({ questionId }),
     })
 
     loadQuestions()
@@ -157,7 +153,15 @@ export default function QuestionsByStatusPage() {
     if (processingId) return
     setProcessingId(questionId)
 
-    const question = questions.find((q) => q.id === questionId)
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setProcessingId(null)
+      return
+    }
+    const authHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${sessionData.session.access_token}`,
+    }
 
     // answered_at is set server-side by a trigger, not here -- so it's
     // never dependent on the expert's own device clock being correct.
@@ -176,21 +180,14 @@ export default function QuestionsByStatusPage() {
 
     await fetch("/api/stripe/capture-payment", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        paymentIntentId: question?.stripe_payment_intent_id,
-      }),
+      headers: authHeaders,
+      body: JSON.stringify({ questionId }),
     })
 
     await fetch("/api/send-answer-email", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        questionText: question?.question_text,
-        answerText,
-        expertName,
-        questionId,
-      }),
+      headers: authHeaders,
+      body: JSON.stringify({ questionId }),
     })
 
     setAnswering(null)

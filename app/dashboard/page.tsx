@@ -129,8 +129,10 @@ export default function DashboardHomePage() {
         try {
           const res = await fetch("/api/stripe/sync-account-status", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ accountId: expert.stripe_account_id }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionData.session.access_token}`,
+            },
           })
           const data = await res.json()
           if (typeof data.stripeOnboarded === "boolean") {

@@ -3,38 +3,54 @@ import { resend } from '@/lib/resend'
 import { renderEmailLayout, renderEmailButton, renderEmailQuote, EMAIL_BASE_URL } from '@/lib/email-layout'
 import { logError } from '@/lib/log-error'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { requireUser } from '@/lib/require-user'
 
 export async function POST(request: Request) {
-  const { questionText, answerText, expertName, questionId } = await request.json()
+  const user = await requireUser(request)
+  if (!user) {
+    return NextResponse.json({ error: 'Not authorized' }, { status: 401 })
+  }
 
-  if (!questionId || !answerText) {
-    return NextResponse.json({ error: 'Missing questionId or answerText' }, { status: 400 })
+  const { questionId } = await request.json()
+  if (typeof questionId !== 'string') {
+    return NextResponse.json({ error: 'Missing questionId' }, { status: 400 })
   }
 
   // Looked up server-side, never trusted from the client -- the expert's
-  // browser must never hold the asker's email address at all.
+  // browser must never hold the asker's email address at all, and the
+  // content sent must be exactly what's stored, not whatever the request
+  // body claims.
   const { data: question } = await supabaseAdmin
     .from('questions')
-    .select('asker_email')
+    .select('expert_id, asker_email, question_text, answer_text')
     .eq('id', questionId)
     .maybeSingle()
 
-  const askerEmail = question?.asker_email
+  if (!question || question.expert_id !== user.id) {
+    return NextResponse.json({ error: 'Question not found' }, { status: 404 })
+  }
+
+  const askerEmail = question.asker_email
   if (!askerEmail) {
-    await logError('send-answer-email:lookup', new Error('Question not found or missing asker_email'), { questionId })
+    await logError('send-answer-email:lookup', new Error('Question missing asker_email'), { questionId })
     return NextResponse.json({ error: 'Could not find the question to notify' }, { status: 404 })
   }
 
-  const expertFirstName = expertName?.split(' ')[0] || expertName
-  const feedbackUrl = questionId
-    ? `${EMAIL_BASE_URL}/feedback/${questionId}`
-    : null
+  const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const expertName = profile?.full_name || 'Your expert'
+  const expertFirstName = expertName.split(' ')[0]
+  const feedbackUrl = `${EMAIL_BASE_URL}/feedback/${questionId}`
 
   const body = `
     <p style="margin:0 0 16px;">${expertFirstName} answered the question you dropped:</p>
-    ${renderEmailQuote(questionText)}
-    <p style="margin:0 0 24px; white-space:pre-wrap;">${answerText}</p>
-    ${feedbackUrl ? renderEmailButton(feedbackUrl, `Was this helpful? Let ${expertFirstName} know &rarr;`) : ''}
+    ${renderEmailQuote(question.question_text)}
+    <p style="margin:0 0 24px; white-space:pre-wrap;">${question.answer_text}</p>
+    ${renderEmailButton(feedbackUrl, `Was this helpful? Let ${expertFirstName} know &rarr;`)}
   `
 
   try {
