@@ -322,14 +322,18 @@ export default async function Home() {
         <div className="mx-auto grid max-w-5xl items-center gap-10 px-6 py-16 lg:grid-cols-2">
           <div>
             <h2 className="font-display text-2xl">
-              AI has answers. You have experience.
+              AI has answers. <span className="text-postal-red">You have experience.</span>
             </h2>
             <p className="mt-4 max-w-xl text-paper/80">
-              Your audience can already ask AI anything for free. What they
-              can&apos;t get from AI is you — your judgment, your experience,
-              your name behind the answer. Drop Me A Question turns that into
-              something you can actually charge for, without building a
-              website or chasing invoices.
+              AI is great for exploring ideas, gathering information, and
+              getting a starting point. But sometimes people want the
+              perspective of someone they trust — someone who&apos;s actually
+              been there.
+            </p>
+            <p className="mt-4 max-w-xl text-paper/80">
+              Drop Me A Question gives them a simple way to ask you directly
+              and get an answer shaped by your experience, judgment, and
+              perspective.
             </p>
           </div>
 
@@ -339,26 +343,30 @@ export default async function Home() {
                 <RobotIcon className="h-5 w-5" />
               </span>
               <div className="rounded-lg rounded-tl-none bg-paper/10 p-3 text-sm text-paper/80">
-                <p className="font-medium text-paper">AI can give information.</p>
+                <p className="font-medium text-paper">AI helps you explore.</p>
                 <p className="mt-1">
-                  Here are 10 general tips about marketing strategies&hellip;
+                  Here are some approaches you could consider&hellip;
                 </p>
               </div>
             </div>
             <div className="flex items-start justify-end gap-2.5">
               <div className="rounded-lg rounded-tr-none bg-postal-red/90 p-3 text-sm text-paper">
-                <p className="font-medium">You give real answers.</p>
+                <p className="font-medium">Experience adds perspective.</p>
                 <p className="mt-1 text-paper/90">
-                  Based on my experience with 20+ companies, here&apos;s what
-                  actually works&hellip;
+                  I&apos;ve handled situations like this before. Here&apos;s
+                  how I&apos;d approach yours&hellip;
                 </p>
               </div>
               <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-postal-red text-paper">
                 <PersonIcon className="h-5 w-5" />
               </span>
             </div>
-            <p className="mt-1 text-center text-sm font-medium text-paper/60">
-              That&apos;s what people will pay for.
+            <p className="mt-4 text-center text-paper/80">
+              Sometimes people don&apos;t just want an answer.
+              <br />
+              <span className="font-semibold text-paper">
+                They want your answer.
+              </span>
             </p>
           </div>
         </div>
