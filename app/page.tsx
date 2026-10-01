@@ -300,19 +300,19 @@ export default async function Home() {
             )}
           </ol>
 
-          <div className="mx-auto mt-6 flex max-w-xl flex-col items-center gap-3 rounded-lg border border-line bg-white px-5 py-4 text-center">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
-              <LockIcon className="h-4 w-4" />
-            </div>
-            <div>
+          <div className="mx-auto mt-6 flex max-w-xl flex-col items-center gap-1 rounded-lg border border-line bg-white px-5 py-3 text-center">
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+                <LockIcon className="h-3.5 w-3.5" />
+              </span>
               <p className="text-sm font-semibold text-ink">
                 Your email stays private
               </p>
-              <p className="mt-0.5 text-sm text-ink-soft">
-                Askers never see your email address. Questions and answers
-                are handled through Drop Me A Question.
-              </p>
             </div>
+            <p className="text-sm text-ink-soft">
+              Askers never see your email address. Questions and answers are
+              handled through Drop Me A Question.
+            </p>
           </div>
         </div>
       </section>
