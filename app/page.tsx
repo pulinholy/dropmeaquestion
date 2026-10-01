@@ -275,9 +275,9 @@ export default async function Home() {
               ) => (
                 <li
                   key={title}
-                  className="rounded-xl border border-line bg-white p-6"
+                  className="rounded-xl border border-line bg-white p-6 text-center"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center gap-3">
                     <span
                       className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-display text-base font-semibold ${numberBg} ${numberText}`}
                     >
@@ -300,7 +300,7 @@ export default async function Home() {
             )}
           </ol>
 
-          <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-lg border border-line bg-white px-5 py-4 text-left">
+          <div className="mx-auto mt-6 flex max-w-xl flex-col items-center gap-3 rounded-lg border border-line bg-white px-5 py-4 text-center">
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
               <LockIcon className="h-4 w-4" />
             </div>
