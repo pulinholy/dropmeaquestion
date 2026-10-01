@@ -30,7 +30,7 @@ export default function SiteFooter() {
               className="h-5 w-auto opacity-70"
             />
           </a>
-          <span>© {new Date().getFullYear()} Drop Me A Question</span>
+          <span>© {new Date().getFullYear()} Drop Me A Question, LLC · Dallas, Texas</span>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
