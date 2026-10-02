@@ -6,7 +6,12 @@ import QuestionForm from "@/components/QuestionForm"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import ExpertBio from "@/components/ExpertBio"
-import { ChatIcon, LightningIcon, LockIcon } from "@/components/icons"
+import {
+  ChatIcon,
+  LightningIcon,
+  LockIcon,
+  SparkleIcon,
+} from "@/components/icons"
 import { PUBLIC_SITE_URL } from "@/lib/site"
 import { formatResponseWindow, formatPrice } from "@/lib/format"
 
@@ -34,12 +39,19 @@ export async function generateMetadata({
 
   const { data: expert } = await supabaseAdmin
     .from("experts")
-    .select("headline, deactivated_at")
+    .select("headline, deactivated_at, is_demo")
     .eq("id", profile.id)
     .maybeSingle()
 
   if (!expert || expert.deactivated_at) {
     return { title: "Drop Me A Question" }
+  }
+
+  if (expert.is_demo) {
+    return {
+      title: "Example profile — Drop Me A Question",
+      robots: { index: false, follow: true },
+    }
   }
 
   const firstName = profile.full_name?.split(" ")[0] || profile.full_name
@@ -78,7 +90,7 @@ export default async function ExpertPage({
   const { data: expert } = await supabaseAdmin
     .from("experts")
     .select(
-      "headline, bio, price_cents, response_window_hours, is_active, stripe_onboarded, pause_message, deactivated_at"
+      "headline, bio, price_cents, response_window_hours, is_active, stripe_onboarded, pause_message, deactivated_at, is_demo"
     )
     .eq("id", profile.id)
     .maybeSingle()
@@ -119,13 +131,32 @@ export default async function ExpertPage({
   const price = formatPrice(expert.price_cents)
   const firstName = profile.full_name?.split(" ")[0] || profile.full_name
   const topicNames = topics?.map((t) => t.name) ?? []
+  const isDemo = Boolean(expert.is_demo)
 
   return (
     <main className="min-h-screen">
-      <SiteHeader variant="asker" />
+      <SiteHeader variant={isDemo ? "default" : "asker"} />
 
       <section className="border-t border-line">
         <div className="mx-auto max-w-[600px] px-6 pb-10 pt-8">
+          {isDemo && (
+            <div className="mb-8 flex items-center gap-4 rounded-lg border border-postal-red/25 bg-postal-red/10 px-5 py-4 text-left">
+              <SparkleIcon className="h-8 w-8 flex-shrink-0 text-postal-red" />
+              <div>
+                <p className="text-sm font-bold uppercase tracking-wide text-postal-red">
+                  Example profile
+                </p>
+                <p className="mt-0.5 text-sm text-ink">
+                  See what a Drop Me A Question profile looks like. This is a
+                  demo&nbsp;—{" "}
+                  <strong className="whitespace-nowrap font-semibold">
+                    no payment will be processed.
+                  </strong>
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="text-center">
             <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
               <div className="absolute h-32 w-32 rounded-full bg-lavender/40" />
@@ -175,7 +206,7 @@ export default async function ExpertPage({
           </div>
 
           <div className="mt-8 rounded-lg border border-line bg-white p-5 shadow-sm sm:p-6">
-            {expert.is_active ? (
+            {isDemo || expert.is_active ? (
               <>
                 <div className="flex items-center gap-3 text-left">
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-postal-red text-white">
@@ -193,7 +224,7 @@ export default async function ExpertPage({
                 </div>
 
                 <div className="mt-4">
-                  {expert.stripe_onboarded ? (
+                  {isDemo || expert.stripe_onboarded ? (
                     <QuestionForm
                       expertId={profile.id}
                       username={profile.username}
@@ -201,6 +232,7 @@ export default async function ExpertPage({
                       expertFirstName={firstName}
                       responseWindowHours={expert.response_window_hours}
                       topics={topicNames}
+                      demo={isDemo}
                     />
                   ) : (
                     <p className="text-sm text-ink-soft">

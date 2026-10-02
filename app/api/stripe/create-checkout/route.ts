@@ -20,9 +20,18 @@ export async function POST(request: Request) {
 
   const { data: expert } = await supabaseAdmin
     .from('experts')
-    .select('price_cents, stripe_account_id, stripe_onboarded, is_active')
+    .select('price_cents, stripe_account_id, stripe_onboarded, is_active, is_demo')
     .eq('id', expertId)
     .maybeSingle()
+
+  // The example profile's form looks live, so this is the real backstop:
+  // no checkout session may ever be created for it, whatever the UI does.
+  if (expert?.is_demo) {
+    return NextResponse.json(
+      { error: 'This is an example profile and cannot receive questions.' },
+      { status: 400 }
+    )
+  }
 
   if (!expert || !expert.is_active || !expert.stripe_onboarded || !expert.stripe_account_id) {
     return NextResponse.json(

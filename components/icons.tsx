@@ -396,6 +396,23 @@ export function ClockIcon({ className }: IconProps) {
 
 // A small fan of radiating dashes, used as a light decorative accent
 // (not a labeled annotation) next to illustrative UI mockups.
+// Outlined four-point star pair -- the "sparkle" used on the example-profile banner.
+export function SparkleIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M10 3c.5 4.4 2.3 6.700 6.500 7.500-4.200.8-6 3.100-6.500 7.500-.5-4.400-2.300-6.700-6.500-7.500C7.700 9.700 9.500 7.400 10 3z" />
+      <path d="M18.500 14c.2 1.700.9 2.600 2.500 2.800-1.600.2-2.300 1.100-2.500 2.800-.2-1.700-.9-2.600-2.500-2.800 1.600-.2 2.300-1.100 2.500-2.800z" />
+    </svg>
+  )
+}
+
 export function SparkleAccentIcon({ className }: IconProps) {
   return (
     <svg

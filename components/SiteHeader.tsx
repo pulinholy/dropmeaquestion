@@ -44,9 +44,9 @@ export default function SiteHeader({
               </a>
               <a
                 href="/register"
-                className="rounded-full bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
+                className="inline-flex items-center gap-1.5 rounded-full bg-postal-red px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink"
               >
-                Create your page
+                Create your page <span aria-hidden>→</span>
               </a>
             </>
           )}
@@ -56,7 +56,7 @@ export default function SiteHeader({
               href="/register"
               className="inline-flex items-center gap-1 text-sm text-ink-soft hover:text-ink"
             >
-              Create your own page <span aria-hidden>→</span>
+              Create your page <span aria-hidden>→</span>
             </a>
           )}
         </nav>

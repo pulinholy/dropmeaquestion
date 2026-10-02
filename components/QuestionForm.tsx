@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { MailIcon, ShieldCheckIcon, InfoIcon, PaperclipIcon } from "./icons"
 import { formatResponseWindow } from "@/lib/format"
+import DemoProfileModal from "./DemoProfileModal"
 
 const MAX_QUESTION_LENGTH = 1000
 
@@ -13,6 +14,7 @@ export default function QuestionForm({
   expertFirstName,
   responseWindowHours,
   topics,
+  demo = false,
 }: {
   expertId: string
   username: string
@@ -20,12 +22,16 @@ export default function QuestionForm({
   expertFirstName: string
   responseWindowHours: number
   topics: string[]
+  // Example profile: looks and behaves like the real form, but submitting
+  // opens an explainer instead of ever contacting the checkout API.
+  demo?: boolean
 }) {
   const [question, setQuestion] = useState("")
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
+  const [showDemoModal, setShowDemoModal] = useState(false)
 
   const placeholder =
     topics.length > 0
@@ -34,6 +40,10 @@ export default function QuestionForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (demo) {
+      setShowDemoModal(true)
+      return
+    }
     setLoading(true)
     setError("")
 
@@ -60,7 +70,8 @@ export default function QuestionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 text-left">
+    <>
+    <form onSubmit={handleSubmit} noValidate={demo} className="space-y-3 text-left">
       <div>
         <label className="block text-sm font-semibold text-ink">
           What would you like to ask {expertFirstName}?
@@ -162,5 +173,9 @@ export default function QuestionForm({
         )}
       </div>
     </form>
+    {showDemoModal && (
+      <DemoProfileModal onClose={() => setShowDemoModal(false)} />
+    )}
+    </>
   )
 }
