@@ -70,15 +70,15 @@ const howItWorks = [
 ]
 
 const whoThisIsFor = [
-  { label: "Consultants", icon: BriefcaseIcon },
-  { label: "Creators", icon: DocumentIcon },
-  { label: "Coaches", icon: UsersIcon },
-  { label: "Designers", icon: PaletteIcon },
-  { label: "Developers", icon: CodeIcon },
-  { label: "Advisors", icon: BarChartIcon },
-  { label: "Founders", icon: RocketIcon },
-  { label: "Marketers", icon: MegaphoneIcon },
-  { label: "Experts", icon: StarIcon },
+  { label: "Consultants", icon: BriefcaseIcon, iconBg: "bg-blue-500/10", iconText: "text-blue-600" },
+  { label: "Creators", icon: DocumentIcon, iconBg: "bg-postal-red/10", iconText: "text-postal-red" },
+  { label: "Coaches", icon: UsersIcon, iconBg: "bg-green-500/10", iconText: "text-green-600" },
+  { label: "Designers", icon: PaletteIcon, iconBg: "bg-violet-500/10", iconText: "text-violet-600" },
+  { label: "Developers", icon: CodeIcon, iconBg: "bg-amber-500/10", iconText: "text-amber-600" },
+  { label: "Advisors", icon: BarChartIcon, iconBg: "bg-sky-500/10", iconText: "text-sky-600" },
+  { label: "Founders", icon: RocketIcon, iconBg: "bg-green-500/10", iconText: "text-green-600" },
+  { label: "Marketers", icon: MegaphoneIcon, iconBg: "bg-postal-red/10", iconText: "text-postal-red" },
+  { label: "Specialists", icon: StarIcon, iconBg: "bg-violet-500/10", iconText: "text-violet-600" },
 ]
 
 // Fallback content for the hero preview card, used only if the live demo
@@ -320,56 +320,54 @@ export default async function Home() {
 
       {/* Why this beats free DMs / beats AI — reframed for the expert's pitch to their audience */}
       <section className="border-t border-line bg-ink text-paper">
-        <div className="mx-auto grid max-w-5xl items-center gap-10 px-6 py-16 lg:grid-cols-2 lg:gap-16">
+        <div className="mx-auto grid max-w-[1120px] items-center gap-12 px-6 pt-20 pb-[90px] lg:grid-cols-[46%_54%] lg:gap-16">
           <div>
-            <h2 className="font-display text-2xl">
+            <h2 className="font-display text-3xl">
               AI has answers. <span className="text-postal-red">You have experience.</span>
             </h2>
-            <p className="mt-4 max-w-xl text-paper/80">
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-paper/80">
               AI is great for exploring ideas, gathering information, and
               getting a starting point. But sometimes people want the
               perspective of someone they trust — someone who&apos;s actually
               been there.
             </p>
-            <p className="mt-4 max-w-xl text-paper/80">
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-paper/80">
               Drop Me A Question gives them a simple way to ask you directly
               and get an answer shaped by your experience, judgment, and
               perspective.
             </p>
           </div>
 
-          <div className="mx-auto flex w-full max-w-lg flex-col gap-3">
-            <div className="flex items-start gap-2.5">
-              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-paper text-ink">
+          <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-paper text-ink">
                 <RobotIcon className="h-5 w-5" />
               </span>
-              <div className="rounded-lg rounded-tl-none bg-paper/10 p-3 text-sm text-paper/80">
+              <div className="rounded-xl rounded-tl-none bg-paper/10 p-4 text-base leading-relaxed text-paper/80">
                 <p className="font-medium text-paper">AI helps you explore.</p>
-                <p className="mt-1">
+                <p className="mt-1.5">
                   Here are some approaches you could consider&hellip;
                 </p>
               </div>
             </div>
-            <div className="flex items-start justify-end gap-2.5">
-              <div className="rounded-lg rounded-tr-none bg-postal-red/90 p-3 text-sm text-paper">
+            <div className="flex items-start justify-end gap-3">
+              <div className="rounded-xl rounded-tr-none bg-postal-red/90 p-4 text-base leading-relaxed text-paper">
                 <p className="font-medium">Experience adds perspective.</p>
-                <p className="mt-1 text-paper/90">
+                <p className="mt-1.5 text-paper/90">
                   I&apos;ve handled situations like this before. Here&apos;s
                   how I&apos;d approach yours&hellip;
                 </p>
               </div>
-              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-postal-red text-paper">
+              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-postal-red text-paper">
                 <PersonIcon className="h-5 w-5" />
               </span>
             </div>
-            <p className="mt-1.5 text-center text-paper/80">
+            <p className="mx-auto mt-4 max-w-md text-center text-base leading-relaxed text-paper/80">
               Sometimes people don&apos;t just want an answer.
               <br />
-              They want your experience.
+              They want your experience. Your perspective.
               <br />
-              Your perspective.
-              <br />
-              <span className="text-lg font-semibold text-postal-red">
+              <span className="mt-1 inline-block text-lg font-semibold text-postal-red">
                 Your answer.
               </span>
             </p>
@@ -379,19 +377,29 @@ export default async function Home() {
 
       {/* Who this is for */}
       <section className="border-t border-line">
-        <div className="mx-auto max-w-3xl px-6 py-16">
-          <h2 className="font-display text-2xl text-ink">Who is this for?</h2>
-          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {whoThisIsFor.map(({ label, icon: Icon }) => (
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <h2 className="font-display text-3xl text-ink">
+            Built for people whose experience is{" "}
+            <span className="text-postal-red">worth asking about</span>.
+          </h2>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {whoThisIsFor.map(({ label, icon: Icon, iconBg, iconText }) => (
               <div
                 key={label}
-                className="flex items-center gap-3 rounded-sm bg-line/30 px-4 py-3"
+                className="flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-4"
               >
-                <Icon className="h-5 w-5 flex-shrink-0 text-postal-blue" />
-                <p className="text-ink">{label}</p>
+                <span
+                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${iconBg} ${iconText}`}
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                <p className="font-medium text-ink">{label}</p>
               </div>
             ))}
           </div>
+          <p className="mt-6 text-center text-ink-soft">
+            And anyone people already come to for advice.
+          </p>
         </div>
       </section>
 
