@@ -5,6 +5,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { useQuestionCounts } from "./questions-context"
 import { useProfileInfo } from "./profile-context"
+import GetMoreQuestionsIllustration from "@/components/GetMoreQuestionsIllustration"
 import {
   ChatIcon,
   CheckIcon,
@@ -432,33 +433,42 @@ export default function DashboardHomePage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-line bg-lavender/40 p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
-              <MegaphoneIcon className="h-5 w-5" />
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr]">
+        <div className="flex gap-4 rounded-lg border border-line bg-lavender/40 p-6">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
+                <MegaphoneIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="font-display text-lg text-ink">
+                  Keep getting questions
+                </h2>
+                <p className="mt-1 text-sm text-ink-soft">
+                  A few simple steps can help more people find your page and
+                  ask you questions.
+                </p>
+              </div>
             </div>
-            <h2 className="font-display text-lg text-ink">
-              Keep getting questions
-            </h2>
+            <ul className="mt-4 space-y-2">
+              {growthTips.map((tip) => (
+                <li
+                  key={tip}
+                  className="flex items-start gap-2 text-sm text-ink-soft"
+                >
+                  <CheckIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-600" />
+                  {tip}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/dashboard/get-more-questions"
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-ink bg-white px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-paper"
+            >
+              Get more questions <span aria-hidden>→</span>
+            </Link>
           </div>
-          <ul className="mt-4 space-y-2">
-            {growthTips.map((tip) => (
-              <li
-                key={tip}
-                className="flex items-start gap-2 text-sm text-ink-soft"
-              >
-                <CheckIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-600" />
-                {tip}
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/dashboard/get-more-questions"
-            className="mt-4 inline-block text-sm font-medium text-postal-blue hover:text-ink"
-          >
-            See how to get more questions →
-          </Link>
+          <GetMoreQuestionsIllustration className="hidden w-40 flex-shrink-0 self-end lg:block xl:w-44" />
         </div>
 
         <div className="rounded-lg border border-line bg-card p-6">
