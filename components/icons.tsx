@@ -108,6 +108,23 @@ export function ChatIcon({ className }: IconProps) {
   )
 }
 
+// Solid speech-bubble mark with three dots -- same shape as the orange "Q"
+// bubble in the DMQ logo, for use anywhere that mark should be echoed
+// without the navy ring around it.
+export function ChatBubbleMarkIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M4 10.2C4 6.2 7.6 3 12 3s8 3.2 8 7.2-3.6 7.2-8 7.2c-.8 0-1.6-.1-2.3-.3L5.2 20l1-4C4.8 14.7 4 12.6 4 10.2z"
+        fill="currentColor"
+      />
+      <circle cx="8.5" cy="10.2" r="1.3" fill="#fff" />
+      <circle cx="12" cy="10.2" r="1.3" fill="#fff" />
+      <circle cx="15.5" cy="10.2" r="1.3" fill="#fff" />
+    </svg>
+  )
+}
+
 export function LightningIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

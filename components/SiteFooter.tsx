@@ -62,9 +62,9 @@ export default function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               aria-label={label}
-              className="text-ink-soft hover:text-ink"
+              className="-m-1.5 p-1.5 text-ink-soft hover:text-ink"
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-5 w-5" />
             </a>
           ))}
         </div>

@@ -8,6 +8,7 @@ import {
   LinkIcon,
   ClockIcon,
   ChatIcon,
+  ChatBubbleMarkIcon,
   LockIcon,
   RobotIcon,
   PersonIcon,
@@ -408,21 +409,46 @@ export default async function Home() {
       {/* Explanation for the asker who lands here directly, not via an
           expert's link -- reachable via "Here to ask?" in the nav */}
       <section id="ask-instead" className="border-t border-line">
-        <div className="mx-auto max-w-md px-6 py-16 text-center">
-          <h2 className="font-display text-xl text-ink">
-            Here to ask a question?
-          </h2>
-          <div className="mt-3 space-y-3 text-center text-sm text-ink-soft">
-            <p>
-              Have a Drop Me A Question link from an expert?
-              <br />
-              Open their link to ask them directly.
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="mx-auto max-w-[600px] rounded-2xl border border-line bg-white p-8 text-center shadow-sm">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+              <ChatBubbleMarkIcon className="h-7 w-7" />
+            </span>
+            <h2 className="mt-4 font-display text-2xl text-ink">
+              Here to ask a question?
+            </h2>
+            <p className="mt-2 text-ink-soft">
+              To ask someone a question, you&apos;ll need their Drop Me A
+              Question link.
             </p>
-            <p>
-              Don&apos;t have one?
-              <br />
-              Ask the expert to share their page with you.
-            </p>
+
+            <div className="mt-6 space-y-3 text-left">
+              <div className="flex items-start gap-3 rounded-lg bg-green-500/10 p-4">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-700">
+                  <LinkIcon className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="font-medium text-ink">
+                    Already have their link?
+                  </p>
+                  <p className="mt-0.5 text-sm text-ink-soft">
+                    Open it to ask your question directly.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-lg bg-blue-500/10 p-4">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/15 text-blue-700">
+                  <UsersIcon className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="font-medium text-ink">Don&apos;t have one?</p>
+                  <p className="mt-0.5 text-sm text-ink-soft">
+                    Ask the expert to share their Drop Me A Question page
+                    with you.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
