@@ -31,7 +31,7 @@ export default function SiteHeader({
                 href="/#ask-instead"
                 className="text-sm text-ink-soft hover:text-ink"
               >
-                Here to ask?
+                Here to ask a question?
               </a>
               <a
                 href="/#how"
