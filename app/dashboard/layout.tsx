@@ -16,7 +16,13 @@ import {
   SettingsIcon,
   StarIcon,
   CreditCardIcon,
+  LightbulbIcon,
+  ExternalLinkIcon,
 } from "@/components/icons"
+
+const PRODUCT_FEEDBACK_HREF = `mailto:hello@dropmeaquestion.com?subject=${encodeURIComponent(
+  "DMQ Product Feedback"
+)}`
 
 const yourPageLinks = [
   { href: "/dashboard/profile", label: "Profile", icon: PersonIcon },
@@ -239,7 +245,7 @@ export default function DashboardLayout({
         <div className="border-t border-line" />
 
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 gap-12 px-8 py-16">
-        <nav className="w-52 flex-shrink-0">
+        <nav className="flex w-52 flex-shrink-0 flex-col">
           <div className="mb-6 rounded-lg border border-line bg-card p-4">
             <div className="flex items-center gap-2">
               {profile.avatarUrl ? (
@@ -345,6 +351,23 @@ export default function DashboardLayout({
               <CreditCardIcon className="h-4 w-4" />
               Payments
             </Link>
+          </div>
+
+          <div className="mt-auto pt-10">
+            <a
+              href={PRODUCT_FEEDBACK_HREF}
+              className="block rounded-sm border-t border-line px-3 pt-5 hover:bg-line/30"
+            >
+              <span className="flex items-center gap-2 text-sm font-medium text-postal-blue">
+                <LightbulbIcon className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                <span className="flex-1">Help improve DMQ</span>
+                <ExternalLinkIcon className="h-3.5 w-3.5 flex-shrink-0 text-ink-soft" />
+              </span>
+              <span className="mt-1 block pl-6 text-xs text-ink-soft">
+                Have an idea or found a problem? We&apos;d love to hear from
+                you.
+              </span>
+            </a>
           </div>
         </nav>
 
