@@ -467,7 +467,7 @@ export default function DashboardHomePage() {
               Get more questions <span aria-hidden>→</span>
             </Link>
           </div>
-          <GetMoreQuestionsIllustration className="pointer-events-none absolute bottom-5 right-5 hidden w-44 lg:block" />
+          <GetMoreQuestionsIllustration className="pointer-events-none absolute bottom-5 right-5 hidden w-32 lg:block" />
         </div>
 
         <div className="rounded-lg border border-line bg-card p-6">
