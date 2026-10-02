@@ -320,7 +320,7 @@ export default async function Home() {
 
       {/* Why this beats free DMs / beats AI — reframed for the expert's pitch to their audience */}
       <section className="border-t border-line bg-ink text-paper">
-        <div className="mx-auto grid max-w-5xl items-center gap-10 px-6 py-16 lg:grid-cols-2">
+        <div className="mx-auto grid max-w-5xl items-center gap-10 px-6 py-16 lg:grid-cols-2 lg:gap-16">
           <div>
             <h2 className="font-display text-2xl">
               AI has answers. <span className="text-postal-red">You have experience.</span>
@@ -338,7 +338,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="mx-auto flex w-full max-w-md flex-col gap-3">
+          <div className="mx-auto flex w-full max-w-lg flex-col gap-3">
             <div className="flex items-start gap-2.5">
               <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-paper text-ink">
                 <RobotIcon className="h-5 w-5" />
@@ -362,11 +362,15 @@ export default async function Home() {
                 <PersonIcon className="h-5 w-5" />
               </span>
             </div>
-            <p className="mt-4 text-center text-paper/80">
+            <p className="mt-1.5 text-center text-paper/80">
               Sometimes people don&apos;t just want an answer.
               <br />
-              <span className="font-semibold text-paper">
-                They want your answer.
+              They want your experience.
+              <br />
+              Your perspective.
+              <br />
+              <span className="text-lg font-semibold text-postal-red">
+                Your answer.
               </span>
             </p>
           </div>
