@@ -245,7 +245,7 @@ export default function DashboardLayout({
         <div className="border-t border-line" />
 
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 gap-12 px-8 py-16">
-        <nav className="flex w-52 flex-shrink-0 flex-col">
+        <nav className="flex w-60 flex-shrink-0 flex-col">
           <div className="mb-6 rounded-lg border border-line bg-card p-4">
             <div className="flex items-center gap-2">
               {profile.avatarUrl ? (
@@ -356,7 +356,7 @@ export default function DashboardLayout({
           <div className="mt-auto pt-10">
             <a
               href={PRODUCT_FEEDBACK_HREF}
-              className="block rounded-sm border-t border-line px-3 pt-5 hover:bg-line/30"
+              className="block rounded-sm border-t border-line px-2 pt-5 hover:bg-line/30"
             >
               <span className="flex items-center gap-2 text-sm font-medium text-postal-blue">
                 <LightbulbIcon className="h-4 w-4 flex-shrink-0 text-amber-500" />

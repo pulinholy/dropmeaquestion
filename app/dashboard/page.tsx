@@ -317,8 +317,7 @@ export default function DashboardHomePage() {
           </p>
           <p className="text-sm text-ink-soft">Total earnings</p>
           <p className="mt-1 text-xs text-ink-soft/70">
-            Your earnings will be transferred to your bank account via
-            Stripe.
+            Earnings from answered questions.
           </p>
         </Link>
       </div>
@@ -434,15 +433,15 @@ export default function DashboardHomePage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr]">
-        <div className="flex gap-4 rounded-lg border border-line bg-lavender/40 p-6">
-          <div className="min-w-0 flex-1">
+        <div className="relative rounded-lg border border-line bg-lavender/40 p-6">
+          <div className="min-w-0">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
                 <MegaphoneIcon className="h-5 w-5" />
               </div>
               <div>
                 <h2 className="font-display text-lg text-ink">
-                  Keep getting questions
+                  Get more questions
                 </h2>
                 <p className="mt-1 text-sm text-ink-soft">
                   A few simple steps can help more people find your page and
@@ -450,7 +449,7 @@ export default function DashboardHomePage() {
                 </p>
               </div>
             </div>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 space-y-2 lg:max-w-[78%]">
               {growthTips.map((tip) => (
                 <li
                   key={tip}
@@ -468,7 +467,7 @@ export default function DashboardHomePage() {
               Get more questions <span aria-hidden>→</span>
             </Link>
           </div>
-          <GetMoreQuestionsIllustration className="hidden w-40 flex-shrink-0 self-end lg:block xl:w-44" />
+          <GetMoreQuestionsIllustration className="pointer-events-none absolute bottom-5 right-5 hidden w-44 lg:block" />
         </div>
 
         <div className="rounded-lg border border-line bg-card p-6">
