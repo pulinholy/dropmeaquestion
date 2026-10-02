@@ -140,7 +140,7 @@ export default async function ExpertPage({
       <section className="border-t border-line">
         <div className="mx-auto max-w-[600px] px-6 pb-10 pt-8">
           {isDemo && (
-            <div className="mb-8 flex items-center gap-4 rounded-lg border border-postal-red/25 bg-postal-red/10 px-5 py-4 text-left">
+            <div className="mx-auto mb-4 flex max-w-[520px] items-center gap-3 rounded-lg border border-postal-red/25 bg-postal-red/10 px-4 py-4 text-left">
               <SparkleIcon className="h-8 w-8 flex-shrink-0 text-postal-red" />
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide text-postal-red">
