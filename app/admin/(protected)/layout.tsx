@@ -4,9 +4,12 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
-import { UsersIcon } from "@/components/icons"
+import { UsersIcon, VideoIcon } from "@/components/icons"
 
-const adminLinks = [{ href: "/admin", label: "Experts", icon: UsersIcon }]
+const adminLinks = [
+  { href: "/admin", label: "Experts", icon: UsersIcon },
+  { href: "/admin/conversations", label: "Conversations", icon: VideoIcon },
+]
 
 export default function AdminLayout({
   children,

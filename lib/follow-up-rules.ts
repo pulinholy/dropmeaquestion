@@ -196,3 +196,87 @@ export function isAllowedMeetingLink(
 
   return { ok: true, url: url.toString() }
 }
+
+// ---- Cancellation, no-show and settlement rules ---------------------------
+
+export const FOLLOW_UP_FREE_CANCEL_HOURS = 24
+// A confirmed call nobody settled is settled automatically this long after it
+// was due to end.
+export const FOLLOW_UP_AUTO_SETTLE_HOURS_AFTER_END = 24
+// An expert can only report "the asker didn't join" once the slot has fully
+// elapsed, so a slightly late asker isn't charged.
+export const FOLLOW_UP_NO_SHOW_AFTER_MINUTES = FOLLOW_UP_DURATION_MINUTES
+// Three strikes (expert cancelled or didn't show) within 90 days switches the
+// expert's follow-ups off.
+export const FOLLOW_UP_STRIKE_LIMIT = 3
+export const FOLLOW_UP_STRIKE_WINDOW_DAYS = 90
+
+// What cancelling now means for the asker.
+//  free    -> hold released, no charge
+//  late    -> charged in full (inside the 24-hour window)
+//  started -> too late to cancel; the call time has begun
+export function cancellationKind(
+  confirmedStartIso: string,
+  now: Date = new Date()
+): 'free' | 'late' | 'started' {
+  const start = new Date(confirmedStartIso).getTime()
+  if (now.getTime() >= start) return 'started'
+  const hoursLeft = (start - now.getTime()) / 3600000
+  return hoursLeft >= FOLLOW_UP_FREE_CANCEL_HOURS ? 'free' : 'late'
+}
+
+// What happens to a confirmed call nobody settled, from who actually opened
+// the join page. Only the asker can't reach the meeting without our button, so
+// "asker never joined" is solid evidence; "expert never joined" is not (they
+// have the link themselves), so that case goes to a person.
+export type AutoSettlement = 'completed' | 'asker_no_show' | 'needs_review' | 'neither_joined'
+
+export function autoSettlementFor(joined: {
+  asker: boolean
+  expert: boolean
+}): AutoSettlement {
+  if (joined.asker && joined.expert) return 'completed'
+  if (!joined.asker && joined.expert) return 'asker_no_show'
+  if (joined.asker && !joined.expert) return 'needs_review'
+  return 'neither_joined'
+}
+
+// Every way a confirmed conversation can end. Money: completed,
+// late_cancelled and asker_no_show are charged in full; the cancelled /
+// no-show / neither / admin_release outcomes are released with no charge;
+// "disputed" stays held for a person to decide.
+export type FollowUpOutcome =
+  | 'completed'
+  | 'late_cancelled'
+  | 'asker_no_show'
+  | 'cancelled_by_asker'
+  | 'cancelled_by_expert'
+  | 'expert_no_show'
+  | 'neither_joined'
+  | 'admin_release'
+  | 'admin_release_expert_fault'
+  | 'disputed'
+
+export function autoSettleDueAt(confirmedStartIso: string): Date {
+  return new Date(
+    new Date(confirmedStartIso).getTime() +
+      (FOLLOW_UP_DURATION_MINUTES * 60 * 1000) +
+      FOLLOW_UP_AUTO_SETTLE_HOURS_AFTER_END * 3600 * 1000
+  )
+}
+
+// Reminder emails to schedule when a call is confirmed: 24 hours and 1 hour
+// before, skipping any that would already be in the past (or about to be).
+export function reminderTimesFor(
+  confirmedStartIso: string,
+  now: Date = new Date()
+): { kind: '24h' | '1h'; at: string }[] {
+  const start = new Date(confirmedStartIso).getTime()
+  const slack = 10 * 60 * 1000
+  const out: { kind: '24h' | '1h'; at: string }[] = []
+  const dayBefore = start - 24 * 3600 * 1000
+  const hourBefore = start - 3600 * 1000
+  if (dayBefore >= now.getTime() + slack) out.push({ kind: '24h', at: new Date(dayBefore).toISOString() })
+  if (hourBefore >= now.getTime() + slack) out.push({ kind: '1h', at: new Date(hourBefore).toISOString() })
+  return out
+}

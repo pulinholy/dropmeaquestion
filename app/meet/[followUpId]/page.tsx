@@ -2,8 +2,13 @@ import type { Metadata } from "next"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import { supabaseAdmin } from "@/lib/supabase-admin"
-import { FOLLOW_UP_POLICY_LINES, FOLLOW_UP_PRIVACY_LINES } from "@/lib/follow-up-rules"
+import {
+  FOLLOW_UP_POLICY_LINES,
+  FOLLOW_UP_PRIVACY_LINES,
+  formatPrice,
+} from "@/lib/follow-up-rules"
 import JoinPanel from "./join-panel"
+import AskerActions from "./asker-actions"
 
 export const metadata: Metadata = {
   title: "Your conversation — Drop Me A Question",
@@ -30,7 +35,7 @@ export default async function MeetPage({
   // join endpoint, while the join window is open.
   const { data: call } = await supabaseAdmin
     .from("follow_up_calls")
-    .select("id, status, confirmed_start, asker_timezone, expert_id")
+    .select("id, status, confirmed_start, asker_timezone, expert_id, price_cents")
     .eq("id", followUpId)
     .maybeSingle()
 
@@ -59,6 +64,11 @@ export default async function MeetPage({
             startIso={call.confirmed_start}
             timezone={call.asker_timezone}
           />
+          <AskerActions
+            followUpId={call.id}
+            startIso={call.confirmed_start}
+            price={formatPrice(call.price_cents)}
+          />
           <div className="mt-8 rounded-lg border border-line bg-white p-5">
             <h2 className="text-sm font-semibold text-ink">Good to know</h2>
             <ul className="mt-2 space-y-1.5 text-xs text-ink-soft">
@@ -85,11 +95,25 @@ export default async function MeetPage({
           as soon as they do. Your card is held, not charged.
         </Message>
       )
+    } else if (call.status === "late_cancelled" || call.status === "asker_no_show") {
+      content = (
+        <Message title="This conversation is over">
+          Your card was charged for it, as described in the cancellation policy
+          you agreed to when booking.
+        </Message>
+      )
+    } else if (call.status === "disputed") {
+      content = (
+        <Message title="We’re reviewing this conversation">
+          A problem was reported. Your card won&apos;t be charged unless we find
+          it took place, and we&apos;ll email you once it&apos;s settled.
+        </Message>
+      )
     } else {
       content = (
         <Message title="This conversation isn’t scheduled">
           It was cancelled or didn&apos;t go ahead. If your card was held, the
-          hold has been released.
+          hold has been released and you weren&apos;t charged.
         </Message>
       )
     }

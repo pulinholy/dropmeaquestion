@@ -5,6 +5,10 @@ import { enforceRateLimit } from '@/lib/rate-limit'
 import { logError } from '@/lib/log-error'
 import { isAllowedMeetingLink } from '@/lib/follow-up'
 import { sendFollowUpConfirmedEmails } from '@/lib/send-follow-up-emails'
+import {
+  cancelScheduledEmails,
+  scheduleFollowUpReminders,
+} from '@/lib/send-follow-up-outcome-emails'
 
 const MIN_LEAD_MINUTES = 120
 
@@ -105,15 +109,41 @@ export async function POST(request: Request) {
     ])
 
     if (question?.asker_email) {
+      const expertEmail = expertRow?.email_notifications === false ? null : (user.email ?? null)
+      const expertFirstName = profile?.full_name?.split(' ')[0] || 'Your expert'
+      const confirmedStart = new Date(chosenMs).toISOString()
+
       await sendFollowUpConfirmedEmails({
         askerEmail: question.asker_email,
-        expertEmail: expertRow?.email_notifications === false ? null : (user.email ?? null),
-        expertFirstName: profile?.full_name?.split(' ')[0] || 'Your expert',
+        expertEmail,
+        expertFirstName,
         followUpId: call.id,
         referenceId: question.reference_id,
-        confirmedStart: new Date(chosenMs).toISOString(),
+        confirmedStart,
         askerTimezone: call.asker_timezone,
       })
+
+      // Reminders 24 hours and 1 hour ahead. Their ids are kept so a
+      // cancellation can call them off; if the ids can't be saved the
+      // reminders are cancelled again rather than left to go out on their own.
+      const reminderIds = await scheduleFollowUpReminders({
+        askerEmail: question.asker_email,
+        expertEmail,
+        expertFirstName,
+        followUpId: call.id,
+        confirmedStart,
+        askerTimezone: call.asker_timezone,
+      })
+      if (reminderIds.length > 0) {
+        const { error: saveError } = await supabaseAdmin
+          .from('follow_up_calls')
+          .update({ reminder_email_ids: reminderIds })
+          .eq('id', call.id)
+        if (saveError) {
+          await cancelScheduledEmails(reminderIds)
+          await logError('follow-up/confirm:save-reminders', saveError, { followUpId: call.id })
+        }
+      }
     }
   } catch (notifyErr) {
     await logError('follow-up/confirm:notification', notifyErr, { followUpId: call.id })

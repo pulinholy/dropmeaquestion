@@ -3,6 +3,7 @@
 import { useState } from "react"
 import {
   ALLOWED_MEETING_SERVICES_TEXT,
+  FOLLOW_UP_NO_SHOW_AFTER_MINUTES,
   FOLLOW_UP_PLATFORM_FEE_RATE,
   formatPrice,
   joinWindowFor,
@@ -158,18 +159,37 @@ export function UpcomingCard({
   call,
   now,
   joining,
+  busy,
   error,
   onJoin,
+  onCancel,
+  onComplete,
+  onAskerNoShow,
+  onReport,
 }: {
   call: FollowUpCall
   now: number
   joining: boolean
+  busy: boolean
   error: string
   onJoin: () => void
+  onCancel: () => void
+  onComplete: () => void
+  onAskerNoShow: () => void
+  onReport: () => void
 }) {
   if (!call.confirmedStart) return null
   const { opensAt, closesAt } = joinWindowFor(call.confirmedStart)
   const open = now >= opensAt.getTime() && now <= closesAt.getTime()
+  const start = new Date(call.confirmedStart).getTime()
+  const started = now >= start
+  // The asker can only be marked as not having joined once their whole slot
+  // has passed, and only if they never opened the join page.
+  const noShowAllowed =
+    !call.askerJoined && now >= start + FOLLOW_UP_NO_SHOW_AFTER_MINUTES * 60 * 1000
+
+  const linkButton =
+    "text-xs font-medium text-ink-soft hover:text-ink disabled:opacity-50"
 
   return (
     <div className="rounded-lg border border-line bg-card p-5">
@@ -200,6 +220,51 @@ export function UpcomingCard({
           <span className="text-xs text-ink-soft">The join window has closed.</span>
         )}
       </div>
+
+      {started ? (
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-xs text-ink-soft">
+            How did it go? Mark it so you&apos;re paid
+            {call.askerJoined ? "" : ", or tell us if the asker never joined"}.
+            If you don&apos;t, it settles automatically a day after it ends.
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onComplete}
+              className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
+            >
+              Mark completed
+            </button>
+            <button
+              type="button"
+              disabled={busy || !noShowAllowed}
+              onClick={onAskerNoShow}
+              title={
+                call.askerJoined
+                  ? "The asker opened the join page, so this isn't available."
+                  : !noShowAllowed
+                    ? "Available once the 15-minute slot has ended."
+                    : undefined
+              }
+              className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
+            >
+              Asker didn&apos;t join
+            </button>
+            <button type="button" disabled={busy} onClick={onReport} className={linkButton}>
+              Report a problem
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3">
+          <button type="button" disabled={busy} onClick={onCancel} className={linkButton}>
+            Cancel this conversation
+          </button>
+        </div>
+      )}
+
       {error && <p className="mt-2 text-sm text-postal-red">{error}</p>}
     </div>
   )
@@ -213,7 +278,7 @@ const STATUS_LABELS: Record<string, string> = {
   late_cancelled: "Cancelled late",
   asker_no_show: "Asker didn't join",
   expert_no_show: "Missed",
-  disputed: "Under review",
+  disputed: "Under review — we'll be in touch",
 }
 
 export function PastRow({ call }: { call: FollowUpCall }) {

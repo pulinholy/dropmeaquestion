@@ -12,7 +12,7 @@ import {
 
 const FROM = 'Drop Me A Question <hello@dropmeaquestion.com>'
 
-async function send(to: string, subject: string, body: string, source: string) {
+export async function send(to: string, subject: string, body: string, source: string) {
   try {
     const { error } = await resend.emails.send({
       from: FROM,

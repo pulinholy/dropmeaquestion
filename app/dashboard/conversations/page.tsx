@@ -10,7 +10,13 @@ import {
   type FollowUpCall,
 } from "./conversation-cards"
 
-type Loaded = { available: boolean; enabled: boolean; calls: FollowUpCall[] }
+type Loaded = {
+  available: boolean
+  enabled: boolean
+  strikes?: number
+  strikeLimit?: number
+  calls: FollowUpCall[]
+}
 
 const GENERIC_ERROR = "Something went wrong. Please try again."
 
@@ -133,6 +139,24 @@ export default function ConversationsPage() {
         answered their question.
       </p>
 
+      {loaded.available &&
+        (loaded.strikes ?? 0) > 0 &&
+        (loaded.strikes ?? 0) < (loaded.strikeLimit ?? 3) && (
+          <p className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-ink">
+            You have {loaded.strikes} of {loaded.strikeLimit ?? 3} strikes in the
+            last 90 days (cancelling or missing a conversation). At{" "}
+            {loaded.strikeLimit ?? 3}, follow-up conversations are switched off
+            for your account.
+          </p>
+        )}
+      {loaded.available && (loaded.strikes ?? 0) >= (loaded.strikeLimit ?? 3) && (
+        <p className="mt-6 rounded-lg border border-postal-red/30 bg-postal-red/10 p-4 text-sm text-ink">
+          Follow-up conversations are switched off for your account because of{" "}
+          {loaded.strikes} cancellations or missed conversations in the last 90
+          days. Contact hello@dropmeaquestion.com if you think this is a mistake.
+        </p>
+      )}
+
       {!loaded.available && (
         <p className="mt-6 text-sm text-ink-soft">
           Follow-up conversations aren&apos;t available yet.
@@ -191,8 +215,41 @@ export default function ConversationsPage() {
                 call={call}
                 now={now}
                 joining={joiningId === call.id}
+                busy={busyId === call.id}
                 error={errors[call.id] ?? ""}
                 onJoin={() => join(call)}
+                onCancel={() => {
+                  if (
+                    window.confirm(
+                      "Cancel this conversation? The asker won't be charged, and it counts as a strike: three in 90 days switches follow-up conversations off for your account."
+                    )
+                  ) {
+                    act(call.id, "/api/follow-up/cancel-expert", { id: call.id })
+                  }
+                }}
+                onComplete={() => {
+                  if (window.confirm("Mark this conversation as completed? The asker is charged and you're paid.")) {
+                    act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "completed" })
+                  }
+                }}
+                onAskerNoShow={() => {
+                  if (
+                    window.confirm(
+                      "The asker never opened the join page. Mark them as not joining? They're charged in full under the cancellation policy and you're paid."
+                    )
+                  ) {
+                    act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
+                  }
+                }}
+                onReport={() => {
+                  if (
+                    window.confirm(
+                      "Report a problem? Nothing is charged or paid until we've reviewed it."
+                    )
+                  ) {
+                    act(call.id, "/api/follow-up/report-problem", { id: call.id })
+                  }
+                }}
               />
             ))}
           </div>
