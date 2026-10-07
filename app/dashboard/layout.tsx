@@ -31,6 +31,24 @@ const yourPageLinks = [
   { href: "/dashboard/feedback", label: "Feedback", icon: StarIcon },
 ]
 
+function HelpImproveLink() {
+  return (
+    <a
+      href={PRODUCT_FEEDBACK_HREF}
+      className="block rounded-sm border-t border-line px-2 pt-5 hover:bg-line/30"
+    >
+      <span className="flex items-center gap-2 text-sm font-medium text-postal-blue">
+        <LightbulbIcon className="h-4 w-4 flex-shrink-0 text-amber-500" />
+        <span className="flex-1">Help improve DMQ</span>
+        <ExternalLinkIcon className="h-3.5 w-3.5 flex-shrink-0 text-ink-soft" />
+      </span>
+      <span className="mt-1 block pl-6 text-xs text-ink-soft">
+        Have an idea or found a problem? We&apos;d love to hear from you.
+      </span>
+    </a>
+  )
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -244,9 +262,9 @@ export default function DashboardLayout({
 
         <div className="border-t border-line" />
 
-      <main className="mx-auto flex w-full max-w-[1200px] flex-1 gap-12 px-8 py-16">
-        <nav className="flex w-60 flex-shrink-0 flex-col">
-          <div className="mb-6 rounded-lg border border-line bg-card p-4">
+      <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-6 px-4 py-8 sm:px-8 lg:flex-row lg:gap-12 lg:py-16">
+        <nav className="flex flex-shrink-0 flex-col lg:w-60">
+          <div className="mb-4 rounded-lg border border-line bg-card p-4 lg:mb-6">
             <div className="flex items-center gap-2">
               {profile.avatarUrl ? (
                 <img
@@ -289,89 +307,84 @@ export default function DashboardLayout({
             )}
           </div>
 
-          <Link
-            href="/dashboard"
-            className={`mb-1 flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium ${
-              pathname === "/dashboard"
-                ? "bg-postal-red/10 text-postal-red"
-                : "text-ink-soft hover:bg-line/50 hover:text-ink"
-            }`}
-          >
-            <HomeIcon className="h-4 w-4" />
-            Home
-          </Link>
-
-          <Link
-            href="/dashboard/questions/pending"
-            className={`mb-6 flex items-center justify-between rounded-sm px-3 py-1.5 text-sm font-medium ${
-              pathname.startsWith("/dashboard/questions")
-                ? "bg-postal-red/10 text-postal-red"
-                : "text-ink-soft hover:bg-line/50 hover:text-ink"
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <ChatIcon className="h-4 w-4" />
-              Questions
-            </span>
-            <span className="text-xs">{counts.pending}</span>
-          </Link>
-
-          <p className="px-3 text-xs font-medium uppercase tracking-wide text-ink-soft/70">
-            Your page
-          </p>
-          <div className="mt-1 space-y-0.5">
-            {yourPageLinks.map(({ href, label, icon: Icon }) => {
-              const active = pathname.startsWith(href)
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium ${
-                    active
-                      ? "bg-postal-red/10 text-postal-red"
-                      : "text-ink-soft hover:bg-line/50 hover:text-ink"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </Link>
-              )
-            })}
-          </div>
-
-          <div className="mt-6 border-t border-line pt-6">
+          {/* Below lg the links become a horizontally scrolling tab row that
+              bleeds to the screen edges; from lg up it's the vertical sidebar. */}
+          <div className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:block lg:overflow-visible lg:p-0 [&::-webkit-scrollbar]:hidden">
             <Link
-              href="/dashboard/payments"
-              className={`flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium ${
-                pathname.startsWith("/dashboard/payments")
+              href="/dashboard"
+              className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium lg:mb-1 ${
+                pathname === "/dashboard"
                   ? "bg-postal-red/10 text-postal-red"
                   : "text-ink-soft hover:bg-line/50 hover:text-ink"
               }`}
             >
-              <CreditCardIcon className="h-4 w-4" />
-              Payments
+              <HomeIcon className="h-4 w-4" />
+              Home
             </Link>
+
+            <Link
+              href="/dashboard/questions/pending"
+              className={`flex flex-shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium lg:mb-6 ${
+                pathname.startsWith("/dashboard/questions")
+                  ? "bg-postal-red/10 text-postal-red"
+                  : "text-ink-soft hover:bg-line/50 hover:text-ink"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <ChatIcon className="h-4 w-4" />
+                Questions
+              </span>
+              <span className="text-xs">{counts.pending}</span>
+            </Link>
+
+            <p className="hidden px-3 text-xs font-medium uppercase tracking-wide text-ink-soft/70 lg:block">
+              Your page
+            </p>
+            <div className="flex gap-1 lg:mt-1 lg:block lg:space-y-0.5">
+              {yourPageLinks.map(({ href, label, icon: Icon }) => {
+                const active = pathname.startsWith(href)
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ${
+                      active
+                        ? "bg-postal-red/10 text-postal-red"
+                        : "text-ink-soft hover:bg-line/50 hover:text-ink"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </Link>
+                )
+              })}
+            </div>
+
+            <div className="flex lg:mt-6 lg:block lg:border-t lg:border-line lg:pt-6">
+              <Link
+                href="/dashboard/payments"
+                className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ${
+                  pathname.startsWith("/dashboard/payments")
+                    ? "bg-postal-red/10 text-postal-red"
+                    : "text-ink-soft hover:bg-line/50 hover:text-ink"
+                }`}
+              >
+                <CreditCardIcon className="h-4 w-4" />
+                Payments
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-auto pt-10">
-            <a
-              href={PRODUCT_FEEDBACK_HREF}
-              className="block rounded-sm border-t border-line px-2 pt-5 hover:bg-line/30"
-            >
-              <span className="flex items-center gap-2 text-sm font-medium text-postal-blue">
-                <LightbulbIcon className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                <span className="flex-1">Help improve DMQ</span>
-                <ExternalLinkIcon className="h-3.5 w-3.5 flex-shrink-0 text-ink-soft" />
-              </span>
-              <span className="mt-1 block pl-6 text-xs text-ink-soft">
-                Have an idea or found a problem? We&apos;d love to hear from
-                you.
-              </span>
-            </a>
+          <div className="mt-auto hidden pt-10 lg:block">
+            <HelpImproveLink />
           </div>
         </nav>
 
         <div className="min-w-0 flex-1">{children}</div>
+
+        <div className="lg:hidden">
+          <HelpImproveLink />
+        </div>
       </main>
 
         <SiteFooter />

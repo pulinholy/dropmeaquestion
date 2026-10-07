@@ -204,14 +204,14 @@ export default function QuestionsByStatusPage() {
   return (
     <section>
       <h1 className="font-display text-2xl text-ink">Questions</h1>
-      <div className="mt-4 flex gap-1 border-b border-line">
+      <div className="mt-4 flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {statusTabs.map((tab) => {
           const active = tab.status === status
           return (
             <Link
               key={tab.status}
               href={`/dashboard/questions/${tab.status}`}
-              className={`border-b-2 px-3 py-2 text-sm font-medium ${
+              className={`flex-shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
                 active
                   ? "border-postal-red text-postal-red"
                   : "border-transparent text-ink-soft hover:text-ink"
