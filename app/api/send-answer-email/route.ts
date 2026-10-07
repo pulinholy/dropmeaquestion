@@ -5,6 +5,7 @@ import { logError } from '@/lib/log-error'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { escapeHtml, formatPrice, getFollowUpOffer } from '@/lib/follow-up'
 
 export async function POST(request: Request) {
   const user = await requireUser(request)
@@ -53,11 +54,25 @@ export async function POST(request: Request) {
   const expertFirstName = expertName.split(' ')[0]
   const feedbackUrl = `${EMAIL_BASE_URL}/feedback/${questionId}`
 
+  // An optional paid follow-up conversation, only when this expert offers
+  // them and the offer is still open. Any trouble checking means no offer.
+  const offer = await getFollowUpOffer(questionId)
+  const followUpBlock = offer.ok
+    ? `
+    <hr style="border:0; border-top:1px solid #ddd6c8; margin:28px 0 20px;" />
+    <p style="margin:0 0 8px; font-weight:bold;">Want to talk it through with ${escapeHtml(expertFirstName)}?</p>
+    <p style="margin:0 0 16px;">Continue the conversation with a private 15-minute call &mdash; $${formatPrice(offer.priceCents)}.</p>
+    ${renderEmailButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
+    <p style="margin:16px 0 0; font-size:12px; color:#4a5568;">Your email address isn&rsquo;t shared by Drop Me A Question. The conversation uses ${escapeHtml(expertFirstName)}&rsquo;s video meeting service, which may show your display name. You&rsquo;re charged only after the conversation takes place.</p>
+  `
+    : ''
+
   const body = `
     <p style="margin:0 0 16px;">${expertFirstName} answered the question you dropped:</p>
     ${renderEmailQuote(question.question_text)}
     <p style="margin:0 0 24px; white-space:pre-wrap;">${question.answer_text}</p>
     ${renderEmailButton(feedbackUrl, `Was this helpful? Let ${expertFirstName} know &rarr;`)}
+    ${followUpBlock}
   `
 
   try {

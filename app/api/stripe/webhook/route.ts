@@ -4,6 +4,7 @@ import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 import { confirmQuestionPayment } from '@/lib/confirm-question-payment'
+import { confirmFollowUpPayment } from '@/lib/confirm-follow-up-payment'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -24,8 +25,19 @@ export async function POST(request: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any
     const questionId = session.metadata?.questionId
+    const followUpId = session.metadata?.followUpId
 
-    if (!questionId) {
+    if (followUpId) {
+      // A follow-up conversation's card hold, not a question payment.
+      try {
+        await confirmFollowUpPayment({
+          followUpId,
+          paymentIntentId: session.payment_intent,
+        })
+      } catch (err) {
+        await logError('stripe/webhook:follow-up', err, { followUpId, sessionId: session.id })
+      }
+    } else if (!questionId) {
       await logError(
         'stripe/webhook:checkout.session.completed',
         new Error('Missing questionId in session metadata'),

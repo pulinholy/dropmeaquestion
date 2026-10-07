@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 import { confirmQuestionPayment } from '@/lib/confirm-question-payment'
+import { maintainFollowUps } from '@/lib/follow-up-maintenance'
 
 // This runs once/day (Vercel Hobby plan caps cron jobs at daily) -- it's a
 // backstop for the rare webhook delivery that never fired, not a fast-follow
@@ -90,5 +91,15 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ checked: stuck?.length ?? 0, results })
+  // Follow-up conversations have the same stuck-checkout problem, plus
+  // requests the expert never confirmed. Isolated so it can't affect the
+  // question reconciliation above.
+  let followUps = null
+  try {
+    followUps = await maintainFollowUps()
+  } catch (err) {
+    await logError('cron/reconcile-payments:follow-ups', err)
+  }
+
+  return NextResponse.json({ checked: stuck?.length ?? 0, results, followUps })
 }
