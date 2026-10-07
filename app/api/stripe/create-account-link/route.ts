@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { logError } from '@/lib/log-error'
+import { APP_BASE_URL } from '@/lib/site'
 
 export async function POST(request: Request) {
   const user = await requireUser(request)
@@ -23,8 +24,8 @@ export async function POST(request: Request) {
   try {
     const accountLink = await stripe.accountLinks.create({
       account: expert.stripe_account_id,
-      refresh_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
-      return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?stripe=return`,
+      refresh_url: `${APP_BASE_URL}/dashboard`,
+      return_url: `${APP_BASE_URL}/dashboard?stripe=return`,
       type: 'account_onboarding',
     })
 

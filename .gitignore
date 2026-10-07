@@ -45,3 +45,5 @@ next-env.d.ts
 
 .vercel
 .env*
+# keep the committed template tracked
+!.env.example

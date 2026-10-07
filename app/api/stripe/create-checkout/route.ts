@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 import { generateReferenceId } from '@/lib/reference-id'
+import { APP_BASE_URL } from '@/lib/site'
 
 const MAX_QUESTION_LENGTH = 1000
 const PLATFORM_FEE_RATE = 0.15
@@ -107,8 +108,8 @@ export async function POST(request: Request) {
         transfer_data: { destination: expert.stripe_account_id },
       },
       metadata: { questionId: newQuestion.id },
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/${username}?paid=false`,
+      success_url: `${APP_BASE_URL}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${APP_BASE_URL}/${username}?paid=false`,
     })
 
     const { error: updateError } = await supabaseAdmin
