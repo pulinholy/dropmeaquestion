@@ -1,11 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MailIcon, ShieldCheckIcon, InfoIcon, PaperclipIcon } from "./icons"
 import { formatResponseWindow } from "@/lib/format"
 import DemoProfileModal from "./DemoProfileModal"
 
 const MAX_QUESTION_LENGTH = 1000
+const CHECKOUT_TIMEOUT_MS = 20000
+const CHECKOUT_ERROR_MESSAGE =
+  "We couldn't start your payment. Please check your connection and try again. You haven't been charged."
 
 export default function QuestionForm({
   expertId,
@@ -33,6 +36,16 @@ export default function QuestionForm({
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
   const [showDemoModal, setShowDemoModal] = useState(false)
 
+  // Coming back from Stripe with the browser's Back button can restore this
+  // page from cache with the button still stuck on "Redirecting to payment...".
+  useEffect(() => {
+    function onPageShow(e: PageTransitionEvent) {
+      if (e.persisted) setLoading(false)
+    }
+    window.addEventListener("pageshow", onPageShow)
+    return () => window.removeEventListener("pageshow", onPageShow)
+  }, [])
+
   const placeholder =
     topics.length > 0
       ? `Ask about ${topics.join(", ")}, or anything else...`
@@ -47,26 +60,41 @@ export default function QuestionForm({
     setLoading(true)
     setError("")
 
-    const res = await fetch("/api/stripe/create-checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        expertId,
-        question,
-        email,
-        username,
-      }),
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), CHECKOUT_TIMEOUT_MS)
 
-    const data = await res.json()
+    try {
+      const res = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expertId,
+          question,
+          email,
+          username,
+        }),
+        signal: controller.signal,
+      })
 
-    if (data.error) {
-      setError(data.error)
+      // A crashed server or an outage page returns HTML, not JSON.
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok || typeof data?.url !== "string") {
+        setError(
+          typeof data?.error === "string" ? data.error : CHECKOUT_ERROR_MESSAGE
+        )
+        setLoading(false)
+        return
+      }
+
+      window.location.href = data.url
+    } catch {
+      // Offline, dropped connection, or the request timed out.
+      setError(CHECKOUT_ERROR_MESSAGE)
       setLoading(false)
-      return
+    } finally {
+      clearTimeout(timeout)
     }
-
-    window.location.href = data.url
   }
 
   return (
