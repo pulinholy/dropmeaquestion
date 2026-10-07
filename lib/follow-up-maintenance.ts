@@ -3,20 +3,11 @@ import { supabaseAdmin } from './supabase-admin'
 import { logError } from './log-error'
 import { confirmFollowUpPayment } from './confirm-follow-up-payment'
 import { sendFollowUpReleasedEmail } from './send-follow-up-emails'
+import { releaseFollowUpHold } from './follow-up-release'
 
 // A Checkout page lives 30 minutes; this is how long we wait before treating
 // an unpaid booking as abandoned.
 const ABANDON_AFTER_HOURS = 2
-
-async function releaseHold(paymentIntentId: string | null, followUpId: string) {
-  if (!paymentIntentId) return
-  try {
-    await stripe.paymentIntents.cancel(paymentIntentId)
-  } catch (err) {
-    // Already cancelled or captured is not worth failing the whole pass for.
-    await logError('follow-up-maintenance:release', err, { followUpId })
-  }
-}
 
 // Runs from the daily reconcile cron. Two jobs, both safe to repeat:
 //  1. Bookings stuck "awaiting_payment": if Stripe says the card hold
@@ -24,7 +15,7 @@ async function releaseHold(paymentIntentId: string | null, followUpId: string) {
 //  2. Requests the expert never confirmed within 24 hours: release the hold
 //     and tell the asker.
 export async function maintainFollowUps() {
-  const summary = { promoted: 0, abandoned: 0, expired: 0, errors: 0 }
+  const summary = { promoted: 0, abandoned: 0, expired: 0, released: 0, errors: 0 }
 
   const abandonCutoff = new Date(Date.now() - ABANDON_AFTER_HOURS * 3600 * 1000).toISOString()
   const { data: unpaid, error: unpaidError } = await supabaseAdmin
@@ -89,13 +80,13 @@ export async function maintainFollowUps() {
       // same moment can't be overridden.
       const { data: claimed } = await supabaseAdmin
         .from('follow_up_calls')
-        .update({ status: 'expired', released_at: new Date().toISOString() })
+        .update({ status: 'expired' })
         .eq('id', row.id)
         .eq('status', 'requested')
         .select('id')
       if (!claimed || claimed.length === 0) continue
 
-      await releaseHold(row.stripe_payment_intent_id, row.id)
+      await releaseFollowUpHold(row.id, row.stripe_payment_intent_id)
 
       const { data: question } = await supabaseAdmin
         .from('questions')
@@ -121,6 +112,27 @@ export async function maintainFollowUps() {
       await logError('follow-up-maintenance:overdue', err, { followUpId: row.id })
       summary.errors++
     }
+  }
+
+  // Bookings that ended without their card hold confirmed released (the
+  // release failed earlier, or the process died): try again. Releasing an
+  // already-released hold is a harmless no-op.
+  const { data: unreleased, error: unreleasedError } = await supabaseAdmin
+    .from('follow_up_calls')
+    .select('id, stripe_payment_intent_id')
+    .in('status', ['declined', 'expired', 'cancelled', 'expert_no_show'])
+    .is('released_at', null)
+    .not('stripe_payment_intent_id', 'is', null)
+
+  if (unreleasedError) {
+    await logError('follow-up-maintenance:fetch-unreleased', unreleasedError)
+    summary.errors++
+  }
+
+  for (const row of unreleased ?? []) {
+    const ok = await releaseFollowUpHold(row.id, row.stripe_payment_intent_id)
+    if (ok) summary.released++
+    else summary.errors++
   }
 
   return summary

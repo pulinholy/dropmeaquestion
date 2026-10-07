@@ -67,7 +67,7 @@ export async function sendFollowUpRequestedEmails({
       <p style="margin:0 0 8px;">They proposed these times${askerTimezone ? ` (shown in their time zone, ${escapeHtml(askerTimezone)})` : ''}:</p>
       <ul style="margin:0 0 16px; padding-left:20px;">${times}</ul>
       <p style="margin:0 0 24px; font-size:13px; color:#4a5568;">Confirm one of them within 24 hours, adding your own Zoom or Google Meet link for this call, or decline. If you don&rsquo;t respond the request expires and they aren&rsquo;t charged. Their email address stays private.</p>
-      ${renderEmailButton(`${EMAIL_BASE_URL}/dashboard`, 'Review the request &rarr;')}
+      ${renderEmailButton(`${EMAIL_BASE_URL}/dashboard/conversations`, 'Review the request &rarr;')}
     `
     await send(
       expertEmail,
@@ -125,4 +125,63 @@ export async function sendFollowUpReleasedEmail({
     body,
     'send-follow-up-emails:released'
   )
+}
+
+// Sent when the expert confirms a time. The asker gets a private join page (the
+// meeting link itself is only revealed there, shortly before the start); the
+// expert gets a record. Times use the asker's time zone, the only one on file.
+export async function sendFollowUpConfirmedEmails({
+  askerEmail,
+  expertEmail,
+  expertFirstName,
+  followUpId,
+  referenceId,
+  confirmedStart,
+  askerTimezone,
+}: {
+  askerEmail: string
+  expertEmail: string | null
+  expertFirstName: string
+  followUpId: string
+  referenceId: string | null
+  confirmedStart: string
+  askerTimezone: string | null
+}) {
+  const name = escapeHtml(expertFirstName)
+  const when = escapeHtml(formatSlot(confirmedStart, askerTimezone))
+  const joinUrl = `${EMAIL_BASE_URL}/meet/${followUpId}`
+
+  const askerBody = `
+    <p style="margin:0 0 16px;">${name} confirmed your 15-minute conversation.</p>
+    <p style="margin:0 0 4px; font-size:13px; color:#4a5568;">When</p>
+    <p style="margin:0 0 20px; font-size:17px; font-weight:bold;">${when}</p>
+    <p style="margin:0 0 20px;">Your private join page opens 10 minutes before the start. Use the button below at that time &mdash; keep this email handy.</p>
+    ${renderEmailButton(joinUrl, 'Open your join page &rarr;')}
+    <p style="margin:24px 0 8px; font-size:13px; font-weight:bold; color:#17243a;">Good to know</p>
+    <ul style="margin:0 0 12px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_POLICY_LINES)}</ul>
+    <ul style="margin:0; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_PRIVACY_LINES)}</ul>
+  `
+  await send(
+    askerEmail,
+    `Your conversation with ${expertFirstName} is confirmed`,
+    askerBody,
+    'send-follow-up-emails:asker-confirmed'
+  )
+
+  if (expertEmail) {
+    const ref = referenceId ? ` for Question #${escapeHtml(referenceId)}` : ''
+    const expertBody = `
+      <p style="margin:0 0 16px;">Your 15-minute conversation${ref} is confirmed.</p>
+      <p style="margin:0 0 4px; font-size:13px; color:#4a5568;">When${askerTimezone ? ` (the asker&rsquo;s time zone, ${escapeHtml(askerTimezone)})` : ''}</p>
+      <p style="margin:0 0 20px; font-size:17px; font-weight:bold;">${when}</p>
+      <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">Join from your dashboard from 10 minutes before the start. The asker can&rsquo;t see your email address, and you can&rsquo;t see theirs.</p>
+      ${renderEmailButton(`${EMAIL_BASE_URL}/dashboard/conversations`, 'Open your conversations &rarr;')}
+    `
+    await send(
+      expertEmail,
+      'Your conversation is confirmed',
+      expertBody,
+      'send-follow-up-emails:expert-confirmed'
+    )
+  }
 }

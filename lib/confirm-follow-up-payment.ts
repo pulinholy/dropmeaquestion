@@ -7,6 +7,7 @@ import {
   FOLLOW_UP_FALLBACK_HOLD_HOURS,
   usableSlotsForHold,
 } from './follow-up'
+import { releaseFollowUpHold } from './follow-up-release'
 import {
   sendFollowUpReleasedEmail,
   sendFollowUpRequestedEmails,
@@ -86,18 +87,13 @@ export async function confirmFollowUpPayment({
         status: 'expired',
         stripe_payment_intent_id: paymentIntentId,
         capture_before: captureBefore.toISOString(),
-        released_at: new Date().toISOString(),
       })
       .eq('id', followUpId)
       .eq('status', 'awaiting_payment')
       .select('id')
 
     if (released && released.length > 0) {
-      try {
-        await stripe.paymentIntents.cancel(paymentIntentId)
-      } catch (err) {
-        await logError('confirm-follow-up-payment:release', err, { followUpId })
-      }
+      await releaseFollowUpHold(followUpId, paymentIntentId)
       if (question?.asker_email) {
         await sendFollowUpReleasedEmail({
           askerEmail: question.asker_email,

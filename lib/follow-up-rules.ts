@@ -132,3 +132,67 @@ export function formatSlot(iso: string, timeZone: string | null | undefined): st
     return new Date(iso).toUTCString()
   }
 }
+
+// The join button unlocks shortly before the start, so nobody stresses about
+// joining a couple of minutes early, and closes a while after the start for
+// late arrivals and overruns.
+export const FOLLOW_UP_JOIN_OPENS_MINUTES_BEFORE = 10
+export const FOLLOW_UP_JOIN_CLOSES_MINUTES_AFTER = 30
+
+export function joinWindowFor(confirmedStartIso: string): { opensAt: Date; closesAt: Date } {
+  const start = new Date(confirmedStartIso).getTime()
+  return {
+    opensAt: new Date(start - FOLLOW_UP_JOIN_OPENS_MINUTES_BEFORE * 60 * 1000),
+    closesAt: new Date(start + FOLLOW_UP_JOIN_CLOSES_MINUTES_AFTER * 60 * 1000),
+  }
+}
+
+export function isJoinWindowOpen(confirmedStartIso: string, now: Date = new Date()): boolean {
+  const { opensAt, closesAt } = joinWindowFor(confirmedStartIso)
+  return now >= opensAt && now <= closesAt
+}
+
+// Meeting links are sent to askers, so only well-known video services are
+// accepted -- an expert can't point someone at an arbitrary website. Matches
+// the host exactly or as a subdomain (us02web.zoom.us), never as a lookalike
+// (evil-zoom.us, zoom.us.evil.com).
+const ALLOWED_MEETING_DOMAINS = [
+  'zoom.us',
+  'meet.google.com',
+  'teams.microsoft.com',
+  'teams.live.com',
+  'webex.com',
+  'whereby.com',
+]
+
+export const ALLOWED_MEETING_SERVICES_TEXT =
+  'Zoom, Google Meet, Microsoft Teams, Webex or Whereby'
+
+export function isAllowedMeetingLink(
+  raw: unknown
+): { ok: true; url: string } | { ok: false; error: string } {
+  const invalid = {
+    ok: false as const,
+    error: `Paste a meeting link from ${ALLOWED_MEETING_SERVICES_TEXT} (it must start with https://).`,
+  }
+  if (typeof raw !== 'string') return invalid
+  const text = raw.trim()
+  if (text.length === 0 || text.length > 500) return invalid
+
+  let url: URL
+  try {
+    url = new URL(text)
+  } catch {
+    return invalid
+  }
+
+  if (url.protocol !== 'https:' || url.username || url.password || url.port) return invalid
+
+  const host = url.hostname.toLowerCase()
+  const allowed = ALLOWED_MEETING_DOMAINS.some(
+    (domain) => host === domain || host.endsWith(`.${domain}`)
+  )
+  if (!allowed) return invalid
+
+  return { ok: true, url: url.toString() }
+}

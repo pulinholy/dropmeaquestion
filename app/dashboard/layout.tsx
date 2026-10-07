@@ -16,6 +16,7 @@ import {
   SettingsIcon,
   StarIcon,
   MegaphoneIcon,
+  VideoIcon,
   CreditCardIcon,
   LightbulbIcon,
   ExternalLinkIcon,
@@ -78,6 +79,39 @@ export default function DashboardLayout({
   const [activeStatusLoading, setActiveStatusLoading] = useState(true)
   const [togglingActive, setTogglingActive] = useState(false)
   const [isImpersonating, setIsImpersonating] = useState(false)
+  // "Conversations" only appears for experts who offer follow-up calls or
+  // already have some; the count is requests waiting for them to confirm.
+  const [followUpNav, setFollowUpNav] = useState({ visible: false, waiting: 0 })
+
+  useEffect(() => {
+    if (checkingSession) return
+    let cancelled = false
+
+    async function loadFollowUpNav() {
+      try {
+        const { data } = await supabase.auth.getSession()
+        if (!data.session) return
+        const res = await fetch("/api/follow-up/mine", {
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        })
+        if (!res.ok) return
+        const json = await res.json()
+        if (cancelled) return
+        const calls: { status: string }[] = json.calls ?? []
+        setFollowUpNav({
+          visible: Boolean(json.available && (json.enabled || calls.length > 0)),
+          waiting: calls.filter((c) => c.status === "requested").length,
+        })
+      } catch {
+        // The menu item just stays hidden.
+      }
+    }
+
+    loadFollowUpNav()
+    return () => {
+      cancelled = true
+    }
+  }, [checkingSession, pathname])
 
   useEffect(() => {
     // The admin's "Login as" link lands here with ?impersonated=1 -- stash
@@ -330,7 +364,9 @@ export default function DashboardLayout({
 
             <Link
               href="/dashboard/questions/pending"
-              className={`flex flex-shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium lg:mb-6 ${
+              className={`flex flex-shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ${
+                followUpNav.visible ? "lg:mb-1" : "lg:mb-6"
+              } ${
                 pathname.startsWith("/dashboard/questions")
                   ? "bg-postal-red/10 text-postal-red"
                   : "text-ink-soft hover:bg-line/50 hover:text-ink"
@@ -342,6 +378,27 @@ export default function DashboardLayout({
               </span>
               <span className="text-xs">{counts.pending}</span>
             </Link>
+
+            {followUpNav.visible && (
+              <Link
+                href="/dashboard/conversations"
+                className={`flex flex-shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium lg:mb-6 ${
+                  pathname.startsWith("/dashboard/conversations")
+                    ? "bg-postal-red/10 text-postal-red"
+                    : "text-ink-soft hover:bg-line/50 hover:text-ink"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <VideoIcon className="h-4 w-4" />
+                  Conversations
+                </span>
+                {followUpNav.waiting > 0 && (
+                  <span className="rounded-full bg-postal-red px-1.5 text-[10px] font-semibold leading-4 text-white">
+                    {followUpNav.waiting}
+                  </span>
+                )}
+              </Link>
+            )}
 
             <p className="hidden px-3 text-xs font-medium uppercase tracking-wide text-ink-soft/70 lg:block">
               Your page

@@ -1,0 +1,232 @@
+"use client"
+
+import { useState } from "react"
+import {
+  ALLOWED_MEETING_SERVICES_TEXT,
+  FOLLOW_UP_PLATFORM_FEE_RATE,
+  formatPrice,
+  joinWindowFor,
+} from "@/lib/follow-up-rules"
+
+export type FollowUpCall = {
+  id: string
+  status: string
+  priceCents: number
+  referenceId: string | null
+  proposedSlots: string[]
+  confirmedStart: string | null
+  meetingLink: string | null
+  confirmBy: string | null
+  askerTimezone: string | null
+  cancelledBy: string | null
+  askerJoined: boolean
+  expertJoined: boolean
+  createdAt: string
+}
+
+// Shown in the expert's own time zone (the browser's).
+export function formatLocal(iso: string, withZone = true): string {
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    ...(withZone ? { timeZoneName: "short" } : {}),
+  }).format(new Date(iso))
+}
+
+function earnings(priceCents: number): string {
+  return formatPrice(Math.round(priceCents * (1 - FOLLOW_UP_PLATFORM_FEE_RATE)))
+}
+
+export function RequestCard({
+  call,
+  busy,
+  error,
+  onConfirm,
+  onDecline,
+}: {
+  call: FollowUpCall
+  busy: boolean
+  error: string
+  onConfirm: (slot: string, meetingLink: string) => void
+  onDecline: () => void
+}) {
+  const [slot, setSlot] = useState(call.proposedSlots[0] ?? "")
+  const [link, setLink] = useState("")
+
+  return (
+    <div className="rounded-lg border border-line bg-card p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm font-semibold text-ink">
+          {call.referenceId ? `Question #${call.referenceId}` : "Follow-up conversation"}
+        </p>
+        <p className="text-xs text-ink-soft">
+          You&apos;ll receive ${earnings(call.priceCents)} after DMQ&apos;s 15% fee
+        </p>
+      </div>
+      <p className="mt-1 text-xs text-ink-soft">
+        The asker wants a 15-minute conversation.
+        {call.confirmBy && (
+          <>
+            {" "}
+            Please respond by{" "}
+            <strong className="text-ink">{formatLocal(call.confirmBy)}</strong>, or the
+            request expires and they aren&apos;t charged.
+          </>
+        )}
+      </p>
+
+      <fieldset className="mt-4">
+        <legend className="text-xs font-medium text-ink">
+          Choose a time (shown in your time zone)
+        </legend>
+        <div className="mt-2 space-y-2">
+          {call.proposedSlots.map((s) => (
+            <label
+              key={s}
+              className={`flex cursor-pointer items-center gap-2.5 rounded-sm border px-3 py-2 text-sm text-ink ${
+                slot === s ? "border-postal-red bg-postal-red/5" : "border-line"
+              }`}
+            >
+              <input
+                type="radio"
+                name={`slot-${call.id}`}
+                value={s}
+                checked={slot === s}
+                onChange={() => setSlot(s)}
+                className="accent-postal-red"
+              />
+              {formatLocal(s)}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <label className="mt-4 block text-xs font-medium text-ink" htmlFor={`link-${call.id}`}>
+        Meeting link for this call
+      </label>
+      <input
+        id={`link-${call.id}`}
+        type="url"
+        inputMode="url"
+        value={link}
+        onChange={(e) => setLink(e.target.value)}
+        placeholder="https://meet.google.com/..."
+        className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
+      />
+      <p className="mt-1 text-xs text-ink-soft">
+        {ALLOWED_MEETING_SERVICES_TEXT}. Use a new link for each call, with a
+        waiting room turned on, and never your personal reusable room if you can
+        avoid it. The asker only sees it shortly before the start.
+      </p>
+
+      {error && <p className="mt-3 text-sm text-postal-red">{error}</p>}
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={busy || !slot || link.trim().length === 0}
+          onClick={() => onConfirm(slot, link)}
+          className="rounded-full bg-postal-red px-5 py-2 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
+        >
+          {busy ? "Working..." : "Confirm this time"}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            if (
+              window.confirm(
+                "Decline all of these times? The asker isn't charged and is invited to propose new times."
+              )
+            ) {
+              onDecline()
+            }
+          }}
+          className="text-sm font-medium text-ink-soft hover:text-ink disabled:opacity-50"
+        >
+          None of these work
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export function UpcomingCard({
+  call,
+  now,
+  joining,
+  error,
+  onJoin,
+}: {
+  call: FollowUpCall
+  now: number
+  joining: boolean
+  error: string
+  onJoin: () => void
+}) {
+  if (!call.confirmedStart) return null
+  const { opensAt, closesAt } = joinWindowFor(call.confirmedStart)
+  const open = now >= opensAt.getTime() && now <= closesAt.getTime()
+
+  return (
+    <div className="rounded-lg border border-line bg-card p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm font-semibold text-ink">
+          {call.referenceId ? `Question #${call.referenceId}` : "Follow-up conversation"}
+        </p>
+        <p className="text-xs text-ink-soft">${earnings(call.priceCents)} to you</p>
+      </div>
+      <p className="mt-1 text-base font-semibold text-ink">{formatLocal(call.confirmedStart)}</p>
+      <p className="text-xs text-ink-soft">15 minutes</p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={!open || joining}
+          onClick={onJoin}
+          className="rounded-full bg-postal-red px-5 py-2 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
+        >
+          {joining ? "Opening..." : "Join conversation"}
+        </button>
+        {!open && now < opensAt.getTime() && (
+          <span className="text-xs text-ink-soft">
+            Opens at {formatLocal(opensAt.toISOString(), false)} (10 minutes before)
+          </span>
+        )}
+        {!open && now > closesAt.getTime() && (
+          <span className="text-xs text-ink-soft">The join window has closed.</span>
+        )}
+      </div>
+      {error && <p className="mt-2 text-sm text-postal-red">{error}</p>}
+    </div>
+  )
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  completed: "Completed",
+  declined: "Declined",
+  expired: "Expired",
+  cancelled: "Cancelled",
+  late_cancelled: "Cancelled late",
+  asker_no_show: "Asker didn't join",
+  expert_no_show: "Missed",
+  disputed: "Under review",
+}
+
+export function PastRow({ call }: { call: FollowUpCall }) {
+  const when = call.confirmedStart ? formatLocal(call.confirmedStart, false) : null
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+      <span className="text-ink">
+        {call.referenceId ? `Question #${call.referenceId}` : "Follow-up conversation"}
+        {when && <span className="text-ink-soft"> · {when}</span>}
+      </span>
+      <span className="rounded-full bg-line/50 px-2.5 py-0.5 text-xs font-medium text-ink-soft">
+        {STATUS_LABELS[call.status] ?? call.status}
+      </span>
+    </li>
+  )
+}
