@@ -15,6 +15,7 @@ import {
   TagIcon,
   SettingsIcon,
   StarIcon,
+  MegaphoneIcon,
   CreditCardIcon,
   LightbulbIcon,
   ExternalLinkIcon,
@@ -29,6 +30,11 @@ const yourPageLinks = [
   { href: "/dashboard/pricing", label: "Pricing", icon: TagIcon },
   { href: "/dashboard/settings", label: "Page settings", icon: SettingsIcon },
   { href: "/dashboard/feedback", label: "Feedback", icon: StarIcon },
+  {
+    href: "/dashboard/get-more-questions",
+    label: "Share your page",
+    icon: MegaphoneIcon,
+  },
 ]
 
 function HelpImproveLink() {

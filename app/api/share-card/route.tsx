@@ -1,189 +1,75 @@
-import { ImageResponse } from 'next/og'
-import { readFile } from 'fs/promises'
-import path from 'path'
+import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { requireUser } from '@/lib/require-user'
+import { enforceRateLimit } from '@/lib/rate-limit'
+import { logError } from '@/lib/log-error'
+import { PUBLIC_SITE_URL } from '@/lib/site'
+import {
+  fetchAvatarDataUrl,
+  renderShareCard,
+  type ShareCardStyle,
+} from '@/lib/share-card'
 
 export const runtime = 'nodejs'
 
-const CARD_SIZE = 1080
-
-const COLORS = {
-  paper: '#f8f6f1',
-  ink: '#17243a',
-  inkSoft: '#4a5568',
-  postalRed: '#e45b4f',
-  line: '#ddd6c8',
-  lavender: '#e9e5f4',
-}
-
-let cachedLogoDataUrl: string | null = null
-
-async function getLogoDataUrl(): Promise<string> {
-  if (cachedLogoDataUrl) return cachedLogoDataUrl
-  const filePath = path.join(process.cwd(), 'public', 'brand', 'logo-lockup.png')
-  const file = await readFile(filePath)
-  cachedLogoDataUrl = `data:image/png;base64,${file.toString('base64')}`
-  return cachedLogoDataUrl
-}
-
+// Renders the signed-in expert's own share card. Everything shown on the card
+// comes from the database -- the request only picks a style and one of their
+// own topics -- so nobody can mint a card for someone else or make the server
+// fetch an arbitrary address.
 export async function GET(request: Request) {
+  const user = await requireUser(request)
+  if (!user) {
+    return NextResponse.json({ error: 'Not authorized' }, { status: 401 })
+  }
+
+  const limited = await enforceRateLimit(request, [
+    { name: 'share-card', subject: user.id, limit: 120, windowSeconds: 3600 },
+  ])
+  if (limited) return limited
+
   const { searchParams } = new URL(request.url)
-  const name = (searchParams.get('name') || 'Your Name').slice(0, 60)
-  const headline = (searchParams.get('headline') || '').slice(0, 80)
-  const topics = (searchParams.get('topics') || '')
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean)
-    .slice(0, 4)
-  const avatarUrl = searchParams.get('avatar')
-  const initial = name.trim().charAt(0).toUpperCase() || '?'
+  const style: ShareCardStyle = searchParams.get('style') === 'topic' ? 'topic' : 'profile'
+  const requestedTopic = searchParams.get('topic')
 
-  const logoDataUrl = await getLogoDataUrl()
+  const [{ data: profile }, { data: expert }, { data: topicRows }] = await Promise.all([
+    supabaseAdmin
+      .from('profiles')
+      .select('full_name, username, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle(),
+    supabaseAdmin.from('experts').select('headline').eq('id', user.id).maybeSingle(),
+    supabaseAdmin
+      .from('expert_topics')
+      .select('name')
+      .eq('expert_id', user.id)
+      .order('sort_order', { ascending: true }),
+  ])
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: COLORS.paper,
-          padding: '80px 90px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              width={200}
-              height={200}
-              style={{
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: `4px solid ${COLORS.line}`,
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                width: 200,
-                height: 200,
-                borderRadius: '50%',
-                backgroundColor: COLORS.lavender,
-                color: COLORS.ink,
-                fontSize: 84,
-                fontWeight: 700,
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: `4px solid ${COLORS.line}`,
-              }}
-            >
-              {initial}
-            </div>
-          )}
+  if (!profile || !expert) {
+    return NextResponse.json({ error: 'Set up your page first.' }, { status: 404 })
+  }
 
-          <div
-            style={{
-              marginTop: 36,
-              fontSize: 56,
-              fontWeight: 700,
-              color: COLORS.ink,
-              textAlign: 'center',
-            }}
-          >
-            {name}
-          </div>
+  const topics = (topicRows ?? []).map((t) => t.name as string)
+  // Only one of the expert's own topics may be highlighted.
+  const highlightTopic =
+    requestedTopic && topics.includes(requestedTopic)
+      ? requestedTopic
+      : style === 'topic'
+        ? (topics[0] ?? null)
+        : null
 
-          {headline ? (
-            <div
-              style={{
-                display: 'flex',
-                marginTop: 12,
-                fontSize: 30,
-                color: COLORS.inkSoft,
-                textAlign: 'center',
-              }}
-            >
-              {headline}
-            </div>
-          ) : null}
-
-          {topics.length > 0 ? (
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                gap: 14,
-                marginTop: 44,
-                maxWidth: 760,
-              }}
-            >
-              {topics.map((topic) => (
-                <div
-                  key={topic}
-                  style={{
-                    display: 'flex',
-                    padding: '14px 28px',
-                    borderRadius: 999,
-                    backgroundColor: COLORS.lavender,
-                    color: COLORS.ink,
-                    fontSize: 26,
-                    fontWeight: 600,
-                  }}
-                >
-                  {topic}
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '20px 52px',
-              borderRadius: 999,
-              backgroundColor: COLORS.postalRed,
-              color: '#ffffff',
-              fontSize: 32,
-              fontWeight: 700,
-            }}
-          >
-            Drop me a question
-          </div>
-
-          <img
-            src={logoDataUrl}
-            width={296}
-            height={40}
-            style={{ marginTop: 44 }}
-          />
-        </div>
-      </div>
-    ),
-    {
-      width: CARD_SIZE,
-      height: CARD_SIZE,
-    }
-  )
+  try {
+    return await renderShareCard({
+      style,
+      name: (profile.full_name ?? '').slice(0, 60) || 'Your Name',
+      headline: (expert.headline ?? '').slice(0, 80),
+      topics,
+      highlightTopic,
+      avatarDataUrl: await fetchAvatarDataUrl(profile.avatar_url),
+      displayUrl: `${PUBLIC_SITE_URL.replace(/^https?:\/\/(www\.)?/, '')}/${profile.username}`,
+    })
+  } catch (err) {
+    await logError('share-card', err, { userId: user.id })
+    return NextResponse.json({ error: 'Could not create your card right now.' }, { status: 500 })
+  }
 }
