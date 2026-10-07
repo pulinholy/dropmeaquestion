@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { completePendingRegistration } from "@/lib/pending-registration"
 import { QuestionCountsContext, type QuestionCounts } from "./questions-context"
 import { ProfileContext, type ProfileInfo } from "./profile-context"
 import { ActiveStatusContext } from "./active-status-context"
@@ -136,11 +137,17 @@ export default function DashboardLayout({
       // An admin deactivation bans the auth account, but an already-open
       // tab's session can outlive that until its token refreshes -- this
       // catches it immediately instead of waiting on that.
-      const { data: expertRow } = await supabase
+      let { data: expertRow } = await supabase
         .from("experts")
         .select("deactivated_at")
         .eq("id", data.session.user.id)
         .maybeSingle()
+
+      // First login after confirming their email: create the page they
+      // filled in at registration.
+      if (!expertRow && (await completePendingRegistration(data.session.user.email))) {
+        expertRow = { deactivated_at: null }
+      }
 
       if (expertRow?.deactivated_at) {
         await supabase.auth.signOut()

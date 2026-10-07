@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 import SiteFooter from "@/components/SiteFooter"
 import TopicInput from "@/components/TopicInput"
 import { slugify } from "@/lib/slugify"
+import { savePendingRegistration } from "@/lib/pending-registration"
 import {
   PersonIcon,
   DocumentIcon,
@@ -180,10 +181,19 @@ export default function RegisterPage() {
         }
 
         if (!authData.session) {
-          setError(
-            "Your account was created but we couldn't sign you in. Please log in to finish setting up your page."
-          )
-          setLoading(false)
+          // Email confirmation is required: keep the details and finish the
+          // page on the first login after they confirm.
+          savePendingRegistration({
+            email: typedEmail,
+            fullName: `${firstName.trim()} ${lastName.trim()}`.trim(),
+            username,
+            headline,
+            bio,
+            priceCents: Math.round(parseFloat(price) * 100),
+            responseWindowHours: parseInt(responseWindowHours, 10),
+            topics: topics.map((name) => ({ name, slug: slugify(name) })),
+          })
+          router.push("/register/check-email")
           return
         }
       }
