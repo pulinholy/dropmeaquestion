@@ -5,9 +5,17 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { formatResponseWindow } from "@/lib/format"
 import { useProfileInfo } from "../profile-context"
-import { ChatIcon, ClockIcon, DollarSignIcon, TagIcon } from "@/components/icons"
+import {
+  ChatIcon,
+  ClockIcon,
+  DollarSignIcon,
+  TagIcon,
+  VideoIcon,
+} from "@/components/icons"
 
 const MIN_PRICE = 5
+const MIN_FOLLOW_UP_PRICE = 15
+const MAX_FOLLOW_UP_PRICE = 100
 
 const responseOptions = [
   { hours: 12, label: "Within 12 hours" },
@@ -29,6 +37,11 @@ export default function PricingPage() {
   const [responseWindowHours, setResponseWindowHours] = useState("24")
   const [headline, setHeadline] = useState("")
   const [topics, setTopics] = useState<string[]>([])
+  // Follow-up conversations are read separately so that, before the database
+  // has the new columns, this page keeps working and just hides the section.
+  const [followUpAvailable, setFollowUpAvailable] = useState(false)
+  const [followUpEnabled, setFollowUpEnabled] = useState(false)
+  const [followUpPrice, setFollowUpPrice] = useState("35")
 
   useEffect(() => {
     load()
@@ -63,6 +76,22 @@ export default function PricingPage() {
       .order("sort_order", { ascending: true })
 
     setTopics(topicsData?.map((t) => t.name) ?? [])
+
+    const { data: followUp, error: followUpError } = await supabase
+      .from("experts")
+      .select("follow_up_enabled, follow_up_price_cents")
+      .eq("id", userId)
+      .single()
+
+    if (followUpError || !followUp) {
+      setFollowUpAvailable(false)
+    } else {
+      setFollowUpAvailable(true)
+      setFollowUpEnabled(followUp.follow_up_enabled)
+      if (followUp.follow_up_price_cents) {
+        setFollowUpPrice((followUp.follow_up_price_cents / 100).toString())
+      }
+    }
     setLoading(false)
   }
 
@@ -74,6 +103,19 @@ export default function PricingPage() {
 
     if (parseFloat(price) < MIN_PRICE) {
       setError(`Minimum question price is $${MIN_PRICE}.`)
+      setSaving(false)
+      return
+    }
+
+    const followUpValue = parseFloat(followUpPrice)
+    const followUpPriceValid =
+      !isNaN(followUpValue) &&
+      followUpValue >= MIN_FOLLOW_UP_PRICE &&
+      followUpValue <= MAX_FOLLOW_UP_PRICE
+    if (followUpAvailable && followUpEnabled && !followUpPriceValid) {
+      setError(
+        `Follow-up conversation price must be between $${MIN_FOLLOW_UP_PRICE} and $${MAX_FOLLOW_UP_PRICE}.`
+      )
       setSaving(false)
       return
     }
@@ -93,9 +135,31 @@ export default function PricingPage() {
 
     if (updateError) {
       setError(updateError.message)
-    } else {
-      setSaved(true)
+      setSaving(false)
+      return
     }
+
+    if (followUpAvailable) {
+      const { error: followUpError } = await supabase
+        .from("experts")
+        .update({
+          follow_up_enabled: followUpEnabled,
+          // Keep a valid price on file even while switched off, so turning it
+          // back on remembers it.
+          follow_up_price_cents: followUpPriceValid
+            ? Math.round(followUpValue * 100)
+            : null,
+        })
+        .eq("id", userId)
+
+      if (followUpError) {
+        setError(followUpError.message)
+        setSaving(false)
+        return
+      }
+    }
+
+    setSaved(true)
     setSaving(false)
   }
 
@@ -203,6 +267,97 @@ export default function PricingPage() {
               </div>
             </div>
           </div>
+
+          {followUpAvailable && (
+            <div className="rounded-lg border border-line bg-card p-5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+                  <VideoIcon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm font-semibold text-ink">
+                    Follow-up conversations
+                  </h2>
+                  <p className="mt-0.5 text-xs text-ink-soft">
+                    After you answer a question, offer that asker an optional
+                    15-minute conversation with you.
+                  </p>
+
+                  <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-sm text-ink">
+                    <input
+                      type="checkbox"
+                      checked={followUpEnabled}
+                      onChange={(e) => setFollowUpEnabled(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded-sm border-line accent-postal-red"
+                    />
+                    Offer 15-minute follow-up conversations after I answer
+                  </label>
+
+                  {followUpEnabled && (
+                    <>
+                      <p className="mt-3 text-xs font-medium text-ink">
+                        Price for a 15-minute conversation
+                      </p>
+                      <div className="mt-1.5 flex items-center rounded-sm border border-line px-3 py-2">
+                        <span className="flex-shrink-0 text-sm text-ink-soft">$</span>
+                        <span className="mx-2.5 h-5 w-px flex-shrink-0 bg-line" />
+                        <input
+                          type="number"
+                          min={MIN_FOLLOW_UP_PRICE}
+                          max={MAX_FOLLOW_UP_PRICE}
+                          step="0.01"
+                          value={followUpPrice}
+                          onChange={(e) => setFollowUpPrice(e.target.value)}
+                          aria-label="Follow-up conversation price in US dollars"
+                          className="min-w-0 flex-1 border-0 p-0 text-sm text-ink focus:outline-none focus:ring-0"
+                        />
+                        <span className="flex-shrink-0 text-sm text-ink-soft">
+                          USD
+                        </span>
+                      </div>
+                      <p className="mt-1.5 text-xs text-ink-soft">
+                        Between ${MIN_FOLLOW_UP_PRICE} and ${MAX_FOLLOW_UP_PRICE}.
+                        {!isNaN(parseFloat(followUpPrice)) &&
+                          parseFloat(followUpPrice) >= MIN_FOLLOW_UP_PRICE &&
+                          parseFloat(followUpPrice) <= MAX_FOLLOW_UP_PRICE && (
+                            <>
+                              {" "}
+                              You receive $
+                              {(parseFloat(followUpPrice) * 0.85).toFixed(2)}{" "}
+                              after DMQ&apos;s 15% platform fee.
+                            </>
+                          )}
+                      </p>
+                    </>
+                  )}
+
+                  <ul className="mt-3 space-y-1.5 text-xs text-ink-soft">
+                    <li>
+                      Askers are offered a conversation in the email that
+                      delivers your answer. It isn&apos;t shown on your public
+                      page.
+                    </li>
+                    <li>
+                      You confirm each call and add your own Zoom or Google
+                      Meet link for it. A new link per call, with a waiting
+                      room turned on, is best.
+                    </li>
+                    <li>
+                      Askers can cancel free until 24 hours before. Later
+                      cancellations and no-shows are charged in full. If you
+                      cancel or don&apos;t show up, the asker isn&apos;t
+                      charged.
+                    </li>
+                    <li>
+                      Your email address isn&apos;t shared by Drop Me A
+                      Question. Your meeting service may show your display
+                      name.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           {error && <p className="text-sm text-postal-red">{error}</p>}
           {saved && <p className="text-sm text-postal-blue">Saved.</p>}

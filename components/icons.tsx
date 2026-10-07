@@ -292,6 +292,15 @@ export function LightbulbIcon({ className }: IconProps) {
   )
 }
 
+export function VideoIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="2" y="6" width="13" height="12" rx="2" />
+      <path d="M15 10l6-3v10l-6-3z" />
+    </svg>
+  )
+}
+
 export function ExternalLinkIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
