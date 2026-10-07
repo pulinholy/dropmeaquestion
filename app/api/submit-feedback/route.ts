@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 const MAX_COMMENT_LENGTH = 500
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, [
+    { name: 'submit-feedback', limit: 10, windowSeconds: 3600 },
+  ])
+  if (limited) return limited
+
   const { questionId, rating, comment } = await request.json()
 
   if (typeof questionId !== 'string' || (rating !== 'up' && rating !== 'down')) {

@@ -11,6 +11,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Housekeeping: rate-limit counters older than two days are dead weight.
+  // Non-fatal -- the table may not exist yet, and that must not stop expiries.
+  const { error: cleanupError } = await supabaseAdmin
+    .from('rate_limits')
+    .delete()
+    .lt('window_start', new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString())
+  if (cleanupError) {
+    await logError('cron/expire-questions:rate-limit-cleanup', cleanupError)
+  }
+
   const { data: overdue, error: fetchError } = await supabaseAdmin
     .from('questions')
     .select('id, expert_id, asker_email, question_text, stripe_payment_intent_id')

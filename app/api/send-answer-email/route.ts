@@ -4,12 +4,19 @@ import { renderEmailLayout, renderEmailButton, renderEmailQuote, EMAIL_BASE_URL 
 import { logError } from '@/lib/log-error'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   const user = await requireUser(request)
   if (!user) {
     return NextResponse.json({ error: 'Not authorized' }, { status: 401 })
   }
+
+  // Per signed-in expert -- each call sends a real email from our domain.
+  const limited = await enforceRateLimit(request, [
+    { name: 'send-answer-email', subject: user.id, limit: 60, windowSeconds: 3600 },
+  ])
+  if (limited) return limited
 
   const { questionId } = await request.json()
   if (typeof questionId !== 'string') {

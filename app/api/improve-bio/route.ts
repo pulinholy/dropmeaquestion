@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server'
 import { anthropic } from '@/lib/anthropic'
 import { logError } from '@/lib/log-error'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 const MAX_BIO_LENGTH = 500
 const MIN_INPUT_LENGTH = 10
 const MAX_INPUT_LENGTH = 2000
 
 export async function POST(request: Request) {
+  // Every call here costs money and the route is open to anyone (it's used
+  // during sign-up), so cap each visitor and the whole site.
+  const limited = await enforceRateLimit(request, [
+    { name: 'improve-bio', limit: 10, windowSeconds: 3600 },
+    { name: 'improve-bio-global', subject: 'global', limit: 200, windowSeconds: 3600 },
+  ])
+  if (limited) return limited
+
   const { bio } = await request.json()
 
   if (typeof bio !== 'string' || bio.trim().length < MIN_INPUT_LENGTH) {

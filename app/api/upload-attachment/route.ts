@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 const MAX_SIZE = 4 * 1024 * 1024
 
@@ -28,6 +29,11 @@ function sniffFileType(bytes: Uint8Array): { ext: string; mimeType: string } | n
 }
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, [
+    { name: 'upload-attachment', limit: 20, windowSeconds: 3600 },
+  ])
+  if (limited) return limited
+
   let sessionIdForLogging: string | null = null
 
   try {

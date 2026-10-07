@@ -4,12 +4,19 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 import { generateReferenceId } from '@/lib/reference-id'
 import { APP_BASE_URL } from '@/lib/site'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 const MAX_QUESTION_LENGTH = 1000
 const PLATFORM_FEE_RATE = 0.15
 const MAX_REFERENCE_ID_ATTEMPTS = 5
 
 export async function POST(request: Request) {
+  // Each call writes a question row and a Stripe session.
+  const limited = await enforceRateLimit(request, [
+    { name: 'create-checkout', limit: 10, windowSeconds: 600 },
+  ])
+  if (limited) return limited
+
   const { expertId, question, email, username } = await request.json()
 
   if (typeof question !== 'string' || question.length > MAX_QUESTION_LENGTH) {
