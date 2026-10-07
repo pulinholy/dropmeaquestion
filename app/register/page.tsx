@@ -151,69 +151,76 @@ export default function RegisterPage() {
       setLoading(false)
       return
     }
-    // Step 1: create the auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+    try {
+      // Step 1: the login. If an earlier attempt already created it (and
+      // signed them in) but failed later, reuse it -- signing up again with
+      // the same email would only fail with a confusing "already registered".
+      const typedEmail = email.trim().toLowerCase()
+      const { data: sessionData } = await supabase.auth.getSession()
+      const existingUser = sessionData.session?.user
 
-    if (authError || !authData.user) {
-      setError(authError?.message || "Something went wrong creating your account.")
-      setLoading(false)
-      return
-    }
+      if (!existingUser || existingUser.email?.toLowerCase() !== typedEmail) {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: typedEmail,
+          password,
+        })
 
-    const userId = authData.user.id
+        if (authError || !authData.user) {
+          setError(authError?.message || "Something went wrong creating your account.")
+          setLoading(false)
+          return
+        }
 
-    // Step 2: create their profile
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: userId,
-      full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-      username: username,
-      is_expert: true,
-    })
+        // An already-registered address comes back as a user with no
+        // identities rather than an error.
+        if (authData.user.identities?.length === 0) {
+          setError("An account with this email already exists. Try logging in instead.")
+          setLoading(false)
+          return
+        }
 
-    if (profileError) {
-      setError(profileError.message)
-      setLoading(false)
-      return
-    }
+        if (!authData.session) {
+          setError(
+            "Your account was created but we couldn't sign you in. Please log in to finish setting up your page."
+          )
+          setLoading(false)
+          return
+        }
+      }
 
-    // Step 3: create their expert record
-    const { error: expertError } = await supabase.from("experts").insert({
-      id: userId,
-      headline,
-      bio,
-      price_cents: Math.round(parseFloat(price) * 100),
-      response_window_hours: parseInt(responseWindowHours, 10),
-    })
+      // Step 2: profile, expert record and topics, created together in one
+      // database transaction -- all of it or none of it.
+      const { error: pageError } = await supabase.rpc("create_expert_page", {
+        p_full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+        p_username: username,
+        p_headline: headline,
+        p_bio: bio,
+        p_price_cents: Math.round(parseFloat(price) * 100),
+        p_response_window_hours: parseInt(responseWindowHours, 10),
+        p_topics: topics.map((name) => ({ name, slug: slugify(name) })),
+      })
 
-    if (expertError) {
-      setError(expertError.message)
-      setLoading(false)
-      return
-    }
-
-    // Step 4: save their "ask me about" topics, if any
-    if (topics.length > 0) {
-      const { error: topicsError } = await supabase.from("expert_topics").insert(
-        topics.map((name, index) => ({
-          expert_id: userId,
-          name,
-          slug: slugify(name),
-          sort_order: index,
-        }))
-      )
-
-      if (topicsError) {
-        setError(topicsError.message)
+      if (pageError) {
+        if (pageError.message === "username_taken") {
+          setUsernameError("That username was just taken. Please choose another.")
+          setError("That username was just taken. Please choose another.")
+        } else if (pageError.message === "already_registered") {
+          setError("This account already has a page. Log in to manage it.")
+        } else {
+          // The login exists already, so a retry won't need a new signup.
+          setError(
+            "We couldn't finish setting up your page. Please check the details and try again."
+          )
+        }
         setLoading(false)
         return
       }
-    }
 
-    setLoading(false)
-    router.push("/register/success")
+      router.push("/register/success")
+    } catch {
+      setError("Something went wrong. Please check your connection and try again.")
+      setLoading(false)
+    }
   }
 
   return (
