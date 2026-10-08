@@ -19,10 +19,13 @@ export async function POST(request: Request) {
   ])
   if (limited) return limited
 
-  const { questionId } = await request.json()
+  const { questionId, offerFollowUp } = await request.json()
   if (typeof questionId !== 'string') {
     return NextResponse.json({ error: 'Missing questionId' }, { status: 400 })
   }
+  // The expert can switch the offer off for this one answer. Only an explicit
+  // false opts out, so older pages that don't send it behave as before.
+  const optedOut = offerFollowUp === false
 
   // Looked up server-side, never trusted from the client -- the expert's
   // browser must never hold the asker's email address at all, and the
@@ -56,8 +59,16 @@ export async function POST(request: Request) {
 
   // An optional paid follow-up conversation, only when this expert offers
   // them and the offer is still open. Any trouble checking means no offer.
-  const offer = await getFollowUpOffer(questionId)
-  const followUpBlock = offer.ok
+  if (optedOut) {
+    // Remembered so the booking page refuses this question too. Ignored if
+    // the column isn't there yet; the email still goes out without the offer.
+    await supabaseAdmin
+      .from('questions')
+      .update({ follow_up_opted_out: true })
+      .eq('id', questionId)
+  }
+  const offer = optedOut ? null : await getFollowUpOffer(questionId)
+  const followUpBlock = offer?.ok
     ? `
     <hr style="border:0; border-top:1px solid #ddd6c8; margin:28px 0 20px;" />
     <p style="margin:0 0 8px; font-weight:bold;">Want to talk it through with ${escapeHtml(expertFirstName)}?</p>

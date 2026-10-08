@@ -75,11 +75,35 @@ export default function QuestionsByStatusPage() {
   const [answerText, setAnswerText] = useState("")
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  // Whether this expert has follow-up conversations switched on in Pricing,
+  // and whether to offer one with the answer being written.
+  const [followUpOn, setFollowUpOn] = useState(false)
+  const [offerFollowUp, setOfferFollowUp] = useState(true)
 
   useEffect(() => {
     loadQuestions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (!sessionData.session) return
+      // Fails harmlessly (option hidden) before the follow-up SQL has run.
+      const { data } = await supabase
+        .from("experts")
+        .select("follow_up_enabled, follow_up_price_cents")
+        .eq("id", sessionData.session.user.id)
+        .maybeSingle()
+      if (!cancelled) {
+        setFollowUpOn(Boolean(data?.follow_up_enabled && data.follow_up_price_cents))
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   async function loadQuestions() {
     setLoading(true)
@@ -187,7 +211,7 @@ export default function QuestionsByStatusPage() {
     await fetch("/api/send-answer-email", {
       method: "POST",
       headers: authHeaders,
-      body: JSON.stringify({ questionId }),
+      body: JSON.stringify({ questionId, offerFollowUp: !followUpOn || offerFollowUp }),
     })
 
     setAnswering(null)
@@ -252,6 +276,17 @@ export default function QuestionsByStatusPage() {
                     className="w-full rounded-sm border border-line px-3 py-2 text-ink"
                     placeholder="Write your answer..."
                   />
+                  {followUpOn && (
+                    <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink">
+                      <input
+                        type="checkbox"
+                        checked={offerFollowUp}
+                        onChange={(e) => setOfferFollowUp(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded-sm border-line accent-postal-red"
+                      />
+                      Offer 15-minute follow-up conversations after I answer
+                    </label>
+                  )}
                   <div className="flex gap-2">
                     <button
                       onClick={() => submitAnswer(q.id)}
@@ -286,6 +321,7 @@ export default function QuestionsByStatusPage() {
                       onClick={() => {
                         setAnswering(q.id)
                         setAnswerText("")
+                        setOfferFollowUp(true)
                       }}
                       className="rounded-sm bg-postal-red px-3 py-1.5 text-sm font-medium text-paper hover:bg-ink"
                     >

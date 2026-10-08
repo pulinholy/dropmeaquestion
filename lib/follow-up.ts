@@ -69,6 +69,16 @@ export async function getFollowUpOffer(questionId: string): Promise<FollowUpOffe
     const offerEndsAt = answeredAt.getTime() + FOLLOW_UP_OFFER_DAYS * 24 * 3600 * 1000
     if (Date.now() > offerEndsAt) return { ok: false, reason: 'offer_expired' }
 
+    // The expert can switch the offer off for a single answer. A separate
+    // query so the offer still works before supabase/follow_up_per_answer.sql
+    // has been run (the read just fails and nothing is opted out).
+    const { data: optOut } = await supabaseAdmin
+      .from('questions')
+      .select('follow_up_opted_out')
+      .eq('id', questionId)
+      .maybeSingle()
+    if (optOut?.follow_up_opted_out) return { ok: false, reason: 'not_offered' }
+
     const { data: expert } = await supabaseAdmin
       .from('experts')
       .select(
