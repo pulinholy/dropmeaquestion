@@ -42,6 +42,7 @@ export async function POST(request: Request) {
     from: ['disputed'],
     outcome: resolution.outcome,
     reason: `${resolution.reason}:${admin.email ?? 'admin'}`,
+    actor: 'admin',
   })
   if (!result.ok) {
     await logError('admin/follow-up-resolve', new Error('Not resolvable'), {

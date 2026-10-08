@@ -7,7 +7,9 @@ import {
   FOLLOW_UP_PLATFORM_FEE_RATE,
   formatPrice,
   joinWindowFor,
+  type FollowUpProblemReason,
 } from "@/lib/follow-up-rules"
+import ReportProblemForm from "@/components/ReportProblemForm"
 
 export type FollowUpCall = {
   id: string
@@ -178,8 +180,9 @@ export function UpcomingCard({
   onCancel: () => void
   onComplete: () => void
   onAskerNoShow: () => void
-  onReport: () => void
+  onReport: (reason: FollowUpProblemReason, note: string) => void
 }) {
+  const [reporting, setReporting] = useState(false)
   if (!call.confirmedStart) return null
   const { opensAt, closesAt } = joinWindowFor(call.confirmedStart)
   const open = now >= opensAt.getTime() && now <= closesAt.getTime()
@@ -223,7 +226,19 @@ export function UpcomingCard({
         )}
       </div>
 
-      {started && call.expertMarked ? (
+      {started && reporting ? (
+        <div className="mt-4 border-t border-line pt-3">
+          <ReportProblemForm
+            role="expert"
+            busy={busy}
+            onCancel={() => setReporting(false)}
+            onSubmit={(reason, note) => {
+              onReport(reason, note)
+              setReporting(false)
+            }}
+          />
+        </div>
+      ) : started && call.expertMarked ? (
         <div className="mt-4 border-t border-line pt-3">
           <p className="text-xs text-ink-soft">
             {call.expertMarked === "completed"
@@ -234,7 +249,7 @@ export function UpcomingCard({
             reported.
           </p>
           <div className="mt-2">
-            <button type="button" disabled={busy} onClick={onReport} className={linkButton}>
+            <button type="button" disabled={busy} onClick={() => setReporting(true)} className={linkButton}>
               Report a problem
             </button>
           </div>
@@ -271,7 +286,7 @@ export function UpcomingCard({
             >
               Asker didn&apos;t join
             </button>
-            <button type="button" disabled={busy} onClick={onReport} className={linkButton}>
+            <button type="button" disabled={busy} onClick={() => setReporting(true)} className={linkButton}>
               Report a problem
             </button>
           </div>

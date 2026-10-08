@@ -8,6 +8,7 @@ import {
   usableSlotsForHold,
 } from './follow-up'
 import { releaseFollowUpHold } from './follow-up-release'
+import { logFollowUpEvent } from './follow-up-events'
 import {
   sendFollowUpReleasedEmail,
   sendFollowUpRequestedEmails,
@@ -129,6 +130,11 @@ export async function confirmFollowUpPayment({
     return
   }
   if (!updated || updated.length === 0) return
+
+  await logFollowUpEvent(followUpId, 'card_hold_placed', 'system', {
+    capture_before: captureBefore.toISOString(),
+    usable_slots: usable,
+  })
 
   // Isolated so a failed email can never undo the booking.
   try {

@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { FOLLOW_UP_NO_SHOW_AFTER_MINUTES } from '@/lib/follow-up'
 import { logError } from '@/lib/log-error'
+import { logFollowUpEvent } from '@/lib/follow-up-events'
 
 // After the start time the expert says how it went: it took place, or the
 // asker never joined. That is a claim, not a charge -- the asker is asked to
@@ -97,6 +98,8 @@ export async function POST(request: Request) {
       { status: 409 }
     )
   }
+
+  await logFollowUpEvent(call.id, 'marked_by_expert', 'expert', { mark: body.outcome })
 
   return NextResponse.json({ ok: true })
 }

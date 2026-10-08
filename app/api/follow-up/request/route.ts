@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { APP_BASE_URL } from '@/lib/site'
+import { logFollowUpEvent } from '@/lib/follow-up-events'
 import {
   FOLLOW_UP_PLATFORM_FEE_RATE,
   FOLLOW_UP_POLICY_LINES,
@@ -133,6 +134,12 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
+
+  await logFollowUpEvent(created.id, 'policy_accepted', 'asker', {
+    policy_version: FOLLOW_UP_POLICY_VERSION,
+    price_cents: priceCents,
+    proposed_slots: slotCheck.slots,
+  })
 
   try {
     const session = await stripe.checkout.sessions.create({

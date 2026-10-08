@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { isJoinWindowOpen } from '@/lib/follow-up'
+import { logFollowUpEvent, meetingLinkHost } from '@/lib/follow-up-events'
 
 // The expert joins their confirmed conversation. The server decides whether
 // the join window is open and records the first join -- the evidence used if
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 
   const { data: call } = await supabaseAdmin
     .from('follow_up_calls')
-    .select('id, status, confirmed_start, meeting_link')
+    .select('id, status, confirmed_start, meeting_link, expert_joined_at')
     .eq('id', body.id)
     .eq('expert_id', user.id)
     .maybeSingle()
@@ -50,6 +51,10 @@ export async function POST(request: Request) {
     .update({ expert_joined_at: new Date().toISOString() })
     .eq('id', call.id)
     .is('expert_joined_at', null)
+  await logFollowUpEvent(call.id, 'join_link_opened', 'expert', {
+    first: !call.expert_joined_at,
+    meeting_service: meetingLinkHost(call.meeting_link),
+  })
 
   return NextResponse.json({ url: call.meeting_link })
 }

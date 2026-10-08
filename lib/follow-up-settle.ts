@@ -7,7 +7,12 @@ import {
   sendFollowUpDisputeAlert,
   sendFollowUpOutcomeEmails,
 } from './send-follow-up-outcome-emails'
-import type { FollowUpOutcome } from './follow-up-rules'
+import { logFollowUpEvent, type FollowUpActor } from './follow-up-events'
+import {
+  problemReasonLabel,
+  type FollowUpOutcome,
+  type FollowUpProblemReason,
+} from './follow-up-rules'
 
 type OutcomeSpec = {
   status: string
@@ -36,6 +41,8 @@ export async function settleFollowUp({
   reason,
   reportedBy,
   expertId,
+  actor = 'system',
+  problem,
 }: {
   id: string
   // Only moves a booking that is currently in one of these states, so two
@@ -47,6 +54,10 @@ export async function settleFollowUp({
   reportedBy?: 'asker' | 'expert' | null
   // Restricts the move to one expert's own booking.
   expertId?: string
+  // Who caused this, for the evidence timeline.
+  actor?: FollowUpActor
+  // For "disputed": what the reporter said went wrong.
+  problem?: { reason: FollowUpProblemReason; note: string | null }
 }): Promise<{ ok: true } | { ok: false }> {
   const spec = OUTCOMES[outcome]
   const now = new Date().toISOString()
@@ -61,6 +72,10 @@ export async function settleFollowUp({
   if (outcome === 'disputed') {
     patch.problem_reported_at = now
     patch.problem_reported_by = reportedBy ?? null
+    if (problem) {
+      patch.problem_reason = problem.reason
+      patch.problem_note = problem.note
+    }
   }
 
   let query = supabaseAdmin.from('follow_up_calls').update(patch).eq('id', id).in('status', from)
@@ -75,6 +90,13 @@ export async function settleFollowUp({
   }
   if (!moved || moved.length === 0) return { ok: false }
   const call = moved[0]
+
+  await logFollowUpEvent(call.id, outcome === 'disputed' ? 'problem_reported' : 'settled', actor, {
+    outcome,
+    reason,
+    money: spec.money,
+    ...(problem ? { problem_reason: problem.reason, problem_note: problem.note } : {}),
+  })
 
   // Money first. If it fails, the daily job retries (captured_at /
   // released_at are only set once Stripe confirms).
@@ -122,6 +144,8 @@ export async function settleFollowUp({
       await sendFollowUpDisputeAlert({
         referenceId: question?.reference_id ?? null,
         reportedBy: reportedBy ?? 'the system (only the asker opened the join page)',
+        problemReason: problem ? problemReasonLabel(problem.reason, reportedBy ?? null) : null,
+        problemNote: problem?.note ?? null,
         priceCents: call.price_cents,
         askerJoined: Boolean(call.asker_joined_at),
         expertJoined: Boolean(call.expert_joined_at),

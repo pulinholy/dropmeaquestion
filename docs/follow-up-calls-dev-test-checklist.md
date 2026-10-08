@@ -12,7 +12,7 @@ waiting days. Tick each box as you go. If something fails, note the booking row
 
 - [ ] In the **dev** Supabase SQL Editor, run in order: `follow_up_settings.sql`,
       `follow_up_calls.sql`, `follow_up_settlement.sql`, `follow_up_review.sql`,
-      `follow_up_per_answer.sql`, `follow_up_beta.sql`, plus `rate_limits.sql` if it isn't there yet.
+      `follow_up_per_answer.sql`, `follow_up_beta.sql`, `follow_up_evidence.sql`, plus `rate_limits.sql` if it isn't there yet.
 - [ ] Start the Stripe webhook forwarder:
       `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
       Make sure `STRIPE_WEBHOOK_SECRET` in `.env.local` matches the `whsec_...`
@@ -96,7 +96,7 @@ emails.
 | **Expert cancels** | Confirmed call, expert cancels | `cancelled` (by expert). Canceled. Asker is told and can book another time |
 | **Asker no-show** | Slot over, asker never joined, expert clicks **Asker didn't join** | Recorded only (still `confirmed`, **Uncaptured**). After the daily job runs a day after the call: `asker_no_show`, **Succeeded**. The button must be disabled until the slot has ended |
 | **No-show blocked** | Same, but the asker had clicked Join | Button disabled, and the API refuses |
-| **Problem report** | After the start, asker or expert clicks Report | `disputed`. Stripe still **Uncaptured**. Alert email arrives at the support inbox |
+| **Problem report** | After the start, asker or expert clicks Report, picks a reason (try each, and "Something else" with and without a note) | `disputed`. Stripe still **Uncaptured**. Alert email arrives at the support inbox with the reason and note. `/admin/conversations` shows them, plus a **Timeline** of everything that happened |
 | **Admin resolve** | `/admin/conversations`: try each of the 3 buttons on 3 different disputes | Charge, release, release and record that the expert didn't show |
 | **Expiry** | Set `confirm_by` to the past, run the job | `expired`. Canceled. Asker emailed |
 

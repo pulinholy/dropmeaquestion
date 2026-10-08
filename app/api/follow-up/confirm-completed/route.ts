@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     from: ['confirmed'],
     outcome: 'completed',
     reason: 'asker_confirmed_completed',
+    actor: 'asker',
   })
   if (!result.ok) {
     return NextResponse.json(

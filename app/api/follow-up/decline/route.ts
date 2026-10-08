@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { logError } from '@/lib/log-error'
 import { releaseFollowUpHold } from '@/lib/follow-up-release'
+import { logFollowUpEvent } from '@/lib/follow-up-events'
 import { sendFollowUpReleasedEmail } from '@/lib/send-follow-up-emails'
 
 // The expert can't make any of the proposed times. The asker's card hold is
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
     )
   }
   const call = claimed[0]
+  await logFollowUpEvent(call.id, 'declined', 'expert')
 
   // If letting go of the hold fails, the daily job retries it.
   await releaseFollowUpHold(call.id, call.stripe_payment_intent_id)

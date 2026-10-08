@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { settleFollowUp } from '@/lib/follow-up-settle'
+import { parseProblemReport } from '@/lib/follow-up-rules'
 
 // Either side reports that something went wrong once the start time has
 // begun (the other person didn't show, the call failed, ...). Nothing is
@@ -13,7 +14,7 @@ import { settleFollowUp } from '@/lib/follow-up-settle'
 // booking id identifies them. A token that is present but invalid is rejected,
 // never quietly treated as an asker.
 export async function POST(request: Request) {
-  let body: { id?: unknown }
+  let body: { id?: unknown; reason?: unknown; note?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -21,6 +22,10 @@ export async function POST(request: Request) {
   }
   if (typeof body.id !== 'string') {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
+  }
+  const report = parseProblemReport(body)
+  if (!report.ok) {
+    return NextResponse.json({ error: report.error }, { status: 400 })
   }
 
   let role: 'asker' | 'expert' = 'asker'
@@ -73,6 +78,8 @@ export async function POST(request: Request) {
     reason: `${role}_reported_problem`,
     reportedBy: role,
     expertId,
+    actor: role,
+    problem: { reason: report.reason, note: report.note },
   })
   if (!result.ok) {
     return NextResponse.json(

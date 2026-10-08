@@ -55,6 +55,7 @@ export async function POST(request: Request) {
     from: ['confirmed'],
     outcome: 'cancelled_by_expert',
     reason: 'expert_cancelled',
+    actor: 'expert',
     expertId: user.id,
   })
   if (!result.ok) {

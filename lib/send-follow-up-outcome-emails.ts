@@ -268,7 +268,11 @@ export async function sendFollowUpDisputeAlert({
   askerJoined,
   expertJoined,
   captureBefore,
+  problemReason,
+  problemNote,
 }: {
+  problemReason: string | null
+  problemNote: string | null
   referenceId: string | null
   reportedBy: string
   priceCents: number
@@ -281,6 +285,8 @@ export async function sendFollowUpDisputeAlert({
     <ul style="margin:0 0 16px; padding-left:20px;">
       <li>Question: ${referenceId ? `#${escapeHtml(referenceId)}` : 'n/a'}</li>
       <li>Reported by: ${escapeHtml(reportedBy)}</li>
+      ${problemReason ? `<li>Reason: ${escapeHtml(problemReason)}</li>` : ''}
+      ${problemNote ? `<li>Their note: ${escapeHtml(problemNote)}</li>` : ''}
       <li>Amount held: ${money(priceCents)}</li>
       <li>Asker opened the join page: ${askerJoined ? 'yes' : 'no'}</li>
       <li>Expert opened the join page: ${expertJoined ? 'yes' : 'no'}</li>

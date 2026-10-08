@@ -1,6 +1,7 @@
 import { stripe } from './stripe'
 import { supabaseAdmin } from './supabase-admin'
 import { logError } from './log-error'
+import { logFollowUpEvent } from './follow-up-events'
 
 // Charges the asker's card hold in full (the platform fee and the transfer to
 // the expert were fixed when the hold was placed). captured_at is only set
@@ -41,5 +42,6 @@ export async function captureFollowUpHold(
     await logError('follow-up-capture:record', error, { followUpId })
     return false
   }
+  await logFollowUpEvent(followUpId, 'card_charged', 'system', { payment_intent: paymentIntentId })
   return true
 }

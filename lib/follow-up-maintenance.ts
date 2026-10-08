@@ -6,6 +6,7 @@ import { sendFollowUpReleasedEmail } from './send-follow-up-emails'
 import { releaseFollowUpHold } from './follow-up-release'
 import { captureFollowUpHold } from './follow-up-capture'
 import { settleFollowUp } from './follow-up-settle'
+import { logFollowUpEvent } from './follow-up-events'
 import {
   FOLLOW_UP_AUTO_SETTLE_HOURS_AFTER_END,
   FOLLOW_UP_DURATION_MINUTES,
@@ -72,6 +73,7 @@ export async function maintainFollowUps() {
         .update({ status: 'expired', released_at: new Date().toISOString() })
         .eq('id', row.id)
         .eq('status', 'awaiting_payment')
+      await logFollowUpEvent(row.id, 'checkout_abandoned', 'system')
       summary.abandoned++
     } catch (err) {
       await logError('follow-up-maintenance:unpaid', err, { followUpId: row.id })
@@ -102,6 +104,7 @@ export async function maintainFollowUps() {
         .select('id')
       if (!claimed || claimed.length === 0) continue
 
+      await logFollowUpEvent(row.id, 'request_expired', 'system')
       await releaseFollowUpHold(row.id, row.stripe_payment_intent_id)
 
       const { data: question } = await supabaseAdmin

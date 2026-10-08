@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { logError } from '@/lib/log-error'
 import { isAllowedMeetingLink } from '@/lib/follow-up'
+import { logFollowUpEvent, meetingLinkHost } from '@/lib/follow-up-events'
 import { sendFollowUpConfirmedEmails } from '@/lib/send-follow-up-emails'
 import {
   cancelScheduledEmails,
@@ -96,6 +97,11 @@ export async function POST(request: Request) {
     )
   }
 
+  await logFollowUpEvent(call.id, 'confirmed', 'expert', {
+    confirmed_start: new Date(chosenMs).toISOString(),
+    meeting_service: meetingLinkHost(link.url),
+  })
+
   // Isolated: a failed email must never undo the confirmation.
   try {
     const [{ data: question }, { data: profile }, { data: expertRow }] = await Promise.all([
@@ -134,6 +140,9 @@ export async function POST(request: Request) {
         confirmedStart,
         askerTimezone: call.asker_timezone,
         priceCents: call.price_cents,
+      })
+      await logFollowUpEvent(call.id, 'emails_scheduled', 'system', {
+        reminders_and_review: reminderIds.length,
       })
       if (reminderIds.length > 0) {
         const { error: saveError } = await supabaseAdmin

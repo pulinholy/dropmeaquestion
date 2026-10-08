@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { problemReasonLabel } from "@/lib/follow-up-rules"
 
 type Dispute = {
   id: string
@@ -12,6 +13,9 @@ type Dispute = {
   captureBefore: string | null
   reportedAt: string | null
   reportedBy: string | null
+  problemReason: string | null
+  problemNote: string | null
+  events: { event: string; actor: string; detail: Record<string, unknown> | null; at: string }[]
   reason: string | null
   askerJoinedAt: string | null
   expertJoinedAt: string | null
@@ -40,6 +44,21 @@ const RESOLUTIONS = [
 
 function fmt(iso: string | null): string {
   return iso ? new Date(iso).toLocaleString() : "—"
+}
+
+// "join_link_opened" -> "Join link opened"
+function eventLabel(event: string): string {
+  const text = event.replace(/_/g, " ")
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+// A short, readable summary of an event's details.
+function eventDetail(detail: Record<string, unknown> | null): string {
+  if (!detail) return ""
+  return Object.entries(detail)
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([k, v]) => `${k.replace(/_/g, " ")}: ${typeof v === "object" ? JSON.stringify(v) : String(v)}`)
+    .join(" · ")
 }
 
 export default function AdminConversationsPage() {
@@ -140,6 +159,42 @@ export default function AdminConversationsPage() {
                 <dd className="text-ink">{fmt(d.captureBefore)}</dd>
               </div>
             </dl>
+            {(d.problemReason || d.problemNote) && (
+              <div className="mt-3 rounded-sm bg-line/30 p-3 text-sm text-ink">
+                {d.problemReason && (
+                  <p className="font-medium">
+                    {problemReasonLabel(
+                      d.problemReason,
+                      d.reportedBy === "expert" ? "expert" : "asker"
+                    )}
+                  </p>
+                )}
+                {d.problemNote && (
+                  <p className="mt-1 whitespace-pre-wrap text-ink-soft">{d.problemNote}</p>
+                )}
+              </div>
+            )}
+
+            {d.events.length > 0 && (
+              <details className="mt-3">
+                <summary className="cursor-pointer text-xs font-medium text-ink-soft hover:text-ink">
+                  Timeline ({d.events.length})
+                </summary>
+                <ol className="mt-2 space-y-1.5 border-l border-line pl-3">
+                  {d.events.map((e, i) => (
+                    <li key={i} className="text-xs">
+                      <span className="text-ink-soft">{fmt(e.at)}</span>{" "}
+                      <span className="font-medium text-ink">{eventLabel(e.event)}</span>{" "}
+                      <span className="text-ink-soft">({e.actor})</span>
+                      {eventDetail(e.detail) && (
+                        <p className="mt-0.5 break-words text-ink-soft">{eventDetail(e.detail)}</p>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
+
             <div className="mt-4 flex flex-wrap gap-2">
               {RESOLUTIONS.map((r) => (
                 <button

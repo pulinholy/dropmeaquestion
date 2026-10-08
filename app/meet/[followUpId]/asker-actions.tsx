@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { cancellationKind, reviewOpensAt } from "@/lib/follow-up-rules"
+import ReportProblemForm from "@/components/ReportProblemForm"
 
 const GENERIC_ERROR = "Something went wrong. Please try again."
 
@@ -17,6 +18,7 @@ export default function AskerActions({
   const [now, setNow] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
+  const [reporting, setReporting] = useState(false)
 
   // Starts null so the server-rendered page and first client render match.
   useEffect(() => {
@@ -73,15 +75,6 @@ export default function AskerActions({
     }
   }
 
-  function report() {
-    if (
-      window.confirm(
-        "Report a problem with this conversation? We'll review it, and your card won't be charged unless we find it took place."
-      )
-    ) {
-      post("/api/follow-up/report-problem", { id: followUpId })
-    }
-  }
 
   return (
     <div className="mt-8 rounded-lg border border-line bg-white p-5">
@@ -122,7 +115,18 @@ export default function AskerActions({
         </>
       )}
 
-      {kind === "started" && (
+      {kind === "started" && reporting && (
+        <ReportProblemForm
+          role="asker"
+          busy={busy}
+          onCancel={() => setReporting(false)}
+          onSubmit={(reason, note) =>
+            post("/api/follow-up/report-problem", { id: followUpId, reason, note })
+          }
+        />
+      )}
+
+      {kind === "started" && !reporting && (
         <>
           <h2 className="text-sm font-semibold text-ink">How did it go?</h2>
           <p className="mt-1 text-xs text-ink-soft">
@@ -145,7 +149,7 @@ export default function AskerActions({
             <button
               type="button"
               disabled={busy}
-              onClick={report}
+              onClick={() => setReporting(true)}
               className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
             >
               Report a problem

@@ -62,6 +62,7 @@ export async function POST(request: Request) {
     from: ['confirmed'],
     outcome: kind === 'free' ? 'cancelled_by_asker' : 'late_cancelled',
     reason: kind === 'free' ? 'asker_cancelled_free' : 'asker_cancelled_late',
+    actor: 'asker',
   })
   if (!result.ok) {
     return NextResponse.json(

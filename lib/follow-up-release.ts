@@ -1,6 +1,7 @@
 import { stripe } from './stripe'
 import { supabaseAdmin } from './supabase-admin'
 import { logError } from './log-error'
+import { logFollowUpEvent } from './follow-up-events'
 
 // Lets go of the asker's card hold and records when. released_at is only set
 // once Stripe confirms the hold is gone, so a booking that ended without its
@@ -37,5 +38,8 @@ export async function releaseFollowUpHold(
     await logError('follow-up-release:record', error, { followUpId })
     return false
   }
+  await logFollowUpEvent(followUpId, 'card_hold_released', 'system', {
+    payment_intent: paymentIntentId ?? null,
+  })
   return true
 }

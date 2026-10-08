@@ -221,15 +221,9 @@ export default function ConversationsPage() {
                     act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
                   }
                 }}
-                onReport={() => {
-                  if (
-                    window.confirm(
-                      "Report a problem? Nothing is charged or paid until we've reviewed it."
-                    )
-                  ) {
-                    act(call.id, "/api/follow-up/report-problem", { id: call.id })
-                  }
-                }}
+                onReport={(reason, note) =>
+                  act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
+                }
               />
             ))}
           </div>

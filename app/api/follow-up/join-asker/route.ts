@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { isJoinWindowOpen } from '@/lib/follow-up'
+import { logFollowUpEvent, meetingLinkHost } from '@/lib/follow-up-events'
 
 // The asker joins from their private join page. They have no account, so the
 // unguessable booking id in their emailed link is what identifies them -- the
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
 
   const { data: call } = await supabaseAdmin
     .from('follow_up_calls')
-    .select('id, status, confirmed_start, meeting_link')
+    .select('id, status, confirmed_start, meeting_link, asker_joined_at')
     .eq('id', body.id)
     .maybeSingle()
 
@@ -44,6 +45,10 @@ export async function POST(request: Request) {
     .update({ asker_joined_at: new Date().toISOString() })
     .eq('id', call.id)
     .is('asker_joined_at', null)
+  await logFollowUpEvent(call.id, 'join_link_opened', 'asker', {
+    first: !call.asker_joined_at,
+    meeting_service: meetingLinkHost(call.meeting_link),
+  })
 
   return NextResponse.json({ url: call.meeting_link })
 }

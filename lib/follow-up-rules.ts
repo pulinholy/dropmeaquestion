@@ -254,6 +254,48 @@ export type FollowUpOutcome =
   | 'admin_release_expert_fault'
   | 'disputed'
 
+// ---- Problem reports --------------------------------------------------------
+
+export const FOLLOW_UP_PROBLEM_REASONS = ['no_show', 'link_failed', 'ended_early', 'other'] as const
+export type FollowUpProblemReason = (typeof FOLLOW_UP_PROBLEM_REASONS)[number]
+export const FOLLOW_UP_PROBLEM_NOTE_MAX = 500
+
+// What each reason is called, from the point of view of whoever is reporting.
+export function problemReasonLabel(
+  reason: string,
+  reportedBy: 'asker' | 'expert' | null
+): string {
+  switch (reason) {
+    case 'no_show':
+      return reportedBy === 'expert' ? "The asker didn't join" : "The expert didn't join"
+    case 'link_failed':
+      return "The meeting link didn't work"
+    case 'ended_early':
+      return 'The call ended early'
+    case 'other':
+      return 'Something else'
+    default:
+      return reason
+  }
+}
+
+// Checks a problem report from the browser. The note is required for "other".
+export function parseProblemReport(
+  body: { reason?: unknown; note?: unknown }
+): { ok: true; reason: FollowUpProblemReason; note: string | null } | { ok: false; error: string } {
+  const reason = FOLLOW_UP_PROBLEM_REASONS.find((r) => r === body.reason)
+  if (!reason) return { ok: false, error: 'Please choose what went wrong.' }
+
+  const note = typeof body.note === 'string' ? body.note.trim() : ''
+  if (note.length > FOLLOW_UP_PROBLEM_NOTE_MAX) {
+    return { ok: false, error: `Please keep the note under ${FOLLOW_UP_PROBLEM_NOTE_MAX} characters.` }
+  }
+  if (reason === 'other' && note.length < 3) {
+    return { ok: false, error: 'Please tell us a little about what happened.' }
+  }
+  return { ok: true, reason, note: note || null }
+}
+
 // The asker is emailed to confirm (or report) this long after the start, just
 // after a 15-minute call would have ended.
 export const FOLLOW_UP_REVIEW_EMAIL_MINUTES_AFTER_START = 20
