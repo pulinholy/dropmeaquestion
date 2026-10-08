@@ -7,9 +7,9 @@ import type { FollowUpOutcome } from '@/lib/follow-up'
 const RESOLUTIONS: Record<string, { outcome: FollowUpOutcome; reason: string }> = {
   // The conversation took place: charge the asker, pay the expert.
   capture: { outcome: 'completed', reason: 'admin_capture' },
-  // It didn't, and nobody's to blame: release the hold, no strike.
+  // It didn't, and nobody's to blame: release the hold.
   release: { outcome: 'admin_release', reason: 'admin_release' },
-  // It didn't because the expert didn't show: release the hold and add a strike.
+  // It didn't because the expert didn't show: release the hold and record it.
   release_expert_fault: {
     outcome: 'admin_release_expert_fault',
     reason: 'admin_release_expert_fault',

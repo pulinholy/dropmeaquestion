@@ -5,8 +5,7 @@ import { enforceRateLimit } from '@/lib/rate-limit'
 import { settleFollowUp } from '@/lib/follow-up-settle'
 
 // The expert cancels a confirmed conversation before it starts. The asker is
-// never charged, and it counts as a strike (three in 90 days switches the
-// expert's follow-ups off).
+// never charged.
 export async function POST(request: Request) {
   const user = await requireUser(request)
   if (!user) {

@@ -279,7 +279,7 @@ export default function PricingPage() {
                     Follow-up conversations
                   </h2>
                   <p className="mt-1 text-sm text-ink-soft">
-                    Give askers the option to book a paid 15-minute conversation
+                    Give askers the option to request a paid 15-minute conversation
                     after receiving your answer.
                   </p>
                 </div>
@@ -392,10 +392,10 @@ export default function PricingPage() {
                     per call, with a waiting room turned on, is best.
                   </li>
                   <li>
-                    Askers can cancel free until 24 hours before. Later
-                    cancellations and no-shows are charged in full. If you cancel
-                    or don&apos;t show up, the asker isn&apos;t charged, and
-                    three of these in 90 days turns the feature off.
+                    Askers can cancel free up to 24 hours before the confirmed
+                    call. Later cancellations or asker no-shows are charged in
+                    full. If you cancel or don&apos;t show up, the asker isn&apos;t
+                    charged.
                   </li>
                   <li>
                     Your email address isn&apos;t shared by Drop Me A Question.

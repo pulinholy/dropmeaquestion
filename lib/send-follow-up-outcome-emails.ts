@@ -4,8 +4,6 @@ import { logError } from './log-error'
 import { send } from './send-follow-up-emails'
 import {
   FOLLOW_UP_PLATFORM_FEE_RATE,
-  FOLLOW_UP_STRIKE_LIMIT,
-  FOLLOW_UP_STRIKE_WINDOW_DAYS,
   escapeHtml,
   formatPrice,
   formatSlot,
@@ -112,7 +110,6 @@ export async function sendFollowUpOutcomeEmails({
   questionId,
   referenceId,
   priceCents,
-  strikes,
 }: {
   outcome: FollowUpOutcome
   askerEmail: string | null
@@ -121,7 +118,6 @@ export async function sendFollowUpOutcomeEmails({
   questionId: string
   referenceId: string | null
   priceCents: number
-  strikes: number
 }) {
   const name = escapeHtml(expertFirstName)
   const paid = money(priceCents)
@@ -131,7 +127,6 @@ export async function sendFollowUpOutcomeEmails({
     `${EMAIL_BASE_URL}/follow-up/${questionId}`,
     'Book another time &rarr;'
   )
-  const strikeLine = `<p style="margin:12px 0 0; font-size:13px; color:#4a5568;">This counts as ${strikes} of ${FOLLOW_UP_STRIKE_LIMIT} strikes in the last ${FOLLOW_UP_STRIKE_WINDOW_DAYS} days. At ${FOLLOW_UP_STRIKE_LIMIT}, follow-up conversations are switched off for your account.</p>`
   const notCharged = `Your card was <strong>not charged</strong> &mdash; the hold has been released.`
 
   let asker: Mail | null = null
@@ -185,7 +180,7 @@ export async function sendFollowUpOutcomeEmails({
       }
       expert = {
         subject: 'You cancelled a conversation',
-        body: `<p style="margin:0;">You cancelled the conversation${ref}. The asker wasn&rsquo;t charged.</p>${strikeLine}`,
+        body: `<p style="margin:0;">You cancelled the conversation${ref}. The asker wasn&rsquo;t charged.</p>`,
       }
       break
     case 'expert_no_show':
@@ -196,7 +191,7 @@ export async function sendFollowUpOutcomeEmails({
       }
       expert = {
         subject: 'You missed a conversation',
-        body: `<p style="margin:0;">You didn&rsquo;t join the conversation${ref}, so the asker wasn&rsquo;t charged.</p>${strikeLine}`,
+        body: `<p style="margin:0;">You didn&rsquo;t join the conversation${ref}, so the asker wasn&rsquo;t charged.</p>`,
       }
       break
     case 'neither_joined':

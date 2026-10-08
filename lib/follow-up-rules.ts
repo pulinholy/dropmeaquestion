@@ -206,10 +206,6 @@ export const FOLLOW_UP_AUTO_SETTLE_HOURS_AFTER_END = 24
 // An expert can only report "the asker didn't join" once the slot has fully
 // elapsed, so a slightly late asker isn't charged.
 export const FOLLOW_UP_NO_SHOW_AFTER_MINUTES = FOLLOW_UP_DURATION_MINUTES
-// Three strikes (expert cancelled or didn't show) within 90 days switches the
-// expert's follow-ups off.
-export const FOLLOW_UP_STRIKE_LIMIT = 3
-export const FOLLOW_UP_STRIKE_WINDOW_DAYS = 90
 
 // What cancelling now means for the asker.
 //  free    -> hold released, no charge

@@ -1,10 +1,6 @@
 import { supabaseAdmin } from './supabase-admin'
 import { logError } from './log-error'
-import {
-  FOLLOW_UP_OFFER_DAYS,
-  FOLLOW_UP_STRIKE_LIMIT,
-  FOLLOW_UP_STRIKE_WINDOW_DAYS,
-} from './follow-up-rules'
+import { FOLLOW_UP_OFFER_DAYS } from './follow-up-rules'
 
 // Re-exported so server code can keep importing everything from one place.
 export * from './follow-up-rules'
@@ -109,10 +105,6 @@ export async function getFollowUpOffer(questionId: string): Promise<FollowUpOffe
       return { ok: false, reason: 'not_offered', existing: { status: blocking[0].status } }
     }
 
-    // Three strikes (the expert cancelled or didn't join) turns the offer off.
-    const strikes = await countExpertStrikes(question.expert_id)
-    if (strikes >= FOLLOW_UP_STRIKE_LIMIT) return { ok: false, reason: 'not_offered' }
-
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('full_name')
@@ -142,20 +134,4 @@ export async function getFollowUpOffer(questionId: string): Promise<FollowUpOffe
     }
     return { ok: false, reason: 'unavailable' }
   }
-}
-
-// Times in the last 90 days the expert cancelled a confirmed call or didn't
-// show. Throws if the table can't be read, so callers fail closed.
-export async function countExpertStrikes(expertId: string): Promise<number> {
-  const since = new Date(
-    Date.now() - FOLLOW_UP_STRIKE_WINDOW_DAYS * 24 * 3600 * 1000
-  ).toISOString()
-  const { data, error } = await supabaseAdmin
-    .from('follow_up_calls')
-    .select('id')
-    .eq('expert_id', expertId)
-    .gte('created_at', since)
-    .or('status.eq.expert_no_show,and(status.eq.cancelled,cancelled_by.eq.expert)')
-  if (error) throw error
-  return data?.length ?? 0
 }

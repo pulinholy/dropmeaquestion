@@ -89,11 +89,11 @@ emails.
 | **Late cancel** | 3h away, asker cancels. The button says "Cancel and pay $35" and a confirm appears | `late_cancelled`. **Succeeded** |
 | **Too late** | Started, asker tries to cancel | Refused, with a "Report a problem" hint |
 | **Decline** | Expert clicks "None of these work" | `declined`. Canceled. Asker gets "propose new times" |
-| **Expert cancels** | Confirmed call, expert cancels | `cancelled` (by expert). Canceled. Strike notice shows |
+| **Expert cancels** | Confirmed call, expert cancels | `cancelled` (by expert). Canceled. Asker is told and can book another time |
 | **Asker no-show** | Slot over, asker never joined, expert clicks **Asker didn't join** | `asker_no_show`. **Succeeded**. The button must be disabled until the slot has ended |
 | **No-show blocked** | Same, but the asker had clicked Join | Button disabled, and the API refuses |
 | **Problem report** | After the start, asker or expert clicks Report | `disputed`. Stripe still **Uncaptured**. Alert email arrives at the support inbox |
-| **Admin resolve** | `/admin/conversations`: try each of the 3 buttons on 3 different disputes | Charge, release, release plus strike |
+| **Admin resolve** | `/admin/conversations`: try each of the 3 buttons on 3 different disputes | Charge, release, release and record that the expert didn't show |
 | **Expiry** | Set `confirm_by` to the past, run the job | `expired`. Canceled. Asker emailed |
 
 ## 4. Daily-job auto-settlement
@@ -102,8 +102,8 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
 
 - [ ] Both joined: `completed` and charged.
 - [ ] Only the expert joined: `asker_no_show` and charged.
-- [ ] Only the asker joined: `disputed` (manual review), not a strike.
-- [ ] Neither joined: `expired` and released, no strike.
+- [ ] Only the asker joined: `disputed` (manual review).
+- [ ] Neither joined: `expired` and released.
 
 ## 5. Edge cases
 
@@ -111,9 +111,9 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
 - [ ] **Close the payment page**, then book again: the new attempt works.
 - [ ] **Reminders cancelled:** cancel a confirmed call, and its scheduled emails
       disappear in Resend.
-- [ ] **Three strikes:** cancel three confirmed calls as the expert. The offer
-      then stops appearing in answer emails, and the booking page says it's
-      unavailable. The Conversations page shows the "switched off" notice.
+- [ ] **Per-answer opt-out:** untick "Offer this asker a 15-minute follow-up
+      conversation" when answering. The email has no offer, and the booking
+      page for that question says it isn't available.
 - [ ] **Offer window:** edit the question's `answered_at` to 15 days ago. The
       booking page says the offer has ended.
 - [ ] **Phone check:** open the join page and the Conversations page at phone

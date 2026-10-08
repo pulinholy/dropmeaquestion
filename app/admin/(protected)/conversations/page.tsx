@@ -32,8 +32,8 @@ const RESOLUTIONS = [
   },
   {
     key: "release_expert_fault",
-    label: "Expert didn’t show — release + strike",
-    confirm: "Release the hold and count a strike against the expert?",
+    label: "Expert didn’t show — release",
+    confirm: "Release the hold and record that the expert didn't show?",
     style: "border border-postal-red/30 text-postal-red hover:bg-postal-red/10",
   },
 ] as const

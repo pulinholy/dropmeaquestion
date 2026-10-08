@@ -2,7 +2,6 @@ import { supabaseAdmin } from './supabase-admin'
 import { logError } from './log-error'
 import { captureFollowUpHold } from './follow-up-capture'
 import { releaseFollowUpHold } from './follow-up-release'
-import { countExpertStrikes } from './follow-up'
 import {
   cancelScheduledEmails,
   sendFollowUpDisputeAlert,
@@ -109,13 +108,6 @@ export async function settleFollowUp({
       expertEmail = authUser?.user?.email ?? null
     }
 
-    let strikes = 0
-    try {
-      strikes = await countExpertStrikes(call.expert_id)
-    } catch {
-      // The count is only for the wording of the email.
-    }
-
     await sendFollowUpOutcomeEmails({
       outcome,
       askerEmail: question?.asker_email ?? null,
@@ -124,7 +116,6 @@ export async function settleFollowUp({
       questionId: call.question_id,
       referenceId: question?.reference_id ?? null,
       priceCents: call.price_cents,
-      strikes,
     })
 
     if (outcome === 'disputed') {

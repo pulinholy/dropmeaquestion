@@ -13,8 +13,6 @@ import {
 type Loaded = {
   available: boolean
   enabled: boolean
-  strikes?: number
-  strikeLimit?: number
   calls: FollowUpCall[]
 }
 
@@ -139,24 +137,6 @@ export default function ConversationsPage() {
         answered their question.
       </p>
 
-      {loaded.available &&
-        (loaded.strikes ?? 0) > 0 &&
-        (loaded.strikes ?? 0) < (loaded.strikeLimit ?? 3) && (
-          <p className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-ink">
-            You have {loaded.strikes} of {loaded.strikeLimit ?? 3} strikes in the
-            last 90 days (cancelling or missing a conversation). At{" "}
-            {loaded.strikeLimit ?? 3}, follow-up conversations are switched off
-            for your account.
-          </p>
-        )}
-      {loaded.available && (loaded.strikes ?? 0) >= (loaded.strikeLimit ?? 3) && (
-        <p className="mt-6 rounded-lg border border-postal-red/30 bg-postal-red/10 p-4 text-sm text-ink">
-          Follow-up conversations are switched off for your account because of{" "}
-          {loaded.strikes} cancellations or missed conversations in the last 90
-          days. Contact hello@dropmeaquestion.com if you think this is a mistake.
-        </p>
-      )}
-
       {!loaded.available && (
         <p className="mt-6 text-sm text-ink-soft">
           Follow-up conversations aren&apos;t available yet.
@@ -221,7 +201,7 @@ export default function ConversationsPage() {
                 onCancel={() => {
                   if (
                     window.confirm(
-                      "Cancel this conversation? The asker won't be charged, and it counts as a strike: three in 90 days switches follow-up conversations off for your account."
+                      "Cancel this conversation? The asker won't be charged."
                     )
                   ) {
                     act(call.id, "/api/follow-up/cancel-expert", { id: call.id })

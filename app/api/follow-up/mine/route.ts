@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
-import { countExpertStrikes, FOLLOW_UP_STRIKE_LIMIT } from '@/lib/follow-up'
 
 // The signed-in expert's follow-up conversations. The table is server-only, so
 // the dashboard reads it through here. The asker's email is never included.
@@ -39,18 +38,9 @@ export async function GET(request: Request) {
     : { data: [] }
   const referenceById = new Map((questions ?? []).map((q) => [q.id, q.reference_id]))
 
-  let strikes = 0
-  try {
-    strikes = await countExpertStrikes(user.id)
-  } catch {
-    // Shown only as a courtesy notice; the offer itself fails closed elsewhere.
-  }
-
   return NextResponse.json({
     available: true,
     enabled: Boolean(expert.follow_up_enabled),
-    strikes,
-    strikeLimit: FOLLOW_UP_STRIKE_LIMIT,
     calls: (rows ?? []).map((r) => ({
       id: r.id,
       status: r.status,
