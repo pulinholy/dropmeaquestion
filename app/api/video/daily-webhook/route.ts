@@ -34,7 +34,13 @@ export async function POST(request: Request) {
   if (!event.id || !event.type) return NextResponse.json({ ok: true })
 
   const p = event.payload ?? {}
-  const joinedAt = typeof p.joined_at === 'number' ? p.joined_at : event.event_ts
+  // When it happened: the join time for a join, and the moment the provider
+  // sent the event for a leave (a leave event's own joined_at is when that
+  // session started, kept in raw).
+  const happenedAt =
+    event.type === 'participant.joined' && typeof p.joined_at === 'number'
+      ? p.joined_at
+      : event.event_ts
   const { error } = await supabaseAdmin.from('video_poc_events').upsert(
     {
       id: event.id,
@@ -43,7 +49,7 @@ export async function POST(request: Request) {
       user_name: typeof p.user_name === 'string' ? p.user_name : null,
       user_id: typeof p.user_id === 'string' ? p.user_id : null,
       session_id: typeof p.session_id === 'string' ? p.session_id : null,
-      occurred_at: joinedAt ? new Date(joinedAt * 1000).toISOString() : null,
+      occurred_at: happenedAt ? new Date(happenedAt * 1000).toISOString() : null,
       raw: event,
     },
     { onConflict: 'id', ignoreDuplicates: true }

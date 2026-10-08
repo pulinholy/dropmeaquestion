@@ -151,6 +151,55 @@ To run it on dev:
 | Phone browser (guest pass on a phone) | Pass: worked as the guest on a phone. Device, browser, Wi-Fi to mobile data and screen-lock behaviour were not recorded; Safari on iPhone and Android in particular still worth a deliberate check before launch |
 | Pass expiry ejects people | Not tested yet |
 
+## Agreed configuration (V1)
+
+| Feature | Setting |
+|---|---|
+| Microphone | On by default, subject to the browser's permission |
+| Camera | Off by default; either person can turn it on |
+| Display names | Expert's public name; asker appears as "Guest" |
+| Screen sharing | Disabled for V1 |
+| Recording | Disabled |
+| Room access | Private room, separate short-lived pass per person, two people at most |
+| Room opens | 10 minutes before the scheduled start |
+| Call length | 15 minutes, counted from the scheduled start (not from when each person joins) |
+| Grace | The room stays open 5 minutes after the 15, then closes and removes everyone |
+| Late arrivals | Join any time until the room closes; the clock doesn't restart, and the charge policy is unchanged |
+
+The policy text will need one line: "The conversation ends 15 minutes after the
+scheduled start." DMQ's page shows a countdown so the end isn't a surprise.
+The timing lives in `videoRoomWindowFor` in `lib/follow-up-rules.ts`.
+
+## Validation before the production build
+
+Six things to confirm, how each will be tested, and where it stands.
+
+| # | Requirement | Where it stands | How to finish validating it |
+|---|---|---|---|
+| 1 | A unique room is created automatically when the expert confirms | Room creation through the API works and each room is unique. It is not yet wired to the real confirm step. | Build step: the room is created the first time either person asks to join (not at confirmation, so cancelled bookings leave nothing behind) and its name is stored on the booking. Test in dev: confirm, join, cancel, rebook; no orphan rooms. |
+| 2 | Only the right expert and asker get in, with separate short-lived credentials | Proven: private room, a pass per person, a third person with a valid pass is refused when two are in, and the room address alone is refused. Not yet proven: that a pass fails before it opens or after it expires, and that people are ejected at expiry. | Test with the PoC page's "opens in / open for" controls (opens in 2 min, open for 3 min). Passes are made only when someone clicks Join, never emailed. A pass can be reused by the same person until it expires. |
+| 3 | Participants see only DMQ display names | Proven: names come from the pass, no name field, no email or phone sent. The provider only receives the name and an opaque id. Calls go through the provider's servers, not directly between people. | In production the opaque id must be a random per-booking value (`expert-<booking id>`), never an email or account id. |
+| 4 | Audio first, camera off by default | Proven: everyone joins with the camera off and can turn it on. Not enforced: audio-only. | Decision: keep the camera optional (recommended), or make audio-only a setting. The provider's pass supports restricting what a person can send; to be verified before offering it. |
+| 5 | Record joins and leaves, including reconnects, without recording the call | Built in the PoC and unit-tested (8 cases: clean call, reconnect, never joined, still connected, lost event, overlapping sessions). Not yet tried with live events. | Needs the webhook reachable (a tunnel). Then join, leave, rejoin, and check the summary card matches. Times come from the provider's signed server events, not the browser. |
+| 6 | Failure handling | Not tested. | Use the PoC controls: arrive late (join mid-window), early (before it opens), after it closes, drop the connection and rejoin, and have one person never join. |
+
+### Connection summary
+
+The PoC page shows a card per room: who joined, whether they are still
+connected, reconnects, and shared connection time, with the note that this
+supports troubleshooting and payment reviews but does not prove the quality
+of the conversation. Rules it follows:
+
+- Only the provider's signed events are used. A browser can't change them.
+- A reconnect is a second session for the same person; time is merged so
+  overlapping sessions aren't double counted.
+- If a "joined" event is lost, the session is rebuilt from the "left" event.
+- A session still open is counted up to now.
+
+Decision needed for production: how much shared time counts as "it took
+place" for settling a booking automatically (for example 5 minutes), and
+whether the asker and expert also see the card.
+
 ## Sources
 
 - Daily pricing: https://www.daily.co/pricing/video-sdk/

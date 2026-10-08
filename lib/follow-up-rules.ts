@@ -149,6 +149,25 @@ export function joinWindowFor(confirmedStartIso: string): { opensAt: Date; close
   }
 }
 
+// DMQ-hosted rooms: open 10 minutes before the scheduled start; the clock runs
+// from the scheduled start, not from when each person joins; and the room
+// closes 5 minutes after the 15-minute slot so nobody is cut off mid-sentence.
+export const FOLLOW_UP_VIDEO_GRACE_MINUTES = 5
+
+export function videoRoomWindowFor(confirmedStartIso: string): {
+  opensAt: Date
+  scheduledEnd: Date
+  closesAt: Date
+} {
+  const start = new Date(confirmedStartIso).getTime()
+  const scheduledEnd = start + FOLLOW_UP_DURATION_MINUTES * 60 * 1000
+  return {
+    opensAt: new Date(start - FOLLOW_UP_JOIN_OPENS_MINUTES_BEFORE * 60 * 1000),
+    scheduledEnd: new Date(scheduledEnd),
+    closesAt: new Date(scheduledEnd + FOLLOW_UP_VIDEO_GRACE_MINUTES * 60 * 1000),
+  }
+}
+
 export function isJoinWindowOpen(confirmedStartIso: string, now: Date = new Date()): boolean {
   const { opensAt, closesAt } = joinWindowFor(confirmedStartIso)
   return now >= opensAt && now <= closesAt

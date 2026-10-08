@@ -82,6 +82,8 @@ export async function createMeetingToken({
         exp: seconds(closesAt),
         eject_at_token_exp: true,
         start_video_off: true,
+        // No screen sharing in V1.
+        enable_screenshare: false,
       },
     }),
   })
