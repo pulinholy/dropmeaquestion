@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { formatPrice } from "@/lib/follow-up-rules"
 import { useQuestionCounts } from "../../questions-context"
 
 const statusTabs = [
@@ -77,7 +78,7 @@ export default function QuestionsByStatusPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   // Whether this expert has follow-up conversations switched on in Pricing,
   // and whether to offer one with the answer being written.
-  const [followUpOn, setFollowUpOn] = useState(false)
+  const [followUpPriceCents, setFollowUpPriceCents] = useState<number | null>(null)
   const [offerFollowUp, setOfferFollowUp] = useState(true)
 
   useEffect(() => {
@@ -97,7 +98,11 @@ export default function QuestionsByStatusPage() {
         .eq("id", sessionData.session.user.id)
         .maybeSingle()
       if (!cancelled) {
-        setFollowUpOn(Boolean(data?.follow_up_enabled && data.follow_up_price_cents))
+        setFollowUpPriceCents(
+          data?.follow_up_enabled && data.follow_up_price_cents
+            ? data.follow_up_price_cents
+            : null
+        )
       }
     })()
     return () => {
@@ -211,7 +216,7 @@ export default function QuestionsByStatusPage() {
     await fetch("/api/send-answer-email", {
       method: "POST",
       headers: authHeaders,
-      body: JSON.stringify({ questionId, offerFollowUp: !followUpOn || offerFollowUp }),
+      body: JSON.stringify({ questionId, offerFollowUp: followUpPriceCents === null || offerFollowUp }),
     })
 
     setAnswering(null)
@@ -276,8 +281,12 @@ export default function QuestionsByStatusPage() {
                     className="w-full rounded-sm border border-line px-3 py-2 text-ink"
                     placeholder="Write your answer..."
                   />
-                  {followUpOn && (
-                    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-white p-4 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/30">
+                  {followUpPriceCents !== null && (
+                    <label
+                      className={`flex cursor-pointer items-start gap-3 rounded-lg border bg-white p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/30 ${
+                        offerFollowUp ? "border-ink" : "border-line hover:border-ink-soft/50"
+                      }`}
+                    >
                       <input
                         type="checkbox"
                         checked={offerFollowUp}
@@ -302,7 +311,7 @@ export default function QuestionsByStatusPage() {
                         </span>
                         <span className="mt-1 block text-xs text-ink-soft">
                           They&apos;ll receive an invitation with your answer and can request a
-                          conversation at your set price.
+                          conversation for ${formatPrice(followUpPriceCents)}.
                         </span>
                       </span>
                     </label>
