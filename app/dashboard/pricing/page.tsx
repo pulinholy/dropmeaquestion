@@ -81,11 +81,12 @@ export default function PricingPage() {
 
     const { data: followUp, error: followUpError } = await supabase
       .from("experts")
-      .select("follow_up_enabled, follow_up_price_cents")
+      .select("follow_up_allowed, follow_up_enabled, follow_up_price_cents")
       .eq("id", userId)
       .single()
 
-    if (followUpError || !followUp) {
+    // Private beta: only experts an admin has allowed see the section.
+    if (followUpError || !followUp || !followUp.follow_up_allowed) {
       setFollowUpAvailable(false)
     } else {
       setFollowUpAvailable(true)

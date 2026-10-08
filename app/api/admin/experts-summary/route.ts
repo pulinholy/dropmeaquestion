@@ -30,6 +30,14 @@ export async function GET(request: Request) {
     if (expertsErr) throw expertsErr
     const expertById = new Map(experts?.map((e) => [e.id, e]) ?? [])
 
+    // Separate, so this page still loads before the beta SQL has been run.
+    const { data: access } = await supabaseAdmin
+      .from('experts')
+      .select('id, follow_up_allowed')
+    const followUpAllowedById = new Map(
+      (access ?? []).map((e) => [e.id, Boolean(e.follow_up_allowed)])
+    )
+
     const { data: questions, error: questionsErr } = await supabaseAdmin
       .from('questions')
       .select('expert_id, status, price_cents')
@@ -94,6 +102,7 @@ export async function GET(request: Request) {
           isActive: expert?.is_active ?? false,
           stripeOnboarded: expert?.stripe_onboarded ?? false,
           deactivatedAt: expert?.deactivated_at ?? null,
+          followUpAllowed: followUpAllowedById.get(p.id) ?? false,
           questionsReceived: s.received,
           questionsAnswered: s.answered,
           expertEarnedCents: s.expertEarnedCents,

@@ -78,13 +78,14 @@ export async function getFollowUpOffer(questionId: string): Promise<FollowUpOffe
     const { data: expert } = await supabaseAdmin
       .from('experts')
       .select(
-        'follow_up_enabled, follow_up_price_cents, stripe_account_id, stripe_onboarded, deactivated_at'
+        'follow_up_allowed, follow_up_enabled, follow_up_price_cents, stripe_account_id, stripe_onboarded, deactivated_at'
       )
       .eq('id', question.expert_id)
       .maybeSingle()
 
     if (
       !expert ||
+      !expert.follow_up_allowed ||
       !expert.follow_up_enabled ||
       !expert.follow_up_price_cents ||
       !expert.stripe_onboarded ||

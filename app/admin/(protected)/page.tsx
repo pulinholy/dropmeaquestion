@@ -12,6 +12,7 @@ type ExpertRow = {
   isActive: boolean
   stripeOnboarded: boolean
   deactivatedAt: string | null
+  followUpAllowed: boolean
   questionsReceived: number
   questionsAnswered: number
   expertEarnedCents: number
@@ -77,6 +78,42 @@ export default function AdminExpertsPage() {
         Authorization: `Bearer ${sessionData.session.access_token}`,
       },
       body: JSON.stringify({ expertId: row.id, deactivate }),
+    })
+    const data = await res.json()
+
+    if (data.error) {
+      alert(data.error)
+    } else {
+      await load()
+    }
+    setUpdatingId(null)
+  }
+
+  async function toggleFollowUpAccess(row: ExpertRow) {
+    const allowed = !row.followUpAllowed
+
+    const confirmed = window.confirm(
+      allowed
+        ? `Allow follow-up conversations for ${row.fullName}? They'll see the setting on their Pricing page and can start offering paid 15-minute conversations.`
+        : `Turn off follow-up conversations for ${row.fullName}? New offers stop. Conversations already booked carry on.`
+    )
+    if (!confirmed) return
+
+    setUpdatingId(row.id)
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setUpdatingId(null)
+      return
+    }
+
+    const res = await fetch("/api/admin/set-follow-up-access", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+      },
+      body: JSON.stringify({ expertId: row.id, allowed }),
     })
     const data = await res.json()
 
@@ -238,6 +275,11 @@ export default function AdminExpertsPage() {
                         No payouts
                       </span>
                     )}
+                    {r.followUpAllowed && (
+                      <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-700">
+                        Follow-ups
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="px-3 py-3 text-right text-ink">
@@ -262,6 +304,16 @@ export default function AdminExpertsPage() {
                         className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink hover:bg-line/40 disabled:opacity-50"
                       >
                         Login as
+                      </button>
+                    )}
+                    {!r.deactivatedAt && (
+                      <button
+                        type="button"
+                        onClick={() => toggleFollowUpAccess(r)}
+                        disabled={updatingId === r.id}
+                        className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink hover:bg-line/40 disabled:opacity-50"
+                      >
+                        {r.followUpAllowed ? "Turn off follow-ups" : "Allow follow-ups"}
                       </button>
                     )}
                   <button

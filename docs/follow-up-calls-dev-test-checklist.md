@@ -12,7 +12,7 @@ waiting days. Tick each box as you go. If something fails, note the booking row
 
 - [ ] In the **dev** Supabase SQL Editor, run in order: `follow_up_settings.sql`,
       `follow_up_calls.sql`, `follow_up_settlement.sql`, `follow_up_review.sql`,
-      `follow_up_per_answer.sql`, plus `rate_limits.sql` if it isn't there yet.
+      `follow_up_per_answer.sql`, `follow_up_beta.sql`, plus `rate_limits.sql` if it isn't there yet.
 - [ ] Start the Stripe webhook forwarder:
       `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
       Make sure `STRIPE_WEBHOOK_SECRET` in `.env.local` matches the `whsec_...`
@@ -21,6 +21,8 @@ waiting days. Tick each box as you go. If something fails, note the booking row
       (`stripe_onboarded` is true).
 - [ ] You can read an asker email address. Use a plus address, e.g.
       `you+asker1@gmail.com`.
+- [ ] As admin: Admin > Experts > **Allow follow-ups** for that expert. A second
+      expert who isn't allowed must not see the Pricing section.
 - [ ] As the expert: Pricing, then "Follow-up conversations", tick the box, set
       **$35**, save.
 - [ ] Open `/dashboard/conversations`. The "Conversations" menu item should now

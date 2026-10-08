@@ -94,12 +94,12 @@ export default function QuestionsByStatusPage() {
       // Fails harmlessly (option hidden) before the follow-up SQL has run.
       const { data } = await supabase
         .from("experts")
-        .select("follow_up_enabled, follow_up_price_cents")
+        .select("follow_up_allowed, follow_up_enabled, follow_up_price_cents")
         .eq("id", sessionData.session.user.id)
         .maybeSingle()
       if (!cancelled) {
         setFollowUpPriceCents(
-          data?.follow_up_enabled && data.follow_up_price_cents
+          data?.follow_up_allowed && data.follow_up_enabled && data.follow_up_price_cents
             ? data.follow_up_price_cents
             : null
         )

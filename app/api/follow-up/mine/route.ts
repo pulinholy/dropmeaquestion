@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
   const { data: expert, error: expertError } = await supabaseAdmin
     .from('experts')
-    .select('follow_up_enabled')
+    .select('follow_up_allowed, follow_up_enabled')
     .eq('id', user.id)
     .maybeSingle()
   if (expertError || !expert) return NextResponse.json(unavailable)
@@ -38,9 +38,15 @@ export async function GET(request: Request) {
     : { data: [] }
   const referenceById = new Map((questions ?? []).map((q) => [q.id, q.reference_id]))
 
+  // Private beta: an expert who isn't allowed sees nothing, unless they
+  // already have conversations (which they must still be able to manage).
+  if (!expert.follow_up_allowed && (rows ?? []).length === 0) {
+    return NextResponse.json(unavailable)
+  }
+
   return NextResponse.json({
     available: true,
-    enabled: Boolean(expert.follow_up_enabled),
+    enabled: Boolean(expert.follow_up_allowed && expert.follow_up_enabled),
     calls: (rows ?? []).map((r) => ({
       id: r.id,
       status: r.status,
