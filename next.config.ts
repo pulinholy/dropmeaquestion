@@ -20,7 +20,10 @@ const supabase = supabaseOrigin();
 // styles; the rest of the policy still blocks foreign scripts, framing, plugin
 // content and requests to any server other than ours and Supabase.
 // 'unsafe-eval' and the websocket are for dev-mode hot reload only.
-const csp = [
+// `extra` adds directives for the few pages that need them (see the video
+// proof of concept below).
+function buildCsp(extra: string[] = []): string {
+  return [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
@@ -34,7 +37,14 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-].join("; ");
+  ...extra,
+  ].join("; ");
+}
+const csp = buildCsp();
+
+// Proof of concept only: the admin video test page may embed the provider's
+// room and hand it the camera and microphone. Every other page stays locked.
+const dailyFrames = "https://*.daily.co https://*.dailywebrtc.com https://*.dailywebrtc.net";
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
@@ -53,7 +63,23 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Later entries override earlier ones for the same header.
+      {
+        source: "/admin/video-poc",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: buildCsp([`frame-src ${dailyFrames}`]),
+          },
+          {
+            key: "Permissions-Policy",
+            value: `camera=(self "https://*.daily.co"), microphone=(self "https://*.daily.co"), display-capture=(self "https://*.daily.co"), geolocation=(), payment=(), usb=()`,
+          },
+        ],
+      },
+    ];
   },
 };
 

@@ -9,6 +9,7 @@ import { UsersIcon, VideoIcon } from "@/components/icons"
 const adminLinks = [
   { href: "/admin", label: "Experts", icon: UsersIcon },
   { href: "/admin/conversations", label: "Conversations", icon: VideoIcon },
+  { href: "/admin/video-poc", label: "Video test", icon: VideoIcon },
 ]
 
 export default function AdminLayout({
