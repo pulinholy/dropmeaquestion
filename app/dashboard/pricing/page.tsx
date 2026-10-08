@@ -11,6 +11,7 @@ import {
   DollarSignIcon,
   TagIcon,
   VideoIcon,
+  InfoIcon,
 } from "@/components/icons"
 
 const MIN_PRICE = 5
@@ -42,6 +43,7 @@ export default function PricingPage() {
   const [followUpAvailable, setFollowUpAvailable] = useState(false)
   const [followUpEnabled, setFollowUpEnabled] = useState(false)
   const [followUpPrice, setFollowUpPrice] = useState("35")
+  const [showFollowUpDetails, setShowFollowUpDetails] = useState(false)
 
   useEffect(() => {
     load()
@@ -271,91 +273,136 @@ export default function PricingPage() {
           {followUpAvailable && (
             <div className="rounded-lg border border-line bg-card p-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
-                  <VideoIcon className="h-4 w-4" />
-                </div>
+                <VideoIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-ink" />
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-sm font-semibold text-ink">
+                  <h2 className="text-base font-semibold text-ink">
                     Follow-up conversations
                   </h2>
-                  <p className="mt-0.5 text-xs text-ink-soft">
-                    After you answer a question, offer that asker an optional
-                    15-minute conversation with you.
+                  <p className="mt-1 text-sm text-ink-soft">
+                    Give askers the option to book a paid 15-minute conversation
+                    after receiving your answer.
                   </p>
-
-                  <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-sm text-ink">
-                    <input
-                      type="checkbox"
-                      checked={followUpEnabled}
-                      onChange={(e) => setFollowUpEnabled(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded-sm border-line accent-postal-red"
-                    />
-                    Offer 15-minute follow-up conversations after I answer
-                  </label>
-
-                  {followUpEnabled && (
-                    <>
-                      <p className="mt-3 text-xs font-medium text-ink">
-                        Price for a 15-minute conversation
-                      </p>
-                      <div className="mt-1.5 flex items-center rounded-sm border border-line px-3 py-2">
-                        <span className="flex-shrink-0 text-sm text-ink-soft">$</span>
-                        <span className="mx-2.5 h-5 w-px flex-shrink-0 bg-line" />
-                        <input
-                          type="number"
-                          min={MIN_FOLLOW_UP_PRICE}
-                          max={MAX_FOLLOW_UP_PRICE}
-                          step="0.01"
-                          value={followUpPrice}
-                          onChange={(e) => setFollowUpPrice(e.target.value)}
-                          aria-label="Follow-up conversation price in US dollars"
-                          className="min-w-0 flex-1 border-0 p-0 text-sm text-ink focus:outline-none focus:ring-0"
-                        />
-                        <span className="flex-shrink-0 text-sm text-ink-soft">
-                          USD
-                        </span>
-                      </div>
-                      <p className="mt-1.5 text-xs text-ink-soft">
-                        Between ${MIN_FOLLOW_UP_PRICE} and ${MAX_FOLLOW_UP_PRICE}.
-                        {!isNaN(parseFloat(followUpPrice)) &&
-                          parseFloat(followUpPrice) >= MIN_FOLLOW_UP_PRICE &&
-                          parseFloat(followUpPrice) <= MAX_FOLLOW_UP_PRICE && (
-                            <>
-                              {" "}
-                              You receive $
-                              {(parseFloat(followUpPrice) * 0.85).toFixed(2)}{" "}
-                              after DMQ&apos;s 15% platform fee.
-                            </>
-                          )}
-                      </p>
-                    </>
-                  )}
-
-                  <ul className="mt-3 space-y-1.5 text-xs text-ink-soft">
-                    <li>
-                      Askers are offered a conversation in the email that
-                      delivers your answer. It isn&apos;t shown on your public
-                      page.
-                    </li>
-                    <li>
-                      You confirm each call and add your own Zoom or Google
-                      Meet link for it. A new link per call, with a waiting
-                      room turned on, is best.
-                    </li>
-                    <li>
-                      Askers can cancel free until 24 hours before. Later
-                      cancellations and no-shows are charged in full. If you
-                      cancel or don&apos;t show up, the asker isn&apos;t
-                      charged.
-                    </li>
-                    <li>
-                      Your email address isn&apos;t shared by Drop Me A
-                      Question. Your meeting service may show your display
-                      name.
-                    </li>
-                  </ul>
                 </div>
               </div>
+
+              <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/30">
+                <input
+                  type="checkbox"
+                  checked={followUpEnabled}
+                  onChange={(e) => setFollowUpEnabled(e.target.checked)}
+                  className="sr-only"
+                />
+                <span
+                  aria-hidden="true"
+                  className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+                    followUpEnabled ? "bg-ink text-white" : "border-2 border-line"
+                  }`}
+                >
+                  {followUpEnabled && (
+                    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3.5 8.5l3 3 6-6.5" />
+                    </svg>
+                  )}
+                </span>
+                <span className="text-base text-ink">
+                  Offer 15-minute follow-up conversations
+                </span>
+              </label>
+
+              {followUpEnabled && (
+                <div className="mt-4">
+                  <label
+                    htmlFor="follow-up-price"
+                    className="text-sm font-semibold text-ink-soft"
+                  >
+                    Price per conversation
+                  </label>
+                  <div className="mt-2 flex items-center rounded-lg border border-line bg-white px-4 py-3.5">
+                    <span className="flex-shrink-0 text-base text-ink">$</span>
+                    <input
+                      id="follow-up-price"
+                      type="number"
+                      min={MIN_FOLLOW_UP_PRICE}
+                      max={MAX_FOLLOW_UP_PRICE}
+                      step="0.01"
+                      value={followUpPrice}
+                      onChange={(e) => setFollowUpPrice(e.target.value)}
+                      className="min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-ink focus:outline-none focus:ring-0"
+                    />
+                    <span className="flex-shrink-0 text-xs text-ink-soft">USD</span>
+                  </div>
+                  <p className="mt-2 text-xs text-ink-soft">
+                    Set a price between ${MIN_FOLLOW_UP_PRICE} and ${MAX_FOLLOW_UP_PRICE}.
+                  </p>
+
+                  {!isNaN(parseFloat(followUpPrice)) &&
+                    parseFloat(followUpPrice) >= MIN_FOLLOW_UP_PRICE &&
+                    parseFloat(followUpPrice) <= MAX_FOLLOW_UP_PRICE && (
+                      <div className="mt-4 px-1">
+                        <div className="flex items-baseline justify-between gap-4">
+                          <p className="text-sm font-medium text-ink">You receive</p>
+                          <p className="text-lg font-semibold text-ink">
+                            ${(parseFloat(followUpPrice) * 0.85).toFixed(2)}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-sm text-ink-soft">
+                          After DMQ&apos;s 15% platform fee. Payment processing included.
+                        </p>
+                      </div>
+                    )}
+                </div>
+              )}
+
+              <p className="mt-4 flex items-center gap-2 text-xs text-ink-soft">
+                <InfoIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                You&apos;ll confirm each request and provide a meeting link.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowFollowUpDetails((open) => !open)}
+                aria-expanded={showFollowUpDetails}
+                aria-controls="follow-up-details"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-ink underline decoration-ink underline-offset-4"
+              >
+                How follow-up conversations work
+                <svg
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                  className={`h-3 w-3 transition-transform ${showFollowUpDetails ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6l5 5 5-5" />
+                </svg>
+              </button>
+
+              {showFollowUpDetails && (
+                <ul id="follow-up-details" className="mt-3 list-disc space-y-2 pl-5 text-sm text-ink-soft">
+                  <li>
+                    Askers receive the invitation in the email that delivers your
+                    written answer. It isn&apos;t shown on your public page.
+                  </li>
+                  <li>
+                    Askers propose up to three times. You confirm one within 24
+                    hours and add your own Zoom or Google Meet link. A new link
+                    per call, with a waiting room turned on, is best.
+                  </li>
+                  <li>
+                    Askers can cancel free until 24 hours before. Later
+                    cancellations and no-shows are charged in full. If you cancel
+                    or don&apos;t show up, the asker isn&apos;t charged, and
+                    three of these in 90 days turns the feature off.
+                  </li>
+                  <li>
+                    Your email address isn&apos;t shared by Drop Me A Question.
+                    Your meeting service may show your display name.
+                  </li>
+                </ul>
+              )}
             </div>
           )}
 
