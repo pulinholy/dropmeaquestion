@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { cancellationKind } from "@/lib/follow-up-rules"
+import { cancellationKind, reviewOpensAt } from "@/lib/follow-up-rules"
 
 const GENERIC_ERROR = "Something went wrong. Please try again."
 
@@ -30,6 +30,7 @@ export default function AskerActions({
 
   if (now === null) return null
   const kind = cancellationKind(startIso, new Date(now))
+  const ended = now >= reviewOpensAt(startIso).getTime()
 
   async function post(path: string, body: Record<string, unknown>) {
     setBusy(true)
@@ -59,6 +60,16 @@ export default function AskerActions({
       : "Cancel this conversation? Your card won't be charged."
     if (window.confirm(message)) {
       post("/api/follow-up/cancel-asker", { id: followUpId, acknowledgeLateCharge: late })
+    }
+  }
+
+  function confirmCompleted() {
+    if (
+      window.confirm(
+        `Confirm that this conversation took place? Your card will be charged $${price}.`
+      )
+    ) {
+      post("/api/follow-up/confirm-completed", { id: followUpId })
     }
   }
 
@@ -113,20 +124,33 @@ export default function AskerActions({
 
       {kind === "started" && (
         <>
-          <h2 className="text-sm font-semibold text-ink">Something go wrong?</h2>
+          <h2 className="text-sm font-semibold text-ink">How did it go?</h2>
           <p className="mt-1 text-xs text-ink-soft">
-            If the other person didn&apos;t show up or the call didn&apos;t
-            work, tell us. We&apos;ll review it, and your card won&apos;t be
-            charged unless we find the conversation took place.
+            {ended
+              ? `Once the conversation has taken place, confirm it and your card is charged $${price}. If we don't hear from you, it's charged about a day after the conversation ends.`
+              : "You can confirm once the conversation has ended."}{" "}
+            If something went wrong, such as the link not working or the other
+            person not showing up, report it. We&apos;ll hold the charge and
+            review it.
           </p>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={report}
-            className="mt-3 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
-          >
-            {busy ? "Working..." : "Report a problem"}
-          </button>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled={busy || !ended}
+              onClick={confirmCompleted}
+              className="rounded-full bg-ink px-4 py-1.5 text-xs font-medium text-white hover:bg-postal-blue disabled:opacity-50"
+            >
+              {busy ? "Working..." : "Yes, it took place"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={report}
+              className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
+            >
+              Report a problem
+            </button>
+          </div>
         </>
       )}
 

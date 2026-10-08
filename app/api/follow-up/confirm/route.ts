@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
   const { data: call } = await supabaseAdmin
     .from('follow_up_calls')
-    .select('id, question_id, status, proposed_slots, asker_timezone')
+    .select('id, question_id, status, proposed_slots, asker_timezone, price_cents')
     .eq('id', body.id)
     .eq('expert_id', user.id)
     .maybeSingle()
@@ -133,6 +133,7 @@ export async function POST(request: Request) {
         followUpId: call.id,
         confirmedStart,
         askerTimezone: call.asker_timezone,
+        priceCents: call.price_cents,
       })
       if (reminderIds.length > 0) {
         const { error: saveError } = await supabaseAdmin

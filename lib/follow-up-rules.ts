@@ -22,13 +22,14 @@ export const FOLLOW_UP_FALLBACK_HOLD_HOURS = 4 * 24 + 18
 
 // Bump when the wording below changes; it's stored with each booking so a
 // dispute can show exactly what the asker agreed to.
-export const FOLLOW_UP_POLICY_VERSION = '2026-10-v1'
+export const FOLLOW_UP_POLICY_VERSION = '2026-10-v2'
 
 export const FOLLOW_UP_POLICY_LINES = [
   'Your card is held when you request the conversation. You are charged only after it takes place.',
   'The expert has 24 hours to confirm a time. If they decline or don’t respond, your hold is released and you are not charged.',
   'You can cancel for free until 24 hours before the conversation. Cancelling later, or not joining, is charged in full.',
   'If the expert cancels or doesn’t join, you are not charged.',
+  'After the conversation we’ll ask you to confirm it took place. If you report a problem, we hold the charge and review it. If we don’t hear from you, your card is charged about a day after it ends.',
 ]
 
 export const FOLLOW_UP_PRIVACY_LINES = [
@@ -252,6 +253,17 @@ export type FollowUpOutcome =
   | 'admin_release'
   | 'admin_release_expert_fault'
   | 'disputed'
+
+// The asker is emailed to confirm (or report) this long after the start, just
+// after a 15-minute call would have ended.
+export const FOLLOW_UP_REVIEW_EMAIL_MINUTES_AFTER_START = 20
+
+// The asker can confirm "it took place" once the slot is over.
+export function reviewOpensAt(confirmedStartIso: string): Date {
+  return new Date(
+    new Date(confirmedStartIso).getTime() + FOLLOW_UP_DURATION_MINUTES * 60 * 1000
+  )
+}
 
 export function autoSettleDueAt(confirmedStartIso: string): Date {
   return new Date(

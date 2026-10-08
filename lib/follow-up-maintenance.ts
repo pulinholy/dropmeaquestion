@@ -137,7 +137,7 @@ export async function maintainFollowUps() {
   ).toISOString()
   const { data: due, error: dueError } = await supabaseAdmin
     .from('follow_up_calls')
-    .select('id, asker_joined_at, expert_joined_at')
+    .select('id, asker_joined_at, expert_joined_at, expert_marked')
     .eq('status', 'confirmed')
     .lt('confirmed_start', settleCutoff)
 
@@ -148,9 +148,12 @@ export async function maintainFollowUps() {
 
   for (const row of due ?? []) {
     try {
+      // The asker has had a day since the call to confirm or report a problem.
+      // The expert's own mark counts as their side being there even if they
+      // opened their meeting link directly rather than through our button.
       const decision = autoSettlementFor({
         asker: Boolean(row.asker_joined_at),
-        expert: Boolean(row.expert_joined_at),
+        expert: Boolean(row.expert_joined_at) || Boolean(row.expert_marked),
       })
       const result = await settleFollowUp({
         id: row.id,

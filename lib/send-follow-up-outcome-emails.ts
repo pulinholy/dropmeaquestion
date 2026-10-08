@@ -4,6 +4,7 @@ import { logError } from './log-error'
 import { send } from './send-follow-up-emails'
 import {
   FOLLOW_UP_PLATFORM_FEE_RATE,
+  FOLLOW_UP_REVIEW_EMAIL_MINUTES_AFTER_START,
   escapeHtml,
   formatPrice,
   formatSlot,
@@ -28,6 +29,7 @@ export async function scheduleFollowUpReminders({
   followUpId,
   confirmedStart,
   askerTimezone,
+  priceCents,
 }: {
   askerEmail: string
   expertEmail: string | null
@@ -35,10 +37,34 @@ export async function scheduleFollowUpReminders({
   followUpId: string
   confirmedStart: string
   askerTimezone: string | null
+  priceCents: number
 }): Promise<string[]> {
   const ids: string[] = []
   const name = escapeHtml(expertFirstName)
   const when = escapeHtml(formatSlot(confirmedStart, askerTimezone))
+
+  // Just after the call should have ended, the asker is asked how it went.
+  // Scheduled now (and cancelled with the rest if the call is) so it needs no
+  // job running at that moment.
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM,
+      to: askerEmail,
+      subject: `How was your conversation with ${expertFirstName}?`,
+      html: renderEmailLayout(`
+        <p style="margin:0 0 12px;">Your 15-minute conversation with ${name}, scheduled for ${when}, has ended. Did it take place?</p>
+        <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">Confirm it and your card is charged ${money(priceCents)} now. If something went wrong &mdash; the link didn&rsquo;t work, or ${name} didn&rsquo;t join &mdash; report it and we&rsquo;ll hold the charge and look into it. If we don&rsquo;t hear from you, your card is charged about a day after the conversation.</p>
+        ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'Confirm, or report a problem &rarr;')}
+      `),
+      scheduledAt: new Date(
+        new Date(confirmedStart).getTime() + FOLLOW_UP_REVIEW_EMAIL_MINUTES_AFTER_START * 60 * 1000
+      ).toISOString(),
+    })
+    if (error) await logError('follow-up-reminders:schedule-review', error, { followUpId })
+    else if (data?.id) ids.push(data.id)
+  } catch (err) {
+    await logError('follow-up-reminders:schedule-review', err, { followUpId })
+  }
 
   for (const reminder of reminderTimesFor(confirmedStart)) {
     const lead = reminder.kind === '24h' ? 'tomorrow' : 'in about an hour'

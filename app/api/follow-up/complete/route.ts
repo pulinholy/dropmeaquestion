@@ -3,13 +3,13 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { FOLLOW_UP_NO_SHOW_AFTER_MINUTES } from '@/lib/follow-up'
-import { settleFollowUp } from '@/lib/follow-up-settle'
+import { logError } from '@/lib/log-error'
 
-// After the start time the expert settles their own conversation: it took
-// place (the asker is charged, the expert paid), or the asker never joined
-// (charged in full under the policy). "Never joined" is only accepted if the
-// server never saw the asker open the join page and the slot has fully
-// elapsed -- the expert's word alone isn't enough.
+// After the start time the expert says how it went: it took place, or the
+// asker never joined. That is a claim, not a charge -- the asker is asked to
+// confirm or report a problem, and the daily job settles it a day after the
+// call if they don't. "Never joined" is only accepted if the server never saw
+// the asker open the join page and the slot has fully elapsed.
 export async function POST(request: Request) {
   const user = await requireUser(request)
   if (!user) {
@@ -76,14 +76,22 @@ export async function POST(request: Request) {
     }
   }
 
-  const result = await settleFollowUp({
-    id: call.id,
-    from: ['confirmed'],
-    outcome: body.outcome,
-    reason: `expert_marked_${body.outcome}`,
-    expertId: user.id,
-  })
-  if (!result.ok) {
+  // Recorded, not settled: the asker is asked to confirm, and a charge only
+  // follows their confirmation or the daily job a day after the call (see
+  // maintainFollowUps). The status guard also stops a second mark.
+  const { data: marked, error: markError } = await supabaseAdmin
+    .from('follow_up_calls')
+    .update({ expert_marked: body.outcome, expert_marked_at: new Date().toISOString() })
+    .eq('id', call.id)
+    .eq('expert_id', user.id)
+    .eq('status', 'confirmed')
+    .is('expert_marked', null)
+    .select('id')
+  if (markError) {
+    await logError('follow-up/complete', markError, { followUpId: call.id })
+    return NextResponse.json({ error: 'Could not save that. Please try again.' }, { status: 500 })
+  }
+  if (!marked || marked.length === 0) {
     return NextResponse.json(
       { error: 'This conversation has already been updated. Please refresh.' },
       { status: 409 }

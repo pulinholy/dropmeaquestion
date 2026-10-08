@@ -22,6 +22,8 @@ export type FollowUpCall = {
   cancelledBy: string | null
   askerJoined: boolean
   expertJoined: boolean
+  // What the expert has said about how it went, before it's settled.
+  expertMarked: "completed" | "asker_no_show" | null
   createdAt: string
 }
 
@@ -221,12 +223,29 @@ export function UpcomingCard({
         )}
       </div>
 
-      {started ? (
+      {started && call.expertMarked ? (
         <div className="mt-4 border-t border-line pt-3">
           <p className="text-xs text-ink-soft">
-            How did it go? Mark it so you&apos;re paid
+            {call.expertMarked === "completed"
+              ? "You marked this completed."
+              : "You said the asker didn't join."}{" "}
+            The asker has been asked to confirm. You&apos;re paid when they do,
+            or automatically about a day after the call if no problem is
+            reported.
+          </p>
+          <div className="mt-2">
+            <button type="button" disabled={busy} onClick={onReport} className={linkButton}>
+              Report a problem
+            </button>
+          </div>
+        </div>
+      ) : started ? (
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-xs text-ink-soft">
+            How did it go? Let us know
             {call.askerJoined ? "" : ", or tell us if the asker never joined"}.
-            If you don&apos;t, it settles automatically a day after it ends.
+            The asker is asked to confirm; you&apos;re paid when they do, or
+            automatically about a day after the call if no problem is reported.
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
             <button

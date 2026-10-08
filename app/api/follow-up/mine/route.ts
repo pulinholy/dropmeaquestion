@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   const { data: rows, error } = await supabaseAdmin
     .from('follow_up_calls')
     .select(
-      'id, question_id, status, price_cents, proposed_slots, confirmed_start, meeting_link, confirm_by, asker_timezone, cancelled_by, requested_at, completed_at, asker_joined_at, expert_joined_at, created_at'
+      'id, question_id, status, price_cents, proposed_slots, confirmed_start, meeting_link, confirm_by, asker_timezone, cancelled_by, requested_at, completed_at, asker_joined_at, expert_joined_at, expert_marked, created_at'
     )
     .eq('expert_id', user.id)
     .neq('status', 'awaiting_payment')
@@ -56,6 +56,7 @@ export async function GET(request: Request) {
       completedAt: r.completed_at,
       askerJoined: Boolean(r.asker_joined_at),
       expertJoined: Boolean(r.expert_joined_at),
+      expertMarked: r.expert_marked ?? null,
       createdAt: r.created_at,
     })),
   })

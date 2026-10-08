@@ -398,6 +398,12 @@ export default function PricingPage() {
                     charged.
                   </li>
                   <li>
+                    After the call, the asker is asked to confirm it took
+                    place. You&apos;re paid when they do, or automatically about
+                    a day after the call if no problem is reported. If they
+                    report one, we hold the payment and review it.
+                  </li>
+                  <li>
                     Your email address isn&apos;t shared by Drop Me A Question.
                     Your meeting service may show your display name.
                   </li>

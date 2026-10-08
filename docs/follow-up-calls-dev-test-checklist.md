@@ -11,8 +11,8 @@ waiting days. Tick each box as you go. If something fails, note the booking row
 ## 0. Setup (once)
 
 - [ ] In the **dev** Supabase SQL Editor, run in order: `follow_up_settings.sql`,
-      `follow_up_calls.sql`, `follow_up_settlement.sql`, plus `rate_limits.sql`
-      if it isn't there yet.
+      `follow_up_calls.sql`, `follow_up_settlement.sql`, `follow_up_review.sql`,
+      `follow_up_per_answer.sql`, plus `rate_limits.sql` if it isn't there yet.
 - [ ] Start the Stripe webhook forwarder:
       `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
       Make sure `STRIPE_WEBHOOK_SECRET` in `.env.local` matches the `whsec_...`
@@ -84,13 +84,15 @@ emails.
 
 | Test | Do | Expect |
 |---|---|---|
-| **Complete** | Window open. Both click **Join** (expert on the dashboard, asker on the join page). After the start, expert clicks **Mark completed** | `completed`. Stripe **Succeeded**, with a transfer to the expert. Both emails |
+| **Complete (asker confirms)** | Window open. Both click **Join** (expert on the dashboard, asker on the join page). After the start, expert clicks **Mark completed**: it is only recorded (`expert_marked`), and Stripe stays **Uncaptured**. After the slot ends, the asker clicks **Yes, it took place** on the join page | `completed`. Stripe **Succeeded**, with a transfer to the expert. Both emails |
+| **Complete (asker silent)** | As above, but the asker does nothing. Set `confirmed_start` to 26 hours ago and run the daily job | `completed` and charged, from the expert's mark plus the join clicks |
+| **Review email** | Confirm a call 2+ hours out, then in Resend check the scheduled "How was your conversation...?" email (start + 20 min) | Scheduled; disappears if the call is cancelled |
 | **Asker free cancel** | 30h away, asker cancels | `cancelled`. Stripe **Canceled**. Not charged |
 | **Late cancel** | 3h away, asker cancels. The button says "Cancel and pay $35" and a confirm appears | `late_cancelled`. **Succeeded** |
 | **Too late** | Started, asker tries to cancel | Refused, with a "Report a problem" hint |
 | **Decline** | Expert clicks "None of these work" | `declined`. Canceled. Asker gets "propose new times" |
 | **Expert cancels** | Confirmed call, expert cancels | `cancelled` (by expert). Canceled. Asker is told and can book another time |
-| **Asker no-show** | Slot over, asker never joined, expert clicks **Asker didn't join** | `asker_no_show`. **Succeeded**. The button must be disabled until the slot has ended |
+| **Asker no-show** | Slot over, asker never joined, expert clicks **Asker didn't join** | Recorded only (still `confirmed`, **Uncaptured**). After the daily job runs a day after the call: `asker_no_show`, **Succeeded**. The button must be disabled until the slot has ended |
 | **No-show blocked** | Same, but the asker had clicked Join | Button disabled, and the API refuses |
 | **Problem report** | After the start, asker or expert clicks Report | `disputed`. Stripe still **Uncaptured**. Alert email arrives at the support inbox |
 | **Admin resolve** | `/admin/conversations`: try each of the 3 buttons on 3 different disputes | Charge, release, release and record that the expert didn't show |
@@ -100,7 +102,8 @@ emails.
 
 Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
 
-- [ ] Both joined: `completed` and charged.
+- [ ] Both joined (or the expert marked it completed and the asker joined):
+      `completed` and charged.
 - [ ] Only the expert joined: `asker_no_show` and charged.
 - [ ] Only the asker joined: `disputed` (manual review).
 - [ ] Neither joined: `expired` and released.
