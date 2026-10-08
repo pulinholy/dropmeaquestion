@@ -135,6 +135,22 @@ To run it on dev:
 - [ ] No direct peer-to-peer connection (WebRTC inspector).
 - [ ] Call quality is acceptable on a phone connection.
 
+## PoC results (Daily, tested on dev 2026-10-08)
+
+| Check | Result |
+|---|---|
+| Expert shows under the profile name, from the pass | Pass; no name field on the join screen |
+| Asker shows as "Guest", cannot change it | Pass; no name field on the join screen |
+| Camera starts off, either person can turn it on | Camera starts off (turning it on from each side still to try) |
+| No recording offered | No record button on the call bar (the More menu is unchecked) |
+| Both sides connect and hear each other | Pass |
+| Third person with a valid pass blocked | Pass ("The meeting is full" at two people) |
+| Room address without a pass refused | Pass ("You are not allowed to join this meeting"); room may have been past its expiry, re-check with a fresh room |
+| No direct connection between the two people | Pass. The selected connection's remote end was a cloud server address (23.20.x.x, which I believe is Amazon's range), not the other person's address. Each page also had separate send and receive connections, typical of routing through the provider's servers. |
+| Join/leave events via webhook | Not tested yet |
+| Phone browser (guest pass on a phone) | Pass: worked as the guest on a phone. Device, browser, Wi-Fi to mobile data and screen-lock behaviour were not recorded; Safari on iPhone and Android in particular still worth a deliberate check before launch |
+| Pass expiry ejects people | Not tested yet |
+
 ## Sources
 
 - Daily pricing: https://www.daily.co/pricing/video-sdk/
