@@ -9,10 +9,12 @@ import {
   UpcomingCard,
   type FollowUpCall,
 } from "./conversation-cards"
+import ConversationRoom from "@/components/ConversationRoom"
 
 type Loaded = {
   available: boolean
   enabled: boolean
+  videoMode?: "dmq" | "external"
   calls: FollowUpCall[]
 }
 
@@ -36,6 +38,8 @@ export default function ConversationsPage() {
   const [loadError, setLoadError] = useState("")
   const [busyId, setBusyId] = useState<string | null>(null)
   const [joiningId, setJoiningId] = useState<string | null>(null)
+  // A conversation held on DMQ, while the expert is in it.
+  const [room, setRoom] = useState<{ url: string; startIso: string } | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [now, setNow] = useState(() => Date.now())
   // Bumping this reloads the list, e.g. after confirming or declining.
@@ -94,8 +98,10 @@ export default function ConversationsPage() {
   async function join(call: FollowUpCall) {
     setJoiningId(call.id)
     setError(call.id, "")
-    // Opened straight away, inside the click, so pop-up blockers allow it.
-    const tab = window.open("", "_blank")
+    const onDmq = call.videoProvider === "dmq"
+    // A link opens in a new tab, which has to be made inside the click so
+    // pop-up blockers allow it. A DMQ conversation opens on this page.
+    const tab = onDmq ? null : window.open("", "_blank")
     try {
       const res = await authedFetch("/api/follow-up/join", {
         method: "POST",
@@ -105,6 +111,8 @@ export default function ConversationsPage() {
       if (!res.ok || typeof data?.url !== "string") {
         tab?.close()
         setError(call.id, typeof data?.error === "string" ? data.error : GENERIC_ERROR)
+      } else if (data.mode === "embedded" && call.confirmedStart) {
+        setRoom({ url: data.url, startIso: call.confirmedStart })
       } else if (tab) {
         tab.location.assign(data.url)
       } else {
@@ -163,6 +171,16 @@ export default function ConversationsPage() {
         </div>
       )}
 
+      {room && (
+        <div className="mt-6">
+          <ConversationRoom
+            url={room.url}
+            startIso={room.startIso}
+            onLeave={() => setRoom(null)}
+          />
+        </div>
+      )}
+
       {requests.length > 0 && (
         <div className="mt-6">
           <h2 className="font-display text-lg text-ink">
@@ -175,6 +193,7 @@ export default function ConversationsPage() {
                 call={call}
                 busy={busyId === call.id}
                 error={errors[call.id] ?? ""}
+                videoMode={loaded.videoMode}
                 onConfirm={(slot, meetingLink) =>
                   act(call.id, "/api/follow-up/confirm", { id: call.id, slot, meetingLink })
                 }

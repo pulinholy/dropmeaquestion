@@ -3,10 +3,11 @@ import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import {
-  FOLLOW_UP_POLICY_LINES,
-  FOLLOW_UP_PRIVACY_LINES,
+  followUpPolicyLines,
+  followUpPrivacyLines,
   formatPrice,
 } from "@/lib/follow-up-rules"
+import { videoMode } from "@/lib/video/config"
 import JoinPanel from "./join-panel"
 import AskerActions from "./asker-actions"
 
@@ -33,11 +34,27 @@ export default async function MeetPage({
 
   // Never selects the meeting link: it only leaves the server through the
   // join endpoint, while the join window is open.
-  const { data: call } = await supabaseAdmin
+  // The new column is only read when DMQ rooms are switched on.
+  const dmqOn = videoMode() === "dmq"
+  const { data: callRow } = await supabaseAdmin
     .from("follow_up_calls")
-    .select("id, status, confirmed_start, asker_timezone, expert_id, price_cents")
+    .select(
+      dmqOn
+        ? "id, status, confirmed_start, asker_timezone, expert_id, price_cents, video_provider"
+        : "id, status, confirmed_start, asker_timezone, expert_id, price_cents"
+    )
     .eq("id", followUpId)
     .maybeSingle()
+  const call = callRow as unknown as {
+    id: string
+    status: string
+    confirmed_start: string | null
+    asker_timezone: string | null
+    expert_id: string
+    price_cents: number
+    video_provider?: string | null
+  } | null
+  const videoProvider = dmqOn && call?.video_provider === "dmq" ? "dmq" : "external"
 
   let content: React.ReactNode
 
@@ -63,7 +80,14 @@ export default async function MeetPage({
             expertFirstName={expertFirstName}
             startIso={call.confirmed_start}
             timezone={call.asker_timezone}
+            videoProvider={videoProvider}
           />
+          {dmqOn && videoProvider === "external" && (
+            <p className="mt-3 rounded-lg border border-line bg-white p-3 text-center text-xs text-ink-soft">
+              This conversation uses {expertFirstName}&apos;s own meeting link, which opens
+              when you join.
+            </p>
+          )}
           <AskerActions
             followUpId={call.id}
             startIso={call.confirmed_start}
@@ -72,10 +96,10 @@ export default async function MeetPage({
           <div className="mt-8 rounded-lg border border-line bg-white p-5">
             <h2 className="text-sm font-semibold text-ink">Good to know</h2>
             <ul className="mt-2 space-y-1.5 text-xs text-ink-soft">
-              {FOLLOW_UP_POLICY_LINES.map((line) => (
+              {followUpPolicyLines(videoMode()).map((line) => (
                 <li key={line}>{line}</li>
               ))}
-              {FOLLOW_UP_PRIVACY_LINES.map((line) => (
+              {followUpPrivacyLines(videoMode()).map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>

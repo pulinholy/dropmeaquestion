@@ -1,9 +1,10 @@
 import { resend } from './resend'
 import { renderEmailLayout, renderEmailButton, EMAIL_BASE_URL } from './email-layout'
 import { logError } from './log-error'
+import { videoMode } from './video/config'
 import {
-  FOLLOW_UP_POLICY_LINES,
-  FOLLOW_UP_PRIVACY_LINES,
+  followUpPolicyLines,
+  followUpPrivacyLines,
   FOLLOW_UP_PLATFORM_FEE_RATE,
   escapeHtml,
   formatPrice,
@@ -66,7 +67,7 @@ export async function sendFollowUpRequestedEmails({
       <p style="margin:0 0 16px;">Hi ${name}, the person who asked${ref} would like a 15-minute conversation with you &mdash; worth $${net} to you.</p>
       <p style="margin:0 0 8px;">They proposed these times${askerTimezone ? ` (shown in their time zone, ${escapeHtml(askerTimezone)})` : ''}:</p>
       <ul style="margin:0 0 16px; padding-left:20px;">${times}</ul>
-      <p style="margin:0 0 24px; font-size:13px; color:#4a5568;">Confirm one of them within 24 hours, adding your own Zoom or Google Meet link for this call, or decline. If you don&rsquo;t respond the request expires and they aren&rsquo;t charged. Their email address stays private.</p>
+      <p style="margin:0 0 24px; font-size:13px; color:#4a5568;">Confirm one of them within 24 hours${videoMode() === 'dmq' ? ' (the conversation takes place on DMQ, or you can add your own Zoom or Google Meet link instead)' : ', adding your own Zoom or Google Meet link for this call'}, or decline. If you don&rsquo;t respond the request expires and they aren&rsquo;t charged. Their email address stays private.</p>
       ${renderEmailButton(`${EMAIL_BASE_URL}/dashboard/conversations`, 'Review the request &rarr;')}
     `
     await send(
@@ -83,8 +84,8 @@ export async function sendFollowUpRequestedEmails({
     <ul style="margin:0 0 16px; padding-left:20px;">${times}</ul>
     <p style="margin:0 0 8px;">${name} has 24 hours to confirm one. You&rsquo;ll get an email as soon as they do. Your card is held, not charged.</p>
     <p style="margin:16px 0 4px; font-size:13px; font-weight:bold; color:#17243a;">How it works</p>
-    <ul style="margin:0 0 16px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_POLICY_LINES)}</ul>
-    <ul style="margin:0; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_PRIVACY_LINES)}</ul>
+    <ul style="margin:0 0 16px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(followUpPolicyLines(videoMode()))}</ul>
+    <ul style="margin:0; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(followUpPrivacyLines(videoMode()))}</ul>
   `
   await send(
     askerEmail,
@@ -138,6 +139,7 @@ export async function sendFollowUpConfirmedEmails({
   referenceId,
   confirmedStart,
   askerTimezone,
+  videoProvider = 'external',
 }: {
   askerEmail: string
   expertEmail: string | null
@@ -146,6 +148,7 @@ export async function sendFollowUpConfirmedEmails({
   referenceId: string | null
   confirmedStart: string
   askerTimezone: string | null
+  videoProvider?: 'dmq' | 'external'
 }) {
   const name = escapeHtml(expertFirstName)
   const when = escapeHtml(formatSlot(confirmedStart, askerTimezone))
@@ -156,10 +159,11 @@ export async function sendFollowUpConfirmedEmails({
     <p style="margin:0 0 4px; font-size:13px; color:#4a5568;">When</p>
     <p style="margin:0 0 20px; font-size:17px; font-weight:bold;">${when}</p>
     <p style="margin:0 0 20px;">Your private join page opens 10 minutes before the start. Use the button below at that time &mdash; keep this email handy.</p>
+    ${videoProvider === 'dmq' ? '<p style="margin:0 0 20px; font-size:13px; color:#4a5568;">The conversation takes place right there on Drop Me A Question, as an audio call. Your camera stays off unless you turn it on, and you appear as &ldquo;Guest&rdquo;.</p>' : videoMode() === 'dmq' ? '<p style="margin:0 0 20px; font-size:13px; color:#4a5568;">This conversation uses the expert&rsquo;s own meeting link, which your join page opens at the start.</p>' : ''}
     ${renderEmailButton(joinUrl, 'Open your join page &rarr;')}
     <p style="margin:24px 0 8px; font-size:13px; font-weight:bold; color:#17243a;">Good to know</p>
-    <ul style="margin:0 0 12px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_POLICY_LINES)}</ul>
-    <ul style="margin:0; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_PRIVACY_LINES)}</ul>
+    <ul style="margin:0 0 12px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(followUpPolicyLines(videoMode()))}</ul>
+    <ul style="margin:0; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(followUpPrivacyLines(videoMode()))}</ul>
   `
   await send(
     askerEmail,
@@ -174,7 +178,7 @@ export async function sendFollowUpConfirmedEmails({
       <p style="margin:0 0 16px;">Your 15-minute conversation${ref} is confirmed.</p>
       <p style="margin:0 0 4px; font-size:13px; color:#4a5568;">When${askerTimezone ? ` (the asker&rsquo;s time zone, ${escapeHtml(askerTimezone)})` : ''}</p>
       <p style="margin:0 0 20px; font-size:17px; font-weight:bold;">${when}</p>
-      <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">Join from your dashboard from 10 minutes before the start. The asker can&rsquo;t see your email address, and you can&rsquo;t see theirs.</p>
+      <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">${videoProvider === 'dmq' ? 'Join from your Conversations page from 10 minutes before the start. The conversation takes place on DMQ as an audio call, and your camera stays off until you turn it on.' : 'Join from your dashboard from 10 minutes before the start.'} The asker can&rsquo;t see your email address, and you can&rsquo;t see theirs.</p>
       ${renderEmailButton(`${EMAIL_BASE_URL}/dashboard/conversations`, 'Open your conversations &rarr;')}
     `
     await send(

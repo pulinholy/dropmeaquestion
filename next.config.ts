@@ -46,6 +46,17 @@ const csp = buildCsp();
 // room and hand it the camera and microphone. Every other page stays locked.
 const dailyFrames = "https://*.daily.co https://*.dailywebrtc.com https://*.dailywebrtc.net";
 
+// The pages that show a call: the admin test page, the asker's join page and
+// the expert's Conversations page.
+const callPages = ["/admin/video-poc", "/meet/:followUpId", "/dashboard/conversations"];
+const callPageHeaders = [
+  { key: "Content-Security-Policy", value: buildCsp([`frame-src ${dailyFrames}`]) },
+  {
+    key: "Permissions-Policy",
+    value: `camera=(self "https://*.daily.co"), microphone=(self "https://*.daily.co"), geolocation=(), payment=(), usb=()`,
+  },
+];
+
 const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
   { key: "Strict-Transport-Security", value: "max-age=63072000" },
@@ -65,20 +76,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
-      // Later entries override earlier ones for the same header.
-      {
-        source: "/admin/video-poc",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: buildCsp([`frame-src ${dailyFrames}`]),
-          },
-          {
-            key: "Permissions-Policy",
-            value: `camera=(self "https://*.daily.co"), microphone=(self "https://*.daily.co"), display-capture=(self "https://*.daily.co"), geolocation=(), payment=(), usb=()`,
-          },
-        ],
-      },
+      // Later entries override earlier ones for the same header. Only the
+      // pages that show a call may embed it and hand it the camera and
+      // microphone (no screen sharing).
+      ...callPages.map((source) => ({ source, headers: callPageHeaders })),
     ];
   },
 };

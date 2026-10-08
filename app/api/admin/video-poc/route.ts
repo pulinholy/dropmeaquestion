@@ -64,7 +64,7 @@ export async function POST(request: Request) {
 
   try {
     if (body.action === 'webhook') {
-      const created = await registerWebhook(`${APP_BASE_URL}/api/video/daily-webhook`)
+      const created = await registerWebhook(`${APP_BASE_URL}/api/video/webhook`)
       return NextResponse.json({ ok: true, webhook: created.uuid })
     }
 

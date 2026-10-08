@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { formatSlot, joinWindowFor } from "@/lib/follow-up-rules"
+import { formatSlot, joinWindowFor, videoRoomWindowFor } from "@/lib/follow-up-rules"
 import { VideoIcon } from "@/components/icons"
+import ConversationRoom from "@/components/ConversationRoom"
 
 const JOIN_ERROR = "We couldn't open the conversation. Please try again in a moment."
 
@@ -19,15 +20,19 @@ export default function JoinPanel({
   expertFirstName,
   startIso,
   timezone,
+  videoProvider,
 }: {
   followUpId: string
   expertFirstName: string
   startIso: string
   timezone: string | null
+  videoProvider: "dmq" | "external"
 }) {
   const [now, setNow] = useState<number | null>(null)
   const [joining, setJoining] = useState(false)
   const [error, setError] = useState("")
+  // The call, once joined, when it is held on DMQ.
+  const [roomUrl, setRoomUrl] = useState<string | null>(null)
 
   // Starts null so the server-rendered page and the first client render match.
   useEffect(() => {
@@ -48,7 +53,8 @@ export default function JoinPanel({
     return () => window.removeEventListener("pageshow", onPageShow)
   }, [])
 
-  const { opensAt, closesAt } = joinWindowFor(startIso)
+  const { opensAt, closesAt } =
+    videoProvider === "dmq" ? videoRoomWindowFor(startIso) : joinWindowFor(startIso)
   const state =
     now === null
       ? "loading"
@@ -73,11 +79,20 @@ export default function JoinPanel({
         setJoining(false)
         return
       }
+      if (data.mode === "embedded") {
+        setRoomUrl(data.url)
+        setJoining(false)
+        return
+      }
       window.location.href = data.url
     } catch {
       setError(JOIN_ERROR)
       setJoining(false)
     }
+  }
+
+  if (roomUrl) {
+    return <ConversationRoom url={roomUrl} startIso={startIso} onLeave={() => setRoomUrl(null)} />
   }
 
   return (
@@ -114,7 +129,9 @@ export default function JoinPanel({
             {joining ? "Opening..." : <>Join conversation <span aria-hidden>→</span></>}
           </button>
           <p className="mt-2 text-xs text-ink-soft">
-            This opens {expertFirstName}&apos;s video meeting.
+            {videoProvider === "dmq"
+              ? "This opens your conversation right here. Your camera starts off."
+              : `This opens ${expertFirstName}'s video meeting.`}
           </p>
         </div>
       )}

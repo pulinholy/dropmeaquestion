@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { logError } from '@/lib/log-error'
 import { isAllowedMeetingLink } from '@/lib/follow-up'
+import { videoMode } from '@/lib/video/config'
 import { logFollowUpEvent, meetingLinkHost } from '@/lib/follow-up-events'
 import { sendFollowUpConfirmedEmails } from '@/lib/send-follow-up-emails'
 import {
@@ -37,10 +38,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
-  const link = isAllowedMeetingLink(body.meetingLink)
-  if (!link.ok) {
+  // With DMQ rooms on, choosing a time is enough: a link is only needed if
+  // the expert wants to use their own. With them off, a link is required, as
+  // before.
+  const providedLink =
+    typeof body.meetingLink === 'string' && body.meetingLink.trim().length > 0
+  const useDmq = videoMode() === 'dmq' && !providedLink
+  const link = useDmq ? null : isAllowedMeetingLink(body.meetingLink)
+  if (link && !link.ok) {
     return NextResponse.json({ error: link.error }, { status: 400 })
   }
+  const meetingUrl = link && link.ok ? link.url : null
 
   const { data: call } = await supabaseAdmin
     .from('follow_up_calls')
@@ -78,7 +86,10 @@ export async function POST(request: Request) {
     .update({
       status: 'confirmed',
       confirmed_start: new Date(chosenMs).toISOString(),
-      meeting_link: link.url,
+      meeting_link: meetingUrl,
+      // Only written when DMQ rooms are on, so nothing depends on the new
+      // column until then.
+      ...(useDmq ? { video_provider: 'dmq' } : {}),
       confirmed_at: new Date().toISOString(),
     })
     .eq('id', call.id)
@@ -99,7 +110,7 @@ export async function POST(request: Request) {
 
   await logFollowUpEvent(call.id, 'confirmed', 'expert', {
     confirmed_start: new Date(chosenMs).toISOString(),
-    meeting_service: meetingLinkHost(link.url),
+    meeting_service: useDmq ? 'dmq' : meetingLinkHost(meetingUrl),
   })
 
   // Isolated: a failed email must never undo the confirmation.
@@ -127,6 +138,7 @@ export async function POST(request: Request) {
         referenceId: question.reference_id,
         confirmedStart,
         askerTimezone: call.asker_timezone,
+        videoProvider: useDmq ? 'dmq' : 'external',
       })
 
       // Reminders 24 hours and 1 hour ahead. Their ids are kept so a

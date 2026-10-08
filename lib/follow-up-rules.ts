@@ -38,6 +38,34 @@ export const FOLLOW_UP_PRIVACY_LINES = [
   'The conversation takes place using the expert’s video meeting service. Information from your meeting profile, such as your display name, may be visible during the conversation.',
 ]
 
+// ---- Wording for DMQ-hosted conversations ---------------------------------
+// With DMQ-hosted rooms switched off these return exactly the lines above, so
+// nothing changes until the switch is on.
+
+export type FollowUpVideoMode = 'dmq' | 'external'
+
+export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v4-dmq'
+
+export function followUpPolicyVersion(mode: FollowUpVideoMode): string {
+  return mode === 'dmq' ? FOLLOW_UP_POLICY_VERSION_DMQ : FOLLOW_UP_POLICY_VERSION
+}
+
+export function followUpPolicyLines(mode: FollowUpVideoMode): string[] {
+  if (mode !== 'dmq') return FOLLOW_UP_POLICY_LINES
+  return [
+    ...FOLLOW_UP_POLICY_LINES,
+    'The conversation lasts 15 minutes from the scheduled start. The room stays open for 5 minutes after that, then closes.',
+  ]
+}
+
+export function followUpPrivacyLines(mode: FollowUpVideoMode): string[] {
+  if (mode !== 'dmq') return FOLLOW_UP_PRIVACY_LINES
+  return [
+    'Your email address isn’t shared by Drop Me A Question.',
+    'The conversation takes place on Drop Me A Question as an audio call with an optional camera. You appear as “Guest”, and it isn’t recorded. Our video provider handles the call. If the expert chooses their own video meeting link instead, you’ll be told, and your meeting profile’s display name may be visible.',
+  ]
+}
+
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 
 // Checks the times an asker proposed: 1-3 distinct start times on a 15-minute

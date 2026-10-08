@@ -143,6 +143,38 @@ from follow_up_calls order by created_at desc limit 5;
 For any capture or release, `captured_at` or `released_at` should be filled. If
 it's empty and the Stripe state is wrong, that's a bug to report.
 
+## 6b. DMQ-hosted conversations (slice 2)
+
+Needs `supabase/video_rooms.sql`, `DAILY_API_KEY` and `DAILY_WEBHOOK_HMAC` in
+`.env.local`, and `FOLLOW_UP_VIDEO=dmq` (restart the dev server). With the
+switch unset, everything above behaves exactly as before.
+
+- [ ] **Confirm without a link:** the request card shows "The conversation takes
+      place on DMQ... There is nothing to paste" and **Confirm this time** works
+      with no link. "Use my own meeting link instead" shows the link box and
+      then requires it.
+- [ ] **Emails:** the asker's confirmation says it takes place on DMQ as an
+      audio call (or, for an own-link booking, says it uses the expert's own
+      link). Policy lines include "The conversation lasts 15 minutes...".
+- [ ] **Join early:** before 10 minutes ahead, Join is unavailable. Use the
+      time-skip table (section 2) to move `confirmed_start`.
+- [ ] **Join (both sides):** at 5 minutes ahead both click Join. The call opens
+      inside the page (asker's `/meet/<id>`, expert's Conversations page) with
+      a countdown. Names: the expert's profile name and "Guest". Camera off.
+- [ ] **Countdown and close:** it shows time left, then "The 15 minutes are up.
+      The room closes in...", then the room closes about 5 minutes after the end.
+- [ ] **Leave and rejoin** works; a third person with the address and no pass
+      is refused.
+- [ ] **Own-link booking** while the switch is on still works end to end, and
+      the asker's page says it uses the expert's own link.
+- [ ] **Limit:** set `VIDEO_MAX_ROOMS_PER_DAY=1`, confirm a second DMQ booking
+      and try to join: "We can't start the call right now", and an email to
+      support.
+- [ ] **Webhook:** with a tunnel and the webhook registered, joins and leaves
+      appear in `follow_up_video_sessions` (or run
+      `scripts/video-webhook-test.mts`).
+- [ ] **Phone:** the asker's page on a phone, in the phone's normal browser.
+
 ## 7. Clean up
 
 ```sql

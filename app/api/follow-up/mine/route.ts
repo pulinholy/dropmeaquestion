@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
+import { videoMode } from '@/lib/video/config'
 
 // The signed-in expert's follow-up conversations. The table is server-only, so
 // the dashboard reads it through here. The asker's email is never included.
@@ -38,6 +39,18 @@ export async function GET(request: Request) {
     : { data: [] }
   const referenceById = new Map((questions ?? []).map((q) => [q.id, q.reference_id]))
 
+  // How each conversation is held. Only read when DMQ rooms are switched on,
+  // so the new column isn't needed until then.
+  const dmqOn = videoMode() === 'dmq'
+  const providerById = new Map<string, string>()
+  if (dmqOn && (rows ?? []).length > 0) {
+    const { data: providers } = await supabaseAdmin
+      .from('follow_up_calls')
+      .select('id, video_provider')
+      .in('id', (rows ?? []).map((r) => r.id))
+    for (const p of providers ?? []) providerById.set(p.id, p.video_provider)
+  }
+
   // Private beta: an expert who isn't allowed sees nothing, unless they
   // already have conversations (which they must still be able to manage).
   if (!expert.follow_up_allowed && (rows ?? []).length === 0) {
@@ -46,6 +59,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     available: true,
+    videoMode: dmqOn ? 'dmq' : 'external',
     enabled: Boolean(expert.follow_up_allowed && expert.follow_up_enabled),
     calls: (rows ?? []).map((r) => ({
       id: r.id,
@@ -55,6 +69,7 @@ export async function GET(request: Request) {
       proposedSlots: r.proposed_slots,
       confirmedStart: r.confirmed_start,
       meetingLink: r.status === 'confirmed' ? r.meeting_link : null,
+      videoProvider: providerById.get(r.id) ?? 'external',
       confirmBy: r.confirm_by,
       askerTimezone: r.asker_timezone,
       cancelledBy: r.cancelled_by,

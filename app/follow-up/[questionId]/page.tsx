@@ -1,7 +1,14 @@
 import type { Metadata } from "next"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
-import { getFollowUpOffer, formatPrice } from "@/lib/follow-up"
+import {
+  getFollowUpOffer,
+  formatPrice,
+  followUpPolicyLines,
+  followUpPrivacyLines,
+  followUpPolicyVersion,
+} from "@/lib/follow-up"
+import { videoMode } from "@/lib/video/config"
 import BookingForm from "./booking-form"
 
 export const metadata: Metadata = {
@@ -77,6 +84,9 @@ export default async function FollowUpPage({
         expertFirstName={offer.expert.firstName}
         referenceId={offer.question.referenceId}
         price={formatPrice(offer.priceCents)}
+        policyLines={followUpPolicyLines(videoMode())}
+        privacyLines={followUpPrivacyLines(videoMode())}
+        policyVersion={followUpPolicyVersion(videoMode())}
       />
     )
   }

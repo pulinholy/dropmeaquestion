@@ -4,9 +4,6 @@ import { useEffect, useState } from "react"
 import {
   FOLLOW_UP_MAX_DAYS_AHEAD,
   FOLLOW_UP_MAX_SLOTS,
-  FOLLOW_UP_POLICY_LINES,
-  FOLLOW_UP_POLICY_VERSION,
-  FOLLOW_UP_PRIVACY_LINES,
   formatSlot,
 } from "@/lib/follow-up-rules"
 import { CheckIcon, LockIcon, VideoIcon } from "@/components/icons"
@@ -46,11 +43,19 @@ export default function BookingForm({
   expertFirstName,
   referenceId,
   price,
+  policyLines,
+  privacyLines,
+  policyVersion,
 }: {
   questionId: string
   expertFirstName: string
   referenceId: string | null
   price: string
+  // Chosen on the server, because the wording depends on how conversations
+  // are held.
+  policyLines: string[]
+  privacyLines: string[]
+  policyVersion: string
 }) {
   const [slots, setSlots] = useState<string[]>(
     Array.from({ length: FOLLOW_UP_MAX_SLOTS }, () => "")
@@ -114,7 +119,7 @@ export default function BookingForm({
           slots: chosen.map((d) => d.toISOString()),
           timezone,
           acceptedPolicy: true,
-          policyVersion: FOLLOW_UP_POLICY_VERSION,
+          policyVersion,
         }),
         signal: controller.signal,
       })
@@ -200,7 +205,7 @@ export default function BookingForm({
         <div>
           <h2 className="text-sm font-semibold text-ink">2. How it works</h2>
           <ul className="mt-2 space-y-2">
-            {FOLLOW_UP_POLICY_LINES.map((line) => (
+            {policyLines.map((line) => (
               <li key={line} className="flex items-start gap-2 text-xs text-ink-soft">
                 <CheckIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-600" />
                 {line}
@@ -212,9 +217,9 @@ export default function BookingForm({
         <div className="rounded-sm bg-line/30 p-3">
           <p className="flex items-start gap-2 text-xs text-ink">
             <LockIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-700" />
-            {FOLLOW_UP_PRIVACY_LINES[0]}
+            {privacyLines[0]}
           </p>
-          <p className="mt-2 text-xs text-ink-soft">{FOLLOW_UP_PRIVACY_LINES[1]}</p>
+          <p className="mt-2 text-xs text-ink-soft">{privacyLines[1]}</p>
         </div>
 
         <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink">
