@@ -136,7 +136,9 @@ export async function sendFollowUpOutcomeEmails({
   questionId,
   referenceId,
   priceCents,
+  rescheduling = false,
 }: {
+  rescheduling?: boolean
   outcome: FollowUpOutcome
   askerEmail: string | null
   expertEmail: string | null
@@ -192,11 +194,15 @@ export async function sendFollowUpOutcomeEmails({
     case 'cancelled_by_asker':
       asker = {
         subject: 'Your conversation was cancelled',
-        body: `<p style="margin:0;">Your conversation with ${name} is cancelled. ${notCharged}</p>`,
+        body: rescheduling
+          ? `<p style="margin:0 0 12px;">Your conversation with ${name} is cancelled so you can choose new times. ${notCharged}</p>${rebook}`
+          : `<p style="margin:0;">Your conversation with ${name} is cancelled. ${notCharged}</p>`,
       }
       expert = {
         subject: 'A conversation was cancelled',
-        body: `<p style="margin:0;">The asker cancelled more than 24 hours ahead${ref}, so that time is free again. No payment was taken.</p>`,
+        body: rescheduling
+          ? `<p style="margin:0;">The asker cancelled more than 24 hours ahead${ref} to choose new times, so that time is free again. No payment was taken. You may receive a new request.</p>`
+          : `<p style="margin:0;">The asker cancelled more than 24 hours ahead${ref}, so that time is free again. No payment was taken.</p>`,
       }
       break
     case 'cancelled_by_expert':

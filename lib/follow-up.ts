@@ -44,7 +44,12 @@ let loggedOfferFailure = false
 // Decides whether this question's asker may be offered a follow-up call. Any
 // trouble reading the data means "no offer" -- never an offer that might not
 // be honoured.
-export async function getFollowUpOffer(questionId: string): Promise<FollowUpOffer> {
+export async function getFollowUpOffer(
+  questionId: string,
+  // When an asker is replacing a booking they're about to cancel, that
+  // booking mustn't count as blocking the new one.
+  options: { ignoreBookingId?: string } = {}
+): Promise<FollowUpOffer> {
   try {
     const { data: question } = await supabaseAdmin
       .from('questions')
@@ -95,12 +100,13 @@ export async function getFollowUpOffer(questionId: string): Promise<FollowUpOffe
       return { ok: false, reason: 'not_offered' }
     }
 
-    const { data: blocking, error: blockingError } = await supabaseAdmin
+    let blockingQuery = supabaseAdmin
       .from('follow_up_calls')
       .select('status')
       .eq('question_id', questionId)
       .in('status', BLOCKING_STATUSES)
-      .limit(1)
+    if (options.ignoreBookingId) blockingQuery = blockingQuery.neq('id', options.ignoreBookingId)
+    const { data: blocking, error: blockingError } = await blockingQuery.limit(1)
     if (blockingError) throw blockingError
     if (blocking && blocking.length > 0) {
       return { ok: false, reason: 'not_offered', existing: { status: blocking[0].status } }

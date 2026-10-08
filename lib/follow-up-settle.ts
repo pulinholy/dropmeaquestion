@@ -43,6 +43,7 @@ export async function settleFollowUp({
   expertId,
   actor = 'system',
   problem,
+  rescheduling = false,
 }: {
   id: string
   // Only moves a booking that is currently in one of these states, so two
@@ -58,6 +59,8 @@ export async function settleFollowUp({
   actor?: FollowUpActor
   // For "disputed": what the reporter said went wrong.
   problem?: { reason: FollowUpProblemReason; note: string | null }
+  // The asker cancelled in order to pick new times (changes the emails).
+  rescheduling?: boolean
 }): Promise<{ ok: true } | { ok: false }> {
   const spec = OUTCOMES[outcome]
   const now = new Date().toISOString()
@@ -138,6 +141,7 @@ export async function settleFollowUp({
       questionId: call.question_id,
       referenceId: question?.reference_id ?? null,
       priceCents: call.price_cents,
+      rescheduling,
     })
 
     if (outcome === 'disputed') {

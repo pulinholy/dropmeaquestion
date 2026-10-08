@@ -90,6 +90,7 @@ emails.
 | **Complete (asker silent)** | As above, but the asker does nothing. Set `confirmed_start` to 26 hours ago and run the daily job | `completed` and charged, from the expert's mark plus the join clicks |
 | **Review email** | Confirm a call 2+ hours out, then in Resend check the scheduled "How was your conversation...?" email (start + 20 min) | Scheduled; disappears if the call is cancelled |
 | **Asker free cancel** | 30h away, asker cancels | `cancelled`. Stripe **Canceled**. Not charged |
+| **Request a different time** | 30h away, asker clicks it | `cancelled`, Stripe **Canceled**, asker lands on the booking page and can book again; both emails mention new times. At 3h away the button isn't shown |
 | **Late cancel** | 3h away, asker cancels. The button says "Cancel and pay $35" and a confirm appears | `late_cancelled`. **Succeeded** |
 | **Too late** | Started, asker tries to cancel | Refused, with a "Report a problem" hint |
 | **Decline** | Expert clicks "None of these work" | `declined`. Canceled. Asker gets "propose new times" |

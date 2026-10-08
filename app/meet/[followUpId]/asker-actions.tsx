@@ -49,7 +49,8 @@ export default function AskerActions({
         setBusy(false)
         return
       }
-      window.location.reload()
+      if (typeof data?.url === "string") window.location.assign(data.url)
+      else window.location.reload()
     } catch {
       setError(GENERIC_ERROR)
       setBusy(false)
@@ -62,6 +63,16 @@ export default function AskerActions({
       : "Cancel this conversation? Your card won't be charged."
     if (window.confirm(message)) {
       post("/api/follow-up/cancel-asker", { id: followUpId, acknowledgeLateCharge: late })
+    }
+  }
+
+  function requestNewTime() {
+    if (
+      window.confirm(
+        "Request a different time? This cancels the current booking for free, and your card won't be charged. You'll then choose new times and the expert will confirm one."
+      )
+    ) {
+      post("/api/follow-up/rebook", { id: followUpId })
     }
   }
 
@@ -93,6 +104,19 @@ export default function AskerActions({
           >
             {busy ? "Working..." : "Cancel conversation"}
           </button>
+          <h2 className="mt-5 text-sm font-semibold text-ink">Need a different time?</h2>
+          <p className="mt-1 text-xs text-ink-soft">
+            Cancel this booking for free and choose new times. Your card won&apos;t be
+            charged, and the expert confirms a new time.
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={requestNewTime}
+            className="mt-3 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
+          >
+            {busy ? "Working..." : "Request a different time"}
+          </button>
         </>
       )}
 
@@ -102,7 +126,9 @@ export default function AskerActions({
           <p className="mt-1 text-xs text-ink-soft">
             It&apos;s less than 24 hours before the start, so cancelling now
             charges your card ${price} in full, as described in the
-            cancellation policy you agreed to.
+            cancellation policy you agreed to. A new time can no longer be
+            requested; if something goes wrong on the day, you can report it once
+            the conversation has started.
           </p>
           <button
             type="button"
