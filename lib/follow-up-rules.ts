@@ -22,14 +22,15 @@ export const FOLLOW_UP_FALLBACK_HOLD_HOURS = 4 * 24 + 18
 
 // Bump when the wording below changes; it's stored with each booking so a
 // dispute can show exactly what the asker agreed to.
-export const FOLLOW_UP_POLICY_VERSION = '2026-10-v2'
+export const FOLLOW_UP_POLICY_VERSION = '2026-10-v3'
 
 export const FOLLOW_UP_POLICY_LINES = [
   'Your card is held when you request the conversation. You are charged only after it takes place.',
   'The expert has 24 hours to confirm a time. If they decline or don’t respond, your hold is released and you are not charged.',
-  'You can cancel for free until 24 hours before the conversation. Cancelling later, or not joining, is charged in full.',
-  'If the expert cancels or doesn’t join, you are not charged.',
+  'You can cancel for free until 24 hours before the conversation. Cancelling later, or not joining, is charged in full, unless something went wrong on our side or the expert’s. Tell us within 24 hours and we’ll review it.',
+  'If the expert cancels or doesn’t join, you are not charged. If a connection problem stops the conversation, report it and we’ll review it.',
   'After the conversation we’ll ask you to confirm it took place. If you report a problem, we hold the charge and review it. If we don’t hear from you, your card is charged about a day after it ends.',
+  'The conversation is the expert’s own opinion. A conversation that didn’t take place isn’t charged, but disagreeing with the advice isn’t a reason for a refund.',
 ]
 
 export const FOLLOW_UP_PRIVACY_LINES = [

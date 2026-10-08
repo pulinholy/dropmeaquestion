@@ -172,7 +172,7 @@ export async function sendFollowUpOutcomeEmails({
     case 'late_cancelled':
       asker = {
         subject: 'Your conversation was cancelled',
-        body: `<p style="margin:0;">You cancelled less than 24 hours before the start, so your card was charged ${paid}, as described in the cancellation policy you agreed to.</p>`,
+        body: `<p style="margin:0;">You cancelled less than 24 hours before the start, so your card was charged ${paid}, as described in the cancellation policy you agreed to.</p><p style="margin:12px 0 0; font-size:13px; color:#4a5568;">If something went wrong on our side or ${name}&rsquo;s, reply to this email within 24 hours and we&rsquo;ll review it.</p>`,
       }
       expert = {
         subject: 'A conversation was cancelled late',
@@ -182,7 +182,7 @@ export async function sendFollowUpOutcomeEmails({
     case 'asker_no_show':
       asker = {
         subject: 'You missed your conversation',
-        body: `<p style="margin:0 0 12px;">We didn&rsquo;t see you join your conversation with ${name}, so your card was charged ${paid}, as described in the cancellation policy you agreed to.</p><p style="margin:0; font-size:13px; color:#4a5568;">If something went wrong on our side, just reply to this email.</p>`,
+        body: `<p style="margin:0 0 12px;">We didn&rsquo;t see you join your conversation with ${name}, so your card was charged ${paid}, as described in the cancellation policy you agreed to.</p><p style="margin:0; font-size:13px; color:#4a5568;">If something went wrong on our side or ${name}&rsquo;s, reply to this email within 24 hours and we&rsquo;ll review it.</p>`,
       }
       expert = {
         subject: 'The asker didn’t join',
