@@ -277,14 +277,34 @@ export default function QuestionsByStatusPage() {
                     placeholder="Write your answer..."
                   />
                   {followUpOn && (
-                    <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink">
+                    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-white p-4 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/30">
                       <input
                         type="checkbox"
                         checked={offerFollowUp}
                         onChange={(e) => setOfferFollowUp(e.target.checked)}
-                        className="mt-0.5 h-4 w-4 rounded-sm border-line accent-postal-red"
+                        className="peer sr-only"
                       />
-                      Offer 15-minute follow-up conversations after I answer
+                      <span
+                        aria-hidden="true"
+                        className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
+                          offerFollowUp ? "bg-ink text-white" : "border-2 border-line"
+                        }`}
+                      >
+                        {offerFollowUp && (
+                          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3.5 8.5l3 3 6-6.5" />
+                          </svg>
+                        )}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-base font-semibold text-ink">
+                          Offer this asker a 15-minute follow-up conversation
+                        </span>
+                        <span className="mt-1 block text-xs text-ink-soft">
+                          They&apos;ll receive an invitation with your answer and can request a
+                          conversation at your set price.
+                        </span>
+                      </span>
                     </label>
                   )}
                   <div className="flex gap-2">
