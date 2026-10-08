@@ -26,6 +26,21 @@ function roundUpToQuarterHour(date: Date): Date {
   return new Date(Math.ceil(date.getTime() / quarter) * quarter)
 }
 
+// Start times sit on a 15-minute grid. Browsers let people type any minute,
+// so a typed time is nudged to the nearest quarter hour (and kept inside the
+// allowed range) rather than blocking the form with a browser error.
+function snapToQuarterHour(value: string, min: string, max: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  const quarter = 15 * 60 * 1000
+  const snapped = toLocalInputValue(new Date(Math.round(date.getTime() / quarter) * quarter))
+  if (min && snapped < min) return min
+  if (max && snapped > max) return toLocalInputValue(
+    new Date(Math.floor(new Date(max).getTime() / quarter) * quarter)
+  )
+  return snapped
+}
+
 export default function BookingForm({
   questionId,
   expertFirstName,
@@ -72,9 +87,10 @@ export default function BookingForm({
     e.preventDefault()
     setError("")
 
+    // Pressing Enter in a field skips the blur that snaps its time.
     const chosen = slots
       .filter(Boolean)
-      .map((value) => new Date(value))
+      .map((value) => new Date(bounds ? snapToQuarterHour(value, bounds.min, bounds.max) : value))
       .filter((d) => !Number.isNaN(d.getTime()))
     if (chosen.length === 0) {
       setError("Propose at least one time.")
@@ -154,11 +170,18 @@ export default function BookingForm({
                 <div key={index}>
                   <input
                     type="datetime-local"
-                    step={900}
                     min={bounds?.min}
                     max={bounds?.max}
                     value={value}
                     onChange={(e) => setSlot(index, e.target.value)}
+                    onBlur={(e) => {
+                      if (e.target.value && bounds) {
+                        setSlot(
+                          index,
+                          snapToQuarterHour(e.target.value, bounds.min, bounds.max)
+                        )
+                      }
+                    }}
                     aria-label={`Proposed time ${index + 1}${index === 0 ? "" : " (optional)"}`}
                     required={index === 0}
                     className="w-full rounded-sm border border-line px-3 py-2 text-sm text-ink"
