@@ -10,6 +10,7 @@ import {
 } from "@/lib/follow-up"
 import { videoMode } from "@/lib/video/config"
 import BookingForm from "./booking-form"
+import RequestStatus from "./request-status"
 
 export const metadata: Metadata = {
   title: "Book a conversation — Drop Me A Question",
@@ -72,10 +73,10 @@ export default async function FollowUpPage({
       )
   } else if (requested === "1") {
     content = (
-      <Message title="Thanks — we’re processing your request">
-        You&apos;ll get an email in a moment confirming it was sent to{" "}
-        {offer.expert.firstName}. Your card is held, not charged.
-      </Message>
+      <RequestStatus
+        questionId={offer.question.id}
+        expertFirstName={offer.expert.firstName}
+      />
     )
   } else {
     content = (
