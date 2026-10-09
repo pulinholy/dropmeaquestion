@@ -382,27 +382,63 @@ export function UpcomingCard({
   )
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  completed: "Completed",
-  declined: "Declined",
-  expired: "Expired",
-  cancelled: "Cancelled",
-  late_cancelled: "Cancelled late",
-  asker_no_show: "Asker didn't join",
-  expert_no_show: "Missed",
-  disputed: "Under review — we'll be in touch",
+// What each ending means for the expert, in plain words.
+function describeEnding(call: FollowUpCall): string {
+  switch (call.status) {
+    case "completed":
+      return "Completed"
+    case "declined":
+      return "You declined"
+    case "expired":
+      return "Expired, not confirmed in time"
+    case "cancelled":
+      return call.cancelledBy === "expert"
+        ? "Cancelled by you"
+        : call.cancelledBy === "asker"
+          ? "Cancelled by the asker"
+          : "Cancelled"
+    case "late_cancelled":
+      return "Cancelled late by the asker"
+    case "asker_no_show":
+      return "The asker didn't join"
+    case "expert_no_show":
+      return "Missed, the asker wasn't charged"
+    case "disputed":
+      return "Under review"
+    default:
+      return call.status
+  }
+}
+
+// What the expert gets (or is waiting on), if anything.
+function describeMoney(call: FollowUpCall): string | null {
+  const net = `$${earnings(call.priceCents)}`
+  switch (call.status) {
+    case "completed":
+    case "late_cancelled":
+    case "asker_no_show":
+      return `${net} to you`
+    case "disputed":
+      return `${net} on hold`
+    default:
+      return null
+  }
 }
 
 export function PastRow({ call }: { call: FollowUpCall }) {
   const when = call.confirmedStart ? formatLocal(call.confirmedStart, false) : null
+  const money = describeMoney(call)
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
       <span className="text-ink">
         {call.referenceId ? `Question #${call.referenceId}` : "Follow-up conversation"}
         {when && <span className="text-ink-soft"> · {when}</span>}
       </span>
-      <span className="rounded-full bg-line/50 px-2.5 py-0.5 text-xs font-medium text-ink-soft">
-        {STATUS_LABELS[call.status] ?? call.status}
+      <span className="flex flex-wrap items-center gap-2">
+        {money && <span className="text-xs text-ink-soft">{money}</span>}
+        <span className="rounded-full bg-line/50 px-2.5 py-0.5 text-xs font-medium text-ink-soft">
+          {describeEnding(call)}
+        </span>
       </span>
     </li>
   )

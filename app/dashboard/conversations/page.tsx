@@ -34,6 +34,33 @@ async function authedFetch(path: string, init?: RequestInit) {
   })
 }
 
+type TabKey = "requests" | "upcoming" | "completed" | "review" | "ended"
+
+// Every status a conversation can have, grouped into five tabs:
+//   requests  requested
+//   upcoming  confirmed
+//   completed completed
+//   review    disputed (a problem was reported, or a person has to decide)
+//   ended     declined, expired, cancelled, late_cancelled, asker_no_show,
+//             expert_no_show
+const TABS: { key: TabKey; label: string; empty: string }[] = [
+  {
+    key: "requests",
+    label: "Requests",
+    empty:
+      "No requests waiting. When an asker asks for a conversation after your answer, it appears here for you to confirm.",
+  },
+  { key: "upcoming", label: "Upcoming", empty: "No upcoming conversations." },
+  { key: "completed", label: "Completed", empty: "No completed conversations yet." },
+  {
+    key: "review",
+    label: "Under review",
+    empty:
+      "Nothing is under review. If a problem is reported, or a conversation needs checking, it appears here while the payment is on hold.",
+  },
+  { key: "ended", label: "Cancelled & missed", empty: "No cancelled or missed conversations." },
+]
+
 export default function ConversationsPage() {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [loadError, setLoadError] = useState("")
@@ -47,6 +74,8 @@ export default function ConversationsPage() {
     referenceId: string | null
   } | null>(null)
   const [roomReporting, setRoomReporting] = useState(false)
+  // The chosen tab; until one is chosen, the first tab that has something in it.
+  const [chosenTab, setChosenTab] = useState<TabKey | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [now, setNow] = useState(() => Date.now())
   // Bumping this reloads the list, e.g. after confirming or declining.
@@ -76,6 +105,14 @@ export default function ConversationsPage() {
       cancelled = true
     }
   }, [reloadKey])
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const wanted = new URLSearchParams(window.location.search).get("tab")
+      if (TABS.some((tab) => tab.key === wanted)) setChosenTab(wanted as TabKey)
+    }, 0)
+    return () => clearTimeout(t)
+  }, [])
 
   // The Join button unlocks on its own as the start time approaches.
   useEffect(() => {
@@ -147,7 +184,29 @@ export default function ConversationsPage() {
       (a, b) =>
         new Date(a.confirmedStart ?? 0).getTime() - new Date(b.confirmedStart ?? 0).getTime()
     )
-  const past = loaded.calls.filter((c) => c.status !== "requested" && c.status !== "confirmed")
+  const completed = loaded.calls.filter((c) => c.status === "completed")
+  const review = loaded.calls.filter((c) => c.status === "disputed")
+  const ended = loaded.calls.filter(
+    (c) => !["requested", "confirmed", "completed", "disputed"].includes(c.status)
+  )
+  const counts: Record<TabKey, number> = {
+    requests: requests.length,
+    upcoming: upcoming.length,
+    completed: completed.length,
+    review: review.length,
+    ended: ended.length,
+  }
+  const activeTab: TabKey =
+    chosenTab ??
+    (["requests", "upcoming", "review", "completed", "ended"] as TabKey[]).find(
+      (key) => counts[key] > 0
+    ) ??
+    "requests"
+
+  function chooseTab(key: TabKey) {
+    setChosenTab(key)
+    window.history.replaceState(null, "", `?tab=${key}`)
+  }
 
   // In a call, the call is the page: no lists or notices beside it.
   if (room) {
@@ -220,86 +279,109 @@ export default function ConversationsPage() {
         </div>
       )}
 
-      {requests.length > 0 && (
-        <div className="mt-6">
-          <h2 className="font-display text-lg text-ink">
-            Waiting for you ({requests.length})
-          </h2>
-          <div className="mt-3 space-y-3">
-            {requests.map((call) => (
-              <RequestCard
-                key={call.id}
-                call={call}
-                busy={busyId === call.id}
-                error={errors[call.id] ?? ""}
-                videoMode={loaded.videoMode}
-                onConfirm={(slot, meetingLink) =>
-                  act(call.id, "/api/follow-up/confirm", { id: call.id, slot, meetingLink })
-                }
-                onDecline={() => act(call.id, "/api/follow-up/decline", { id: call.id })}
-              />
-            ))}
+      {loaded.available && loaded.calls.length > 0 && (
+        <>
+          <div className="mt-4 flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {TABS.map((tab) => {
+              const active = tab.key === activeTab
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => chooseTab(tab.key)}
+                  className={`flex-shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
+                    active
+                      ? "border-postal-red text-postal-red"
+                      : "border-transparent text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  {tab.label} ({counts[tab.key]})
+                </button>
+              )
+            })}
           </div>
-        </div>
-      )}
 
-      {upcoming.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-display text-lg text-ink">Upcoming</h2>
-          <div className="mt-3 space-y-3">
-            {upcoming.map((call) => (
-              <UpcomingCard
-                key={call.id}
-                call={call}
-                now={now}
-                joining={joiningId === call.id}
-                busy={busyId === call.id}
-                error={errors[call.id] ?? ""}
-                onJoin={() => join(call)}
-                onCancel={() => {
-                  if (
-                    window.confirm(
-                      "Cancel this conversation? The asker won't be charged."
+          <div className="mt-4 space-y-3">
+            {counts[activeTab] === 0 && (
+              <p className="text-ink-soft">{TABS.find((t) => t.key === activeTab)?.empty}</p>
+            )}
+
+            {activeTab === "requests" &&
+              requests.map((call) => (
+                  <RequestCard
+                    key={call.id}
+                    call={call}
+                    busy={busyId === call.id}
+                    error={errors[call.id] ?? ""}
+                    videoMode={loaded.videoMode}
+                    onConfirm={(slot, meetingLink) =>
+                      act(call.id, "/api/follow-up/confirm", { id: call.id, slot, meetingLink })
+                    }
+                    onDecline={() => act(call.id, "/api/follow-up/decline", { id: call.id })}
+                  />
+              ))}
+
+            {activeTab === "upcoming" &&
+              upcoming.map((call) => (
+                  <UpcomingCard
+                    key={call.id}
+                    call={call}
+                    now={now}
+                    joining={joiningId === call.id}
+                    busy={busyId === call.id}
+                    error={errors[call.id] ?? ""}
+                    onJoin={() => join(call)}
+                    onCancel={() => {
+                      if (
+                        window.confirm(
+                          "Cancel this conversation? The asker won't be charged."
+                        )
+                      ) {
+                        act(call.id, "/api/follow-up/cancel-expert", { id: call.id })
+                      }
+                    }}
+                    onComplete={() => {
+                      if (window.confirm("Mark this conversation as completed? The asker is asked to confirm. You're paid when they do, or automatically about a day after if no problem is reported.")) {
+                        act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "completed" })
+                      }
+                    }}
+                    onAskerNoShow={() => {
+                      if (
+                        window.confirm(
+                          "The asker never opened the join page. Mark them as not joining? They're asked to confirm, and under the cancellation policy they're charged in full about a day later unless they report a problem. You're paid when they are."
+                        )
+                      ) {
+                        act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
+                      }
+                    }}
+                    onUseOwnLink={(meetingLink) =>
+                      act(call.id, "/api/follow-up/use-own-link", { id: call.id, meetingLink })
+                    }
+                    onReport={(reason, note) =>
+                      act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
+                    }
+                  />
+              ))}
+
+            {activeTab === "review" && review.length > 0 && (
+              <p className="rounded-lg border border-line bg-card p-4 text-sm text-ink-soft">
+                A problem was reported, or the connection record needs a person to check. The payment
+                is on hold until we decide, and we&apos;ll email you.
+              </p>
+            )}
+
+            {(activeTab === "completed" || activeTab === "review" || activeTab === "ended") &&
+              counts[activeTab] > 0 && (
+                <ul className="divide-y divide-line rounded-lg border border-line bg-card px-4">
+                  {(activeTab === "completed" ? completed : activeTab === "review" ? review : ended).map(
+                    (call) => (
+                      <PastRow key={call.id} call={call} />
                     )
-                  ) {
-                    act(call.id, "/api/follow-up/cancel-expert", { id: call.id })
-                  }
-                }}
-                onComplete={() => {
-                  if (window.confirm("Mark this conversation as completed? The asker is charged and you're paid.")) {
-                    act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "completed" })
-                  }
-                }}
-                onAskerNoShow={() => {
-                  if (
-                    window.confirm(
-                      "The asker never opened the join page. Mark them as not joining? They're charged in full under the cancellation policy and you're paid."
-                    )
-                  ) {
-                    act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
-                  }
-                }}
-                onUseOwnLink={(meetingLink) =>
-                  act(call.id, "/api/follow-up/use-own-link", { id: call.id, meetingLink })
-                }
-                onReport={(reason, note) =>
-                  act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
-                }
-              />
-            ))}
+                  )}
+                </ul>
+              )}
           </div>
-        </div>
-      )}
-
-      {past.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-display text-lg text-ink">Past</h2>
-          <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-card px-4">
-            {past.map((call) => (
-              <PastRow key={call.id} call={call} />
-            ))}
-          </ul>
-        </div>
+        </>
       )}
     </section>
   )
