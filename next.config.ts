@@ -46,9 +46,13 @@ const csp = buildCsp();
 // room and hand it the camera and microphone. Every other page stays locked.
 const dailyFrames = "https://*.daily.co https://*.dailywebrtc.com https://*.dailywebrtc.net";
 
-// The pages that show a call: the admin test page, the asker's join page and
-// the expert's Conversations page.
-const callPages = ["/admin/video-poc", "/meet/:followUpId", "/dashboard/conversations"];
+// The pages that can show a call: the asker's join page, and the expert's
+// dashboard and the admin test page.
+// Security headers are read once per full page load, not when someone clicks
+// between pages inside the dashboard or admin. So the whole dashboard and admin
+// are included, not just the page that shows the call, or the call would be
+// blocked after arriving by a sidebar link.
+const callPages = ["/admin/:path*", "/meet/:followUpId", "/dashboard/:path*"];
 const callPageHeaders = [
   { key: "Content-Security-Policy", value: buildCsp([`frame-src ${dailyFrames}`]) },
   {

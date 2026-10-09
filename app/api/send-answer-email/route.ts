@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
-import { renderEmailLayout, renderEmailButton, renderEmailQuote, EMAIL_BASE_URL } from '@/lib/email-layout'
+import {
+  renderEmailLayout,
+  renderEmailButton,
+  renderEmailSecondaryButton,
+  renderEmailQuote,
+  EMAIL_BASE_URL,
+} from '@/lib/email-layout'
 import { logError } from '@/lib/log-error'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
@@ -69,21 +75,37 @@ export async function POST(request: Request) {
       .eq('id', questionId)
   }
   const offer = optedOut ? null : await getFollowUpOffer(questionId)
+  const first = escapeHtml(expertFirstName)
+  const onDmq = videoMode() === 'dmq'
+
+  // The invitation is deliberately quieter than the answer: a light box with
+  // an outlined button, after the answer and the request for feedback.
   const followUpBlock = offer?.ok
     ? `
-    <hr style="border:0; border-top:1px solid #ddd6c8; margin:28px 0 20px;" />
-    <p style="margin:0 0 8px; font-weight:bold;">Want to talk it through with ${escapeHtml(expertFirstName)}?</p>
-    <p style="margin:0 0 16px;">Continue the conversation with a private 15-minute call &mdash; $${formatPrice(offer.priceCents)}.</p>
-    ${renderEmailButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
-    <p style="margin:16px 0 0; font-size:12px; color:#4a5568;">Your email address isn&rsquo;t shared by Drop Me A Question. ${videoMode() === 'dmq' ? 'The conversation takes place on Drop Me A Question as an audio call, with an optional camera, and you appear as &ldquo;Guest&rdquo;.' : `The conversation uses ${escapeHtml(expertFirstName)}&rsquo;s video meeting service, which may show your display name.`} You&rsquo;re charged only after the conversation takes place.</p>
+    <div style="margin:28px 0 0; padding:16px 18px; background-color:#fbfaf7; border:1px solid #ddd6c8; border-radius:6px;">
+      <p style="margin:0 0 4px; font-size:15px; font-weight:bold;">Want to talk it through with ${first}?</p>
+      <p style="margin:0 0 10px; font-size:14px;">An optional, private 15-minute conversation &mdash; $${formatPrice(offer.priceCents)}.</p>
+      <ul style="margin:0 0 12px; padding-left:18px; font-size:13px; color:#4a5568;">
+        <li style="margin:0 0 4px;">${onDmq ? 'An audio call on Drop Me A Question. Your camera starts off.' : `A video meeting on ${first}&rsquo;s own meeting link.`}</li>
+        <li style="margin:0 0 4px;">You propose up to three times; ${first} confirms one.</li>
+        <li style="margin:0 0 4px;">${onDmq ? 'You appear as &ldquo;Guest&rdquo;, and your email address isn&rsquo;t shared.' : 'Your email address isn&rsquo;t shared. Your meeting profile&rsquo;s display name may be visible.'}</li>
+        <li style="margin:0;">Your card is charged after the conversation, unless cancellation or no-show fees apply.</li>
+      </ul>
+      ${renderEmailSecondaryButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
+    </div>
   `
     : ''
 
+  // The written answer is the main content; everything else follows it.
   const body = `
-    <p style="margin:0 0 16px;">${expertFirstName} answered the question you dropped:</p>
+    <p style="margin:0 0 18px;">${first} has answered your question.</p>
+    <p style="margin:0 0 6px; font-family: Arial, Helvetica, sans-serif; font-size:11px; font-weight:bold; letter-spacing:0.06em; text-transform:uppercase; color:#4a5568;">Your question</p>
     ${renderEmailQuote(question.question_text)}
-    <p style="margin:0 0 24px; white-space:pre-wrap;">${question.answer_text}</p>
-    ${renderEmailButton(feedbackUrl, `Was this helpful? Let ${expertFirstName} know &rarr;`)}
+    <p style="margin:0 0 6px; font-family: Arial, Helvetica, sans-serif; font-size:11px; font-weight:bold; letter-spacing:0.06em; text-transform:uppercase; color:#4a5568;">${first}&rsquo;s answer</p>
+    <div style="margin:0 0 24px; padding:16px 18px; background-color:#ffffff; border:1px solid #ddd6c8; border-radius:6px; font-size:16px; white-space:pre-wrap;">${escapeHtml(question.answer_text ?? '')}</div>
+    <p style="margin:0 0 4px; font-weight:bold;">Was this helpful?</p>
+    <p style="margin:0 0 10px; font-size:14px; color:#4a5568;">Your feedback helps ${first} and other askers.</p>
+    ${renderEmailButton(feedbackUrl, 'Give feedback &rarr;')}
     ${followUpBlock}
   `
 

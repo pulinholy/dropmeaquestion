@@ -11,18 +11,48 @@ function apiKey(): string {
   return key
 }
 
+const MAX_ATTEMPTS = 3
+const REQUEST_TIMEOUT_MS = 15000
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// One call to the provider. A dropped connection or a server hiccup is retried
+// a couple of times with a short pause, because a single failed request on a
+// connection that sat idle is common and harmless to repeat. Anything the
+// provider rejects (a 4xx) is not retried. The error keeps the real cause
+// (for example ECONNRESET) instead of Node's bare "fetch failed".
 async function daily<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey()}`,
-      ...(init.headers ?? {}),
-    },
-  })
-  const text = await res.text()
-  if (!res.ok) throw new Error(`Daily ${res.status}: ${text.slice(0, 300)}`)
-  return (text ? JSON.parse(text) : {}) as T
+  for (let attempt = 1; ; attempt++) {
+    let res: Response
+    try {
+      res = await fetch(`${API}${path}`, {
+        ...init,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey()}`,
+          ...(init.headers ?? {}),
+        },
+      })
+    } catch (err) {
+      if (attempt < MAX_ATTEMPTS) {
+        await sleep(300 * attempt)
+        continue
+      }
+      const cause = (err as { cause?: { code?: string; message?: string } }).cause
+      throw new Error(
+        `Daily request failed after ${attempt} tries (${cause?.code ?? cause?.message ?? (err as Error).message})`
+      )
+    }
+
+    const text = await res.text()
+    if (res.status >= 500 && attempt < MAX_ATTEMPTS) {
+      await sleep(300 * attempt)
+      continue
+    }
+    if (!res.ok) throw new Error(`Daily ${res.status}: ${text.slice(0, 300)}`)
+    return (text ? JSON.parse(text) : {}) as T
+  }
 }
 
 const seconds = (d: Date) => Math.floor(d.getTime() / 1000)

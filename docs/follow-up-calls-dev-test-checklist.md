@@ -72,6 +72,17 @@ Put the booking `id` in each snippet.
 | Request expired | `update follow_up_calls set confirm_by = now() - interval '1 hour' where id = '...' and status = 'requested';` |
 | Reset who joined | `... set asker_joined_at = null, expert_joined_at = null ...` |
 
+**DMQ-hosted bookings:** the room is created the first time someone joins, with
+the booking's time at that moment. If you change `confirmed_start` after
+anyone has joined, also clear the room so a fresh one is made, or the call shows
+"This meeting is no longer available":
+
+```sql
+update follow_up_calls
+set video_room_name = null, video_room_url = null, video_room_created_at = null
+where id = '...';
+```
+
 Run the daily job by hand:
 
 ```bash

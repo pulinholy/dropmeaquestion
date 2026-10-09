@@ -1,4 +1,5 @@
 import { PUBLIC_SITE_URL } from './site'
+import { escapeHtml } from './follow-up-rules'
 
 // Emails are always opened from a real inbox, never from the machine that
 // triggered the send -- so this must be a publicly reachable URL even when
@@ -71,6 +72,24 @@ export function renderEmailButton(url: string, label: string): string {
 `
 }
 
+// Text from a person (a question, an answer) is escaped here, so nothing they
+// type can add markup to an email we send.
 export function renderEmailQuote(text: string): string {
-  return `<blockquote style="margin:0 0 20px; padding:12px 16px; background-color:#f8f6f1; border-left:3px solid #ddd6c8; color:#4a5568; font-style:italic;">${text}</blockquote>`
+  return `<blockquote style="margin:0 0 20px; padding:12px 16px; background-color:#f8f6f1; border-left:3px solid #ddd6c8; color:#4a5568; font-style:italic; white-space:pre-wrap;">${escapeHtml(text)}</blockquote>`
+}
+
+// A quieter, outlined button for a secondary action, so it never competes with
+// the main one.
+export function renderEmailSecondaryButton(url: string, label: string): string {
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 4px 0 0;">
+  <tr>
+    <td style="border-radius:999px; border:1px solid #17243a; background-color:#ffffff;">
+      <a href="${url}" style="display:inline-block; padding:9px 20px; font-family: Arial, Helvetica, sans-serif; font-size:13px; font-weight:bold; color:#17243a; text-decoration:none; border-radius:999px;">
+        ${label}
+      </a>
+    </td>
+  </tr>
+</table>
+`
 }
