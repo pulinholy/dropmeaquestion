@@ -22,6 +22,10 @@ export type RoleSummary = {
   sessions: number
   reconnects: number
   totalSeconds: number
+  // When they first connected, and when they last left (null if still
+  // connected or never joined). Used to show lateness against the start.
+  firstJoinedAt?: string | null
+  lastLeftAt?: string | null
 }
 
 export type ConnectionSummary = {
@@ -132,6 +136,8 @@ export function summarizeSessions(
   const intervals: Record<'expert' | 'asker', Interval[]> = { expert: [], asker: [] }
   const count = { expert: 0, asker: 0 }
   const open = { expert: false, asker: false }
+  const first: Record<'expert' | 'asker', number | null> = { expert: null, asker: null }
+  const last: Record<'expert' | 'asker', number | null> = { expert: null, asker: null }
 
   for (const s of sessions) {
     if (s.role !== 'expert' && s.role !== 'asker') continue
@@ -147,6 +153,8 @@ export function summarizeSessions(
     if (Number.isNaN(end) || end < start) continue
     intervals[role].push([start, end])
     count[role]++
+    if (first[role] === null || start < first[role]!) first[role] = start
+    if (s.left_at && (last[role] === null || end > last[role]!)) last[role] = end
   }
 
   const expert = mergeIntervals(intervals.expert)
@@ -159,6 +167,8 @@ export function summarizeSessions(
     sessions: count[role],
     reconnects: Math.max(0, count[role] - 1),
     totalSeconds: total(iv),
+    firstJoinedAt: first[role] === null ? null : new Date(first[role]!).toISOString(),
+    lastLeftAt: open[role] || last[role] === null ? null : new Date(last[role]!).toISOString(),
   })
 
   return {

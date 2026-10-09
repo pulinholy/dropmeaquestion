@@ -212,6 +212,14 @@ export default function BookingForm({
               </li>
             ))}
           </ul>
+          <a
+            href="/conversation-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-block text-xs font-medium text-ink underline underline-offset-2"
+          >
+            Read the full conversation policy
+          </a>
         </div>
 
         <div className="rounded-sm bg-line/30 p-3">

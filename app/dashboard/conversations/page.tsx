@@ -10,6 +10,7 @@ import {
   type FollowUpCall,
 } from "./conversation-cards"
 import ConversationRoom from "@/components/ConversationRoom"
+import ReportProblemForm from "@/components/ReportProblemForm"
 
 type Loaded = {
   available: boolean
@@ -39,7 +40,13 @@ export default function ConversationsPage() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [joiningId, setJoiningId] = useState<string | null>(null)
   // A conversation held on DMQ, while the expert is in it.
-  const [room, setRoom] = useState<{ url: string; startIso: string } | null>(null)
+  const [room, setRoom] = useState<{
+    url: string
+    startIso: string
+    id: string
+    referenceId: string | null
+  } | null>(null)
+  const [roomReporting, setRoomReporting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [now, setNow] = useState(() => Date.now())
   // Bumping this reloads the list, e.g. after confirming or declining.
@@ -112,7 +119,12 @@ export default function ConversationsPage() {
         tab?.close()
         setError(call.id, typeof data?.error === "string" ? data.error : GENERIC_ERROR)
       } else if (data.mode === "embedded" && call.confirmedStart) {
-        setRoom({ url: data.url, startIso: call.confirmedStart })
+        setRoom({
+          url: data.url,
+          startIso: call.confirmedStart,
+          id: call.id,
+          referenceId: call.referenceId,
+        })
       } else if (tab) {
         tab.location.assign(data.url)
       } else {
@@ -136,6 +148,43 @@ export default function ConversationsPage() {
         new Date(a.confirmedStart ?? 0).getTime() - new Date(b.confirmedStart ?? 0).getTime()
     )
   const past = loaded.calls.filter((c) => c.status !== "requested" && c.status !== "confirmed")
+
+  // In a call, the call is the page: no lists or notices beside it.
+  if (room) {
+    return (
+      <section>
+        <h1 className="font-display text-2xl text-ink">
+          Conversation{room.referenceId ? ` for Question #${room.referenceId}` : ""}
+        </h1>
+        <p className="mt-1 text-sm text-ink-soft">15-minute follow-up · Guest</p>
+        <div className="mt-4">
+          <ConversationRoom
+            url={room.url}
+            startIso={room.startIso}
+            onLeave={() => {
+              setRoom(null)
+              setRoomReporting(false)
+            }}
+            onReport={() => setRoomReporting(true)}
+          />
+        </div>
+        {roomReporting && (
+          <div className="mt-4 rounded-lg border border-line bg-card p-5">
+            <ReportProblemForm
+              role="expert"
+              busy={busyId === room.id}
+              onCancel={() => setRoomReporting(false)}
+              onSubmit={(reason, note) => {
+                act(room.id, "/api/follow-up/report-problem", { id: room.id, reason, note })
+                setRoomReporting(false)
+              }}
+            />
+          </div>
+        )}
+        {errors[room.id] && <p className="mt-3 text-sm text-postal-red">{errors[room.id]}</p>}
+      </section>
+    )
+  }
 
   return (
     <section>
@@ -168,16 +217,6 @@ export default function ConversationsPage() {
         <div className="mt-6 rounded-lg border border-line bg-card p-5 text-sm text-ink-soft">
           Nothing yet. After you answer a question, the asker&apos;s email offers
           a follow-up conversation, and requests will appear here.
-        </div>
-      )}
-
-      {room && (
-        <div className="mt-6">
-          <ConversationRoom
-            url={room.url}
-            startIso={room.startIso}
-            onLeave={() => setRoom(null)}
-          />
         </div>
       )}
 

@@ -114,7 +114,14 @@ export default function JoinPanel({
   }
 
   if (roomUrl) {
-    return <ConversationRoom url={roomUrl} startIso={startIso} onLeave={() => setRoomUrl(null)} />
+    return (
+      <ConversationRoom
+        url={roomUrl}
+        startIso={startIso}
+        onLeave={() => setRoomUrl(null)}
+        onReport={() => window.dispatchEvent(new Event("dmq-open-report"))}
+      />
+    )
   }
 
   return (

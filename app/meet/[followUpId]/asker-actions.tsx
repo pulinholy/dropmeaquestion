@@ -20,6 +20,19 @@ export default function AskerActions({
   const [error, setError] = useState("")
   const [reporting, setReporting] = useState(false)
 
+  // The call's "Report a problem" asks this page to open its report form.
+  useEffect(() => {
+    function open() {
+      setReporting(true)
+      setTimeout(
+        () => document.getElementById("report-problem")?.scrollIntoView({ behavior: "smooth", block: "center" }),
+        50
+      )
+    }
+    window.addEventListener("dmq-open-report", open)
+    return () => window.removeEventListener("dmq-open-report", open)
+  }, [])
+
   // Starts null so the server-rendered page and first client render match.
   useEffect(() => {
     const first = setTimeout(() => setNow(Date.now()), 0)
@@ -87,8 +100,25 @@ export default function AskerActions({
   }
 
 
+  // While the conversation is live there is only a small way to report a
+  // problem. The confirmation comes after the scheduled end.
+  if (kind === "started" && !ended && !reporting) {
+    return (
+      <p id="report-problem" className="mt-3 text-center text-xs text-ink-soft">
+        Problem with the call?{" "}
+        <button
+          type="button"
+          onClick={() => setReporting(true)}
+          className="font-medium text-ink underline underline-offset-2"
+        >
+          Report it
+        </button>
+      </p>
+    )
+  }
+
   return (
-    <div className="mt-8 rounded-lg border border-line bg-white p-5">
+    <div id="report-problem" className="mt-8 rounded-lg border border-line bg-white p-5">
       {kind === "free" && (
         <>
           <h2 className="text-sm font-semibold text-ink">Need to cancel?</h2>
@@ -152,7 +182,7 @@ export default function AskerActions({
         />
       )}
 
-      {kind === "started" && !reporting && (
+      {kind === "started" && !reporting && ended && (
         <>
           <h2 className="text-sm font-semibold text-ink">How did it go?</h2>
           <p className="mt-1 text-xs text-ink-soft">

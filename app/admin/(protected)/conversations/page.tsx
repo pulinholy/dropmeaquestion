@@ -18,8 +18,8 @@ type Dispute = {
   problemNote: string | null
   // Present for conversations held on DMQ.
   connection: {
-    expert: { joined: boolean; connected: boolean; reconnects: number }
-    asker: { joined: boolean; connected: boolean; reconnects: number }
+    expert: { joined: boolean; connected: boolean; reconnects: number; firstJoinedAt?: string | null; lastLeftAt?: string | null }
+    asker: { joined: boolean; connected: boolean; reconnects: number; firstJoinedAt?: string | null; lastLeftAt?: string | null }
     sharedSeconds: number
   } | null
   events: { event: string; actor: string; detail: Record<string, unknown> | null; at: string }[]
@@ -51,6 +51,14 @@ const RESOLUTIONS = [
 
 function fmt(iso: string | null): string {
   return iso ? new Date(iso).toLocaleString() : "—"
+}
+
+// "6 min after the start" / "1 min before the start", for judging lateness.
+function againstStart(iso: string | null | undefined, startIso: string | null): string | null {
+  if (!iso || !startIso) return null
+  const minutes = Math.round((new Date(iso).getTime() - new Date(startIso).getTime()) / 60000)
+  if (minutes === 0) return "at the start"
+  return `${Math.abs(minutes)} min ${minutes < 0 ? "before" : "after"} the start`
 }
 
 // Why the system itself held a conversation, from its stored reason.
@@ -279,6 +287,14 @@ export default function AdminConversationsPage() {
                       </span>
                       <span className="text-ink">
                         {!c.joined ? "Not joined" : c.connected ? "Still connected" : "Connected, then left"}
+                        {againstStart(c.firstJoinedAt, d.confirmedStart) && (
+                          <span className="ml-2 text-xs text-ink-soft">
+                            joined {againstStart(c.firstJoinedAt, d.confirmedStart)}
+                            {againstStart(c.lastLeftAt, d.confirmedStart)
+                              ? `, left ${againstStart(c.lastLeftAt, d.confirmedStart)}`
+                              : ""}
+                          </span>
+                        )}
                         {c.reconnects > 0 && (
                           <span className="ml-2 text-xs text-ink-soft">
                             {c.reconnects} reconnect{c.reconnects === 1 ? "" : "s"}

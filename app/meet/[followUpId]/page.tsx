@@ -3,10 +3,9 @@ import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import {
-  followUpPolicyLines,
-  followUpPrivacyLines,
   formatPrice,
 } from "@/lib/follow-up-rules"
+import { ExternalLinkIcon, LockIcon, ShieldCheckIcon, VideoIcon } from "@/components/icons"
 import { videoMode } from "@/lib/video/config"
 import JoinPanel from "./join-panel"
 import AskerActions from "./asker-actions"
@@ -93,16 +92,34 @@ export default async function MeetPage({
             startIso={call.confirmed_start}
             price={formatPrice(call.price_cents)}
           />
-          <div className="mt-8 rounded-lg border border-line bg-white p-5">
+          <div className="mt-6 rounded-lg border border-line bg-white p-4">
             <h2 className="text-sm font-semibold text-ink">Good to know</h2>
-            <ul className="mt-2 space-y-1.5 text-xs text-ink-soft">
-              {followUpPolicyLines(videoMode()).map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-              {followUpPrivacyLines(videoMode()).map((line) => (
-                <li key={line}>{line}</li>
-              ))}
+            <ul className="mt-2 space-y-2 text-xs text-ink-soft">
+              <li className="flex items-start gap-2">
+                <ShieldCheckIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                Your card is charged after the conversation, unless cancellation or no-show fees
+                apply.
+              </li>
+              <li className="flex items-start gap-2">
+                <LockIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                Your email address isn&apos;t shared with the expert.
+              </li>
+              <li className="flex items-start gap-2">
+                <VideoIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                {videoProvider === "dmq"
+                  ? "Your camera starts off. This conversation isn't recorded."
+                  : `This conversation uses ${expertFirstName}'s own meeting link, so Drop Me A Question doesn't control the call.`}
+              </li>
             </ul>
+            <a
+              href="/conversation-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-ink underline underline-offset-2"
+            >
+              View conversation policies
+              <ExternalLinkIcon className="h-3 w-3" />
+            </a>
           </div>
         </div>
       )
