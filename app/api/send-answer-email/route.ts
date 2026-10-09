@@ -6,6 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { escapeHtml, formatPrice, getFollowUpOffer } from '@/lib/follow-up'
+import { videoMode } from '@/lib/video/config'
 
 export async function POST(request: Request) {
   const user = await requireUser(request)
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
     <p style="margin:0 0 8px; font-weight:bold;">Want to talk it through with ${escapeHtml(expertFirstName)}?</p>
     <p style="margin:0 0 16px;">Continue the conversation with a private 15-minute call &mdash; $${formatPrice(offer.priceCents)}.</p>
     ${renderEmailButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
-    <p style="margin:16px 0 0; font-size:12px; color:#4a5568;">Your email address isn&rsquo;t shared by Drop Me A Question. The conversation uses ${escapeHtml(expertFirstName)}&rsquo;s video meeting service, which may show your display name. You&rsquo;re charged only after the conversation takes place.</p>
+    <p style="margin:16px 0 0; font-size:12px; color:#4a5568;">Your email address isn&rsquo;t shared by Drop Me A Question. ${videoMode() === 'dmq' ? 'The conversation takes place on Drop Me A Question as an audio call, with an optional camera, and you appear as &ldquo;Guest&rdquo;.' : `The conversation uses ${escapeHtml(expertFirstName)}&rsquo;s video meeting service, which may show your display name.`} You&rsquo;re charged only after the conversation takes place.</p>
   `
     : ''
 
