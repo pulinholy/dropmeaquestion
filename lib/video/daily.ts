@@ -136,3 +136,27 @@ export function verifyDailyWebhook(
   const b = Buffer.from(headers.signature)
   return a.length === b.length && timingSafeEqual(a, b)
 }
+
+export type DailyMeeting = {
+  id: string
+  room: string
+  start_time: number
+  duration: number
+  ongoing: boolean
+  participants: {
+    participant_id: string
+    user_id: string | null
+    user_name: string | null
+    join_time: number
+    duration: number
+  }[]
+}
+
+// The provider's own record of who was in a room and for how long (meeting
+// analytics). Used only as a backup when our webhook events are missing.
+export async function listRoomMeetings(roomName: string): Promise<DailyMeeting[]> {
+  const result = await daily<{ data?: DailyMeeting[] }>(
+    `/meetings?room=${encodeURIComponent(roomName)}&limit=10`
+  )
+  return result.data ?? []
+}

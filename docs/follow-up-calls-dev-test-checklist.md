@@ -111,6 +111,27 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
 - [ ] Only the asker joined: `disputed` (manual review).
 - [ ] Neither joined: `expired` and released.
 
+## 6c. Failure handling for DMQ-hosted conversations (slice 4)
+
+- [ ] **In-app browser:** open the asker's join page inside Instagram or another
+      app's built-in browser (or send yourself the link in a chat app and tap
+      it): a hint says to open it in Safari or Chrome, with a "Copy this page's
+      link" button. In a normal browser there is no hint.
+- [ ] **Stalled call:** in the call, "Trouble connecting? Reload" reloads it on
+      the same pass; "Leave conversation" then Join makes a fresh pass.
+- [ ] **Move to my own link:** on a confirmed DMQ booking, the expert's card
+      shows "Trouble with the call? Use my own meeting link". Submitting a link
+      emails the asker, and the asker's join page then opens that link. The
+      booking then settles from join clicks, like any own-link booking.
+- [ ] **Backfill:** with the webhook NOT registered, hold a real call, skip 26
+      hours ahead and run the daily job: it still settles from the provider's
+      own record (look for "video_sessions_backfilled" in the booking's
+      timeline). Provider records are only kept for a limited time, so do this
+      the same day.
+- [ ] **Admin Video card:** `/admin/conversations` shows the switch state,
+      rooms in the last 24 hours, calls in progress and when a connection was
+      last recorded.
+
 ## 4b. Settling a DMQ-hosted conversation (slice 3)
 
 For a booking held on DMQ the daily job decides from who was actually in the

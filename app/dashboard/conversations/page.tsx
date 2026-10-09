@@ -240,6 +240,9 @@ export default function ConversationsPage() {
                     act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
                   }
                 }}
+                onUseOwnLink={(meetingLink) =>
+                  act(call.id, "/api/follow-up/use-own-link", { id: call.id, meetingLink })
+                }
                 onReport={(reason, note) =>
                   act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
                 }

@@ -189,3 +189,36 @@ export async function sendFollowUpConfirmedEmails({
     )
   }
 }
+
+// The expert moved a conversation held on DMQ to their own meeting link, for
+// example because the call wasn't working. The asker's join page now opens
+// that link, so tell them right away.
+export async function sendFollowUpMovedToOwnLinkEmail({
+  askerEmail,
+  expertFirstName,
+  followUpId,
+  confirmedStart,
+  askerTimezone,
+}: {
+  askerEmail: string
+  expertFirstName: string
+  followUpId: string
+  confirmedStart: string
+  askerTimezone: string | null
+}) {
+  const name = escapeHtml(expertFirstName)
+  const when = escapeHtml(formatSlot(confirmedStart, askerTimezone))
+  const body = `
+    <p style="margin:0 0 16px;">${name} has moved your conversation to their own video meeting link. Nothing else changes &mdash; same time, same price.</p>
+    <p style="margin:0 0 4px; font-size:13px; color:#4a5568;">When</p>
+    <p style="margin:0 0 20px; font-size:17px; font-weight:bold;">${when}</p>
+    <p style="margin:0 0 20px;">Use your private join page, as before. It now opens ${name}&rsquo;s meeting link, and your meeting profile&rsquo;s display name may be visible there.</p>
+    ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'Open your join page &rarr;')}
+  `
+  await send(
+    askerEmail,
+    `${expertFirstName} moved your conversation to their own link`,
+    body,
+    'send-follow-up-emails:moved-to-own-link'
+  )
+}

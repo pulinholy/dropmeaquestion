@@ -200,6 +200,7 @@ export function UpcomingCard({
   onComplete,
   onAskerNoShow,
   onReport,
+  onUseOwnLink,
 }: {
   call: FollowUpCall
   now: number
@@ -211,8 +212,11 @@ export function UpcomingCard({
   onComplete: () => void
   onAskerNoShow: () => void
   onReport: (reason: FollowUpProblemReason, note: string) => void
+  onUseOwnLink: (meetingLink: string) => void
 }) {
   const [reporting, setReporting] = useState(false)
+  const [ownLinkOpen, setOwnLinkOpen] = useState(false)
+  const [ownLink, setOwnLink] = useState("")
   if (!call.confirmedStart) return null
   const { opensAt, closesAt } =
     call.videoProvider === "dmq"
@@ -258,6 +262,47 @@ export function UpcomingCard({
           <span className="text-xs text-ink-soft">The join window has closed.</span>
         )}
       </div>
+
+      {call.videoProvider === "dmq" && !started && (
+        <div className="mt-3">
+          {!ownLinkOpen ? (
+            <button type="button" onClick={() => setOwnLinkOpen(true)} className={linkButton}>
+              Trouble with the call? Use my own meeting link
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-ink" htmlFor={`own-${call.id}`}>
+                Your meeting link
+              </label>
+              <input
+                id={`own-${call.id}`}
+                type="url"
+                inputMode="url"
+                value={ownLink}
+                onChange={(e) => setOwnLink(e.target.value)}
+                placeholder="https://meet.google.com/..."
+                className="w-full rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
+              />
+              <p className="text-xs text-ink-soft">
+                The asker is emailed straight away and their join page then opens this link.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={busy || ownLink.trim().length === 0}
+                  onClick={() => onUseOwnLink(ownLink)}
+                  className="rounded-full bg-ink px-4 py-1.5 text-xs font-medium text-white hover:bg-postal-blue disabled:opacity-50"
+                >
+                  Move to my link
+                </button>
+                <button type="button" onClick={() => setOwnLinkOpen(false)} className={linkButton}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {started && reporting ? (
         <div className="mt-4 border-t border-line pt-3">

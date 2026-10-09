@@ -146,6 +146,7 @@ export async function maintainFollowUps() {
     expert_joined_at: string | null
     expert_marked: string | null
     video_provider?: string | null
+    video_room_name?: string | null
   }
   // How a booking is held decides how it settles. The column may not exist
   // yet (before video_rooms.sql), in which case every booking is an external
@@ -157,7 +158,7 @@ export async function maintainFollowUps() {
       .eq('status', 'confirmed')
       .lt('confirmed_start', settleCutoff)
   let dueResult = await dueQuery(
-    'id, confirmed_start, asker_joined_at, expert_joined_at, expert_marked, video_provider'
+    'id, confirmed_start, asker_joined_at, expert_joined_at, expert_marked, video_provider, video_room_name'
   )
   if (dueResult.error) {
     dueResult = await dueQuery(
@@ -181,6 +182,7 @@ export async function maintainFollowUps() {
       if (row.video_provider === 'dmq' && row.confirmed_start) {
         const { decision: video, summary: connection } = await decideVideoSettlement({
           id: row.id,
+          video_room_name: row.video_room_name,
           confirmed_start: row.confirmed_start,
           asker_joined_at: row.asker_joined_at,
           expert_joined_at: row.expert_joined_at,

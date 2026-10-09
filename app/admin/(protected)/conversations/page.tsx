@@ -88,11 +88,52 @@ function eventDetail(detail: Record<string, unknown> | null): string {
     .join(" · ")
 }
 
+type VideoHealth = {
+  mode: "dmq" | "external"
+  apiKeyConfigured: boolean
+  webhookSecretConfigured: boolean
+  roomsLast24h: number | null
+  maxRoomsPerDay: number
+  callsNow: number | null
+  maxConcurrent: number
+  lastConnectionRecordedAt: string | null
+}
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "never"
+  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 48) return `${hours} h ago`
+  return `${Math.round(hours / 24)} days ago`
+}
+
 export default function AdminConversationsPage() {
+  const [health, setHealth] = useState<VideoHealth | null>(null)
   const [disputes, setDisputes] = useState<Dispute[] | null>(null)
   const [error, setError] = useState("")
   const [busyId, setBusyId] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (!sessionData.session) return
+      try {
+        const res = await fetch("/api/admin/video-health", {
+          headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+        })
+        if (res.ok && !cancelled) setHealth(await res.json())
+      } catch {
+        // The card just stays hidden.
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -144,6 +185,46 @@ export default function AdminConversationsPage() {
         Follow-up conversations held for review. If nobody decides, the card
         hold is released automatically about 12 hours before it would lapse.
       </p>
+
+      {health && (
+        <div className="mt-4 rounded-lg border border-line bg-card p-4 text-sm">
+          <p className="font-semibold text-ink">Video on DMQ</p>
+          <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+            <div className="flex justify-between gap-3">
+              <dt className="text-ink-soft">Switch</dt>
+              <dd className="text-ink">{health.mode === "dmq" ? "On" : "Off (experts paste their own link)"}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-ink-soft">Provider key and webhook secret</dt>
+              <dd className="text-ink">
+                {health.apiKeyConfigured && health.webhookSecretConfigured ? "Set" : "Missing"}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-ink-soft">Rooms in the last 24 hours</dt>
+              <dd className="text-ink">
+                {health.roomsLast24h ?? "unknown"} of {health.maxRoomsPerDay}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-ink-soft">Calls in progress</dt>
+              <dd className="text-ink">
+                {health.callsNow ?? "unknown"} of {health.maxConcurrent}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3 sm:col-span-2">
+              <dt className="text-ink-soft">Last connection recorded</dt>
+              <dd className="text-ink">{timeAgo(health.lastConnectionRecordedAt)}</dd>
+            </div>
+          </dl>
+          {health.mode === "dmq" && !health.lastConnectionRecordedAt && (
+            <p className="mt-2 text-xs text-ink-soft">
+              No connections have been recorded yet. If calls have happened, check that the
+              provider&apos;s webhook is registered and reaching us.
+            </p>
+          )}
+        </div>
+      )}
 
       {error && <p className="mt-4 text-sm text-postal-red">{error}</p>}
 

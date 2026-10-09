@@ -22,6 +22,8 @@ export default function ConversationRoom({
 }) {
   const { scheduledEnd, closesAt } = videoRoomWindowFor(startIso)
   const [now, setNow] = useState<number | null>(null)
+  // Bumped to load the call again on the same pass, if the connection stalls.
+  const [reloadKey, setReloadKey] = useState(0)
 
   // Starts null so the server render and the first client render match.
   useEffect(() => {
@@ -50,6 +52,14 @@ export default function ConversationRoom({
         <p className="text-sm font-semibold text-ink" aria-live="polite">
           {status}
         </p>
+        <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setReloadKey((k) => k + 1)}
+          className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-ink"
+        >
+          Trouble connecting? Reload
+        </button>
         <button
           type="button"
           onClick={onLeave}
@@ -57,8 +67,10 @@ export default function ConversationRoom({
         >
           Leave conversation
         </button>
+        </div>
       </div>
       <iframe
+        key={reloadKey}
         src={url}
         allow="camera; microphone; autoplay; fullscreen"
         title="Your conversation"

@@ -1,6 +1,6 @@
 # DMQ-hosted audio conversations: production build plan
 
-Status: slices 1 (foundation), 2 (confirm and join) and 3 (evidence and settlement) built and switched off; slice 4 not started. Builds on the proof of concept and the agreed
+Status: all four slices built and switched off. Next: test on dev, then the production Daily account and the policy wording review before release. Builds on the proof of concept and the agreed
 configuration in `docs/video-provider-comparison.md` (provider: Daily).
 
 ## What changes for people
@@ -117,8 +117,18 @@ Walk through each case with the PoC controls and fix what surfaces: late
 arrival, pass not yet open, pass expired, dropped connection and rejoin, one
 person never joining, an in-app browser (Instagram, Gmail) that blocks the
 microphone (show a "open in your browser" hint), and expert on a poor
-connection. Also: delete the room when a booking ends (tidy, not required), and
-an admin "room health" line (webhook last received).
+connection.
+
+Built: an in-app browser hint with a copy-link button; a reload button in the
+call; an expert escape hatch ("Use my own meeting link") that moves a booking to
+the expert's own link and emails the asker; a backup that, before settling,
+completes missing connection records from the provider's own record of the
+room; and an admin Video card (switch state, rooms and calls against the
+limits, when a connection was last recorded).
+
+Dropped on purpose: deleting rooms when a booking ends. Rooms close on their
+own at the end of the window, and deleting one early would remove the
+provider's own record of the call, which is evidence in a dispute.
 
 ## Testing
 

@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '../supabase-admin'
 import { videoRoomWindowFor, videoSettlementFor, type VideoSettlement } from '../follow-up-rules'
 import { summarizeSessions, type ConnectionSummary } from './connection-summary'
+import { backfillSessionsFromProvider } from './backfill'
 
 // Reads a booking's stored connections and decides how it ends. Used by the
 // daily job once the asker has had their chance to confirm or report.
@@ -22,12 +23,21 @@ export async function loadConnectionSummary(
 
 export async function decideVideoSettlement(row: {
   id: string
+  video_room_name?: string | null
   confirmed_start: string
   asker_joined_at: string | null
   expert_joined_at: string | null
   expert_marked: string | null
 }): Promise<{ decision: VideoSettlement; summary: ConnectionSummary }> {
-  const summary = await loadConnectionSummary(row.id, row.confirmed_start)
+  // If our own records look empty or unfinished, complete them from the
+  // provider's records first, so a missed webhook doesn't decide the outcome.
+  let summary = await loadConnectionSummary(row.id, row.confirmed_start)
+  const looksIncomplete =
+    !summary.anySessions || summary.expert.connected || summary.asker.connected
+  if (looksIncomplete && row.video_room_name) {
+    const changed = await backfillSessionsFromProvider(row.id, row.video_room_name)
+    if (changed > 0) summary = await loadConnectionSummary(row.id, row.confirmed_start)
+  }
   const decision = videoSettlementFor({
     expertConnected: summary.expert.joined,
     askerConnected: summary.asker.joined,

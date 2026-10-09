@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { formatSlot, joinWindowFor, videoRoomWindowFor } from "@/lib/follow-up-rules"
 import { VideoIcon } from "@/components/icons"
 import ConversationRoom from "@/components/ConversationRoom"
+import { detectInAppBrowser } from "@/lib/video/in-app-browser"
 
 const JOIN_ERROR = "We couldn't open the conversation. Please try again in a moment."
 
@@ -33,6 +34,10 @@ export default function JoinPanel({
   const [error, setError] = useState("")
   // The call, once joined, when it is held on DMQ.
   const [roomUrl, setRoomUrl] = useState<string | null>(null)
+  // Set after load (it depends on the visitor's browser): an app's built-in
+  // browser often can't use the microphone.
+  const [browserHint, setBrowserHint] = useState<string | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   // Starts null so the server-rendered page and the first client render match.
   useEffect(() => {
@@ -44,6 +49,23 @@ export default function JoinPanel({
       clearInterval(timer)
     }
   }, [])
+
+  useEffect(() => {
+    if (videoProvider !== "dmq") return
+    const t = setTimeout(() => {
+      const app = detectInAppBrowser(navigator.userAgent)
+      if (app) {
+        setBrowserHint(
+          `You're viewing this inside ${app === "another app" ? "another app" : app}. The microphone often doesn't work there, so open this page in Safari or Chrome before the conversation.`
+        )
+      } else if (!navigator.mediaDevices?.getUserMedia) {
+        setBrowserHint(
+          "This browser can't use a microphone for calls. Open this page in Safari or Chrome."
+        )
+      }
+    }, 0)
+    return () => clearTimeout(t)
+  }, [videoProvider])
 
   useEffect(() => {
     function onPageShow(e: PageTransitionEvent) {
@@ -107,6 +129,24 @@ export default function JoinPanel({
         {formatSlot(startIso, timezone)}
       </p>
       <p className="mt-0.5 text-xs text-ink-soft">15 minutes</p>
+
+      {browserHint && (
+        <div className="mt-5 rounded-lg border border-line bg-paper p-3 text-left text-xs text-ink">
+          <p>{browserHint}</p>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard
+                ?.writeText(window.location.href)
+                .then(() => setLinkCopied(true))
+                .catch(() => setLinkCopied(false))
+            }}
+            className="mt-2 font-medium text-ink underline underline-offset-2"
+          >
+            {linkCopied ? "Link copied. Paste it into your browser." : "Copy this page's link"}
+          </button>
+        </div>
+      )}
 
       {state === "before" && now !== null && (
         <div className="mt-5">
