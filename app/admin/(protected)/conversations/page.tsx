@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { problemReasonLabel } from "@/lib/follow-up-rules"
+import { formatDuration } from "@/lib/video/connection-summary"
 
 type Dispute = {
   id: string
@@ -15,6 +16,12 @@ type Dispute = {
   reportedBy: string | null
   problemReason: string | null
   problemNote: string | null
+  // Present for conversations held on DMQ.
+  connection: {
+    expert: { joined: boolean; connected: boolean; reconnects: number }
+    asker: { joined: boolean; connected: boolean; reconnects: number }
+    sharedSeconds: number
+  } | null
   events: { event: string; actor: string; detail: Record<string, unknown> | null; at: string }[]
   reason: string | null
   askerJoinedAt: string | null
@@ -44,6 +51,26 @@ const RESOLUTIONS = [
 
 function fmt(iso: string | null): string {
   return iso ? new Date(iso).toLocaleString() : "—"
+}
+
+// Why the system itself held a conversation, from its stored reason.
+function systemReasonText(reason: string | null): string {
+  switch (reason) {
+    case "auto_needs_review":
+      return "only the asker opened the join page"
+    case "auto_video_no_data":
+      return "someone tried to join but no connection data arrived"
+    case "auto_video_conflict":
+      return "the expert's mark and the connection data disagree"
+    case "auto_video_short_call":
+      return "both connected, but for under 10 minutes together"
+    case "auto_video_connection_failure":
+      return "both connected, but for under 2 minutes together (likely a connection failure)"
+    case "auto_video_asker_clicked_no_connection":
+      return "the asker pressed Join but never connected"
+    default:
+      return reason ?? "unknown"
+  }
 }
 
 // "join_link_opened" -> "Join link opened"
@@ -140,7 +167,7 @@ export default function AdminConversationsPage() {
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-ink-soft">Reported by</dt>
-                <dd className="text-ink">{d.reportedBy ?? "system (only the asker joined)"}</dd>
+                <dd className="text-ink">{d.reportedBy ?? `system: ${systemReasonText(d.reason)}`}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-ink-soft">Asker opened join page</dt>
@@ -159,6 +186,38 @@ export default function AdminConversationsPage() {
                 <dd className="text-ink">{fmt(d.captureBefore)}</dd>
               </div>
             </dl>
+            {d.connection && (
+              <div className="mt-3 rounded-lg border border-line bg-white p-4">
+                <p className="text-sm font-semibold text-ink">Connection (held on DMQ)</p>
+                {(["expert", "asker"] as const).map((role) => {
+                  const c = d.connection![role]
+                  return (
+                    <div key={role} className="mt-2 flex items-center justify-between text-sm">
+                      <span className="text-ink-soft">
+                        {role === "expert" ? "Expert joined" : "Asker joined"}
+                      </span>
+                      <span className="text-ink">
+                        {!c.joined ? "Not joined" : c.connected ? "Still connected" : "Connected, then left"}
+                        {c.reconnects > 0 && (
+                          <span className="ml-2 text-xs text-ink-soft">
+                            {c.reconnects} reconnect{c.reconnects === 1 ? "" : "s"}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )
+                })}
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-ink-soft">Shared connection time</span>
+                  <span className="font-semibold text-ink">{formatDuration(d.connection.sharedSeconds)}</span>
+                </div>
+                <p className="mt-3 border-t border-line pt-3 text-xs text-ink-soft">
+                  Connection data can support troubleshooting and payment reviews, but doesn&apos;t
+                  prove the quality of the conversation.
+                </p>
+              </div>
+            )}
+
             {(d.problemReason || d.problemNote) && (
               <div className="mt-3 rounded-sm bg-line/30 p-3 text-sm text-ink">
                 {d.problemReason && (

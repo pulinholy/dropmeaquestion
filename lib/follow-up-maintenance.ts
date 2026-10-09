@@ -7,6 +7,7 @@ import { releaseFollowUpHold } from './follow-up-release'
 import { captureFollowUpHold } from './follow-up-capture'
 import { settleFollowUp } from './follow-up-settle'
 import { logFollowUpEvent } from './follow-up-events'
+import { decideVideoSettlement } from './video/settlement'
 import {
   FOLLOW_UP_AUTO_SETTLE_HOURS_AFTER_END,
   FOLLOW_UP_DURATION_MINUTES,
@@ -138,11 +139,33 @@ export async function maintainFollowUps() {
   const settleCutoff = new Date(
     Date.now() - (FOLLOW_UP_DURATION_MINUTES * 60 * 1000 + FOLLOW_UP_AUTO_SETTLE_HOURS_AFTER_END * 3600 * 1000)
   ).toISOString()
-  const { data: due, error: dueError } = await supabaseAdmin
-    .from('follow_up_calls')
-    .select('id, asker_joined_at, expert_joined_at, expert_marked')
-    .eq('status', 'confirmed')
-    .lt('confirmed_start', settleCutoff)
+  type DueRow = {
+    id: string
+    confirmed_start: string | null
+    asker_joined_at: string | null
+    expert_joined_at: string | null
+    expert_marked: string | null
+    video_provider?: string | null
+  }
+  // How a booking is held decides how it settles. The column may not exist
+  // yet (before video_rooms.sql), in which case every booking is an external
+  // link and the older rule applies.
+  const dueQuery = (columns: string) =>
+    supabaseAdmin
+      .from('follow_up_calls')
+      .select(columns)
+      .eq('status', 'confirmed')
+      .lt('confirmed_start', settleCutoff)
+  let dueResult = await dueQuery(
+    'id, confirmed_start, asker_joined_at, expert_joined_at, expert_marked, video_provider'
+  )
+  if (dueResult.error) {
+    dueResult = await dueQuery(
+      'id, confirmed_start, asker_joined_at, expert_joined_at, expert_marked'
+    )
+  }
+  const due = dueResult.data as unknown as DueRow[] | null
+  const dueError = dueResult.error
 
   if (dueError) {
     await logError('follow-up-maintenance:fetch-due', dueError)
@@ -154,6 +177,34 @@ export async function maintainFollowUps() {
       // The asker has had a day since the call to confirm or report a problem.
       // The expert's own mark counts as their side being there even if they
       // opened their meeting link directly rather than through our button.
+      // A conversation held on DMQ settles from who was actually in the room.
+      if (row.video_provider === 'dmq' && row.confirmed_start) {
+        const { decision: video, summary: connection } = await decideVideoSettlement({
+          id: row.id,
+          confirmed_start: row.confirmed_start,
+          asker_joined_at: row.asker_joined_at,
+          expert_joined_at: row.expert_joined_at,
+          expert_marked: row.expert_marked,
+        })
+        const videoResult = await settleFollowUp({
+          id: row.id,
+          from: ['confirmed'],
+          outcome: video.outcome,
+          reason: video.reason,
+          reportedBy: null,
+          systemNote: 'the system (' + video.reason.replace(/^auto_video_/, '').replace(/_/g, ' ') + ')',
+          detail: {
+            expert_connected: connection.expert.joined,
+            asker_connected: connection.asker.joined,
+            shared_seconds: connection.sharedSeconds,
+            expert_reconnects: connection.expert.reconnects,
+            asker_reconnects: connection.asker.reconnects,
+          },
+        })
+        if (videoResult.ok) summary.settled++
+        continue
+      }
+
       const decision = autoSettlementFor({
         asker: Boolean(row.asker_joined_at),
         expert: Boolean(row.expert_joined_at) || Boolean(row.expert_marked),

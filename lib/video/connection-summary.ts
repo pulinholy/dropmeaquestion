@@ -121,6 +121,53 @@ export function summarizeConnections(
   }
 }
 
+// The same summary, built from stored connection records (one row per
+// connection) instead of raw events. A connection with no leave time is
+// counted up to `capAt`, so a lost "left" event can't make someone present
+// forever.
+export function summarizeSessions(
+  sessions: { role: string; joined_at: string; left_at: string | null }[],
+  capAt: Date
+): ConnectionSummary {
+  const intervals: Record<'expert' | 'asker', Interval[]> = { expert: [], asker: [] }
+  const count = { expert: 0, asker: 0 }
+  const open = { expert: false, asker: false }
+
+  for (const s of sessions) {
+    if (s.role !== 'expert' && s.role !== 'asker') continue
+    const role = s.role
+    const start = Date.parse(s.joined_at)
+    if (Number.isNaN(start)) continue
+    let end: number
+    if (s.left_at) end = Date.parse(s.left_at)
+    else {
+      end = Math.max(start, capAt.getTime())
+      open[role] = true
+    }
+    if (Number.isNaN(end) || end < start) continue
+    intervals[role].push([start, end])
+    count[role]++
+  }
+
+  const expert = mergeIntervals(intervals.expert)
+  const asker = mergeIntervals(intervals.asker)
+  const total = (iv: Interval[]) =>
+    Math.round(iv.reduce((sum, [a, b]) => sum + (b - a), 0) / 1000)
+  const summarize = (role: 'expert' | 'asker', iv: Interval[]): RoleSummary => ({
+    joined: count[role] > 0,
+    connected: open[role],
+    sessions: count[role],
+    reconnects: Math.max(0, count[role] - 1),
+    totalSeconds: total(iv),
+  })
+
+  return {
+    expert: summarize('expert', expert),
+    asker: summarize('asker', asker),
+    sharedSeconds: overlapSeconds(expert, asker),
+  }
+}
+
 export function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60

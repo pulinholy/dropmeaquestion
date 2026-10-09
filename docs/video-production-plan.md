@@ -1,6 +1,6 @@
 # DMQ-hosted audio conversations: production build plan
 
-Status: slices 1 (foundation) and 2 (confirm and join) built and switched off; slices 3 and 4 not started. Builds on the proof of concept and the agreed
+Status: slices 1 (foundation), 2 (confirm and join) and 3 (evidence and settlement) built and switched off; slice 4 not started. Builds on the proof of concept and the agreed
 configuration in `docs/video-provider-comparison.md` (provider: Daily).
 
 ## What changes for people

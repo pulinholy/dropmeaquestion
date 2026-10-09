@@ -44,6 +44,8 @@ export async function settleFollowUp({
   actor = 'system',
   problem,
   rescheduling = false,
+  detail,
+  systemNote,
 }: {
   id: string
   // Only moves a booking that is currently in one of these states, so two
@@ -61,6 +63,11 @@ export async function settleFollowUp({
   problem?: { reason: FollowUpProblemReason; note: string | null }
   // The asker cancelled in order to pick new times (changes the emails).
   rescheduling?: boolean
+  // Extra facts for the evidence timeline (for example connection times).
+  detail?: Record<string, unknown>
+  // For a booking the system itself held for review: why, in words, for the
+  // alert to support.
+  systemNote?: string
 }): Promise<{ ok: true } | { ok: false }> {
   const spec = OUTCOMES[outcome]
   const now = new Date().toISOString()
@@ -98,6 +105,7 @@ export async function settleFollowUp({
     outcome,
     reason,
     money: spec.money,
+    ...(detail ?? {}),
     ...(problem ? { problem_reason: problem.reason, problem_note: problem.note } : {}),
   })
 
@@ -147,7 +155,7 @@ export async function settleFollowUp({
     if (outcome === 'disputed') {
       await sendFollowUpDisputeAlert({
         referenceId: question?.reference_id ?? null,
-        reportedBy: reportedBy ?? 'the system (only the asker opened the join page)',
+        reportedBy: reportedBy ?? systemNote ?? 'the system (only the asker opened the join page)',
         problemReason: problem ? problemReasonLabel(problem.reason, reportedBy ?? null) : null,
         problemNote: problem?.note ?? null,
         priceCents: call.price_cents,

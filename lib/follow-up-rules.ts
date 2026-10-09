@@ -177,6 +177,79 @@ export function joinWindowFor(confirmedStartIso: string): { opensAt: Date; close
   }
 }
 
+// ---- Settling a DMQ-hosted conversation from who was in the room -----------
+
+// Shared time (both people connected at once) at or above this makes a
+// booking eligible for automatic completion; below it, a person decides.
+export const FOLLOW_UP_MIN_SHARED_SECONDS = 10 * 60
+// Under this, the call most likely failed to connect properly.
+export const FOLLOW_UP_CONNECTION_FAILURE_SECONDS = 2 * 60
+
+export type VideoSettlement =
+  | {
+      outcome: 'completed' | 'asker_no_show' | 'expert_no_show' | 'neither_joined' | 'disputed'
+      reason: string
+    }
+
+// Decides how a DMQ-hosted booking ends once the asker has had their chance to
+// confirm or report. The rule it never breaks: missing or contradictory data
+// goes to a person, never to an automatic charge. Inputs come from the
+// provider's signed events (who connected, for how long) plus the clicks and
+// marks we already record.
+export function videoSettlementFor(input: {
+  expertConnected: boolean
+  askerConnected: boolean
+  sharedSeconds: number
+  // Any connection data at all for this booking.
+  anySessions: boolean
+  askerClicked: boolean
+  expertClicked: boolean
+  expertMarked: 'completed' | 'asker_no_show' | null
+}): VideoSettlement {
+  const { expertConnected, askerConnected } = input
+
+  if (!input.anySessions) {
+    // Nobody connected as far as we know -- or the events never reached us.
+    // Clicks or an expert's mark mean someone tried, so a person looks.
+    if (input.askerClicked || input.expertClicked || input.expertMarked) {
+      return { outcome: 'disputed', reason: 'auto_video_no_data' }
+    }
+    return { outcome: 'neither_joined', reason: 'auto_video_neither_connected' }
+  }
+
+  if (expertConnected && askerConnected) {
+    if (input.expertMarked === 'asker_no_show') {
+      return { outcome: 'disputed', reason: 'auto_video_conflict' }
+    }
+    if (input.sharedSeconds >= FOLLOW_UP_MIN_SHARED_SECONDS) {
+      return { outcome: 'completed', reason: 'auto_video_completed' }
+    }
+    return {
+      outcome: 'disputed',
+      reason:
+        input.sharedSeconds < FOLLOW_UP_CONNECTION_FAILURE_SECONDS
+          ? 'auto_video_connection_failure'
+          : 'auto_video_short_call',
+    }
+  }
+
+  if (expertConnected && !askerConnected) {
+    // They pressed Join but never got in: more likely a technical failure on
+    // their side than a no-show, so a person decides.
+    if (input.askerClicked) {
+      return { outcome: 'disputed', reason: 'auto_video_asker_clicked_no_connection' }
+    }
+    return { outcome: 'asker_no_show', reason: 'auto_video_asker_no_show' }
+  }
+
+  // Only the asker connected. If the expert claims it was completed, that
+  // contradicts the data, so a person looks; otherwise the asker is released.
+  if (input.expertMarked === 'completed') {
+    return { outcome: 'disputed', reason: 'auto_video_conflict' }
+  }
+  return { outcome: 'expert_no_show', reason: 'auto_video_expert_no_show' }
+}
+
 // DMQ-hosted rooms: open 10 minutes before the scheduled start; the clock runs
 // from the scheduled start, not from when each person joins; and the room
 // closes 5 minutes after the 15-minute slot so nobody is cut off mid-sentence.

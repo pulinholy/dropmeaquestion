@@ -111,6 +111,30 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
 - [ ] Only the asker joined: `disputed` (manual review).
 - [ ] Neither joined: `expired` and released.
 
+## 4b. Settling a DMQ-hosted conversation (slice 3)
+
+For a booking held on DMQ the daily job decides from who was actually in the
+room (the connection records), not from who clicked Join. Use real calls, or
+`scripts/video-webhook-test.mts`, then set `confirmed_start` to 26 hours ago
+and run the daily job (section 2). Expected:
+
+| Connection data | Result |
+|---|---|
+| Both connected, 10+ minutes together | `completed`, charged |
+| Both connected, 2 to 10 minutes together | `disputed` (reason "short call") |
+| Both connected, under 2 minutes together | `disputed` (reason "connection failure") |
+| Expert in, asker never clicked Join or connected | `asker_no_show`, charged |
+| Expert in, asker clicked Join but never connected | `disputed` |
+| Asker in, expert never connected | `expert_no_show`, released |
+| Asker in, but the expert marked it completed | `disputed` (conflict) |
+| Nobody connected, nobody clicked | `expired`, released |
+| Nobody connected, but someone clicked Join or the expert marked it | `disputed` (no data), never released or charged |
+
+- [ ] In `/admin/conversations` a held DMQ booking shows the **Connection** card
+      (who joined, reconnects, shared time) and the reason the system held it.
+- [ ] The alert email names the reason, not "only the asker joined".
+- [ ] An external-link booking still settles from join clicks as before.
+
 ## 5. Edge cases
 
 - [ ] **Declined card** `4000 0000 0000 0002` at checkout: no booking progresses.

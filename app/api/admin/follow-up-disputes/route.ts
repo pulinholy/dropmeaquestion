@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireAdmin } from '@/lib/require-admin'
+import { videoRoomWindowFor } from '@/lib/follow-up-rules'
+import { summarizeSessions, type ConnectionSummary } from '@/lib/video/connection-summary'
 
 // Follow-up conversations held for a decision. No email addresses are
 // returned -- the evidence needed is who opened the join page and when.
@@ -49,6 +51,32 @@ export async function GET(request: Request) {
     list.push({ event: e.event, actor: e.actor, detail: e.detail, at: e.created_at })
     eventsById.set(e.follow_up_id, list)
   }
+  // For conversations held on DMQ: who was in the room, from the provider's
+  // signed events. Tolerant of the new columns and table not existing yet.
+  const connectionById = new Map<string, ConnectionSummary>()
+  if (openIds.length > 0) {
+    const { data: held } = await supabaseAdmin
+      .from('follow_up_calls')
+      .select('id, video_provider, confirmed_start')
+      .in('id', openIds)
+    const dmq = (held ?? []).filter((h) => h.video_provider === 'dmq' && h.confirmed_start)
+    if (dmq.length > 0) {
+      const { data: sessions } = await supabaseAdmin
+        .from('follow_up_video_sessions')
+        .select('follow_up_id, role, joined_at, left_at')
+        .in('follow_up_id', dmq.map((h) => h.id))
+      for (const h of dmq) {
+        connectionById.set(
+          h.id,
+          summarizeSessions(
+            (sessions ?? []).filter((s) => s.follow_up_id === h.id),
+            videoRoomWindowFor(h.confirmed_start as string).closesAt
+          )
+        )
+      }
+    }
+  }
+
   const ref = new Map((questions ?? []).map((q) => [q.id, q.reference_id]))
   const name = new Map((profiles ?? []).map((p) => [p.id, p.full_name]))
 
@@ -65,6 +93,7 @@ export async function GET(request: Request) {
       problemReason: r.problem_reason ?? null,
       problemNote: r.problem_note ?? null,
       events: eventsById.get(r.id) ?? [],
+      connection: connectionById.get(r.id) ?? null,
       reason: r.settlement_reason,
       askerJoinedAt: r.asker_joined_at,
       expertJoinedAt: r.expert_joined_at,
