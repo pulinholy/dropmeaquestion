@@ -12,6 +12,13 @@ export default function AuthHashRedirect() {
   useEffect(() => {
     if (window.location.pathname !== "/") return
     const hash = window.location.hash
+
+    // An emailed link that was already used or has expired.
+    if (hash.includes("error_code=otp_expired")) {
+      window.location.replace("/login?link=expired")
+      return
+    }
+
     if (!hash.includes("access_token=")) return
 
     const type = new URLSearchParams(hash.slice(1)).get("type")
