@@ -164,6 +164,9 @@ export default function RegisterPage() {
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: typedEmail,
           password,
+          // The confirmation link lands here, which signs them in and sends
+          // them to the dashboard to finish setting up their page.
+          options: { emailRedirectTo: `${window.location.origin}/auth/confirmed` },
         })
 
         if (authError || !authData.user) {

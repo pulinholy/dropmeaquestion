@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { PUBLIC_SITE_URL } from "@/lib/site";
+import AuthHashRedirect from "@/components/AuthHashRedirect";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -52,6 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${fraunces.variable} ${publicSans.variable} antialiased`}>
+        <AuthHashRedirect />
         {children}
       </body>
     </html>
