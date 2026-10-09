@@ -3,7 +3,6 @@ import { resend } from '@/lib/resend'
 import {
   renderEmailLayout,
   renderEmailButton,
-  renderEmailSecondaryButton,
   renderEmailQuote,
   EMAIL_BASE_URL,
 } from '@/lib/email-layout'
@@ -78,20 +77,43 @@ export async function POST(request: Request) {
   const first = escapeHtml(expertFirstName)
   const onDmq = videoMode() === 'dmq'
 
-  // The invitation is deliberately quieter than the answer: a light box with
-  // an outlined button, after the answer and the request for feedback.
+  // The invitation comes after the answer and the request for feedback. The
+  // three points beside it are plain images and text, because email programs
+  // drop inline graphics and can't be relied on for columns.
+  const icon = (name: string) => `${EMAIL_BASE_URL}/email/icon-${name}.png`
+  const point = (img: string, alt: string, title: string, sub: string) => `
+        <td width="33%" align="center" valign="top" style="padding:0 4px;">
+          <img src="${icon(img)}" width="40" height="40" alt="${alt}" style="display:block; margin:0 auto 6px; border:0;" />
+          <p style="margin:0 0 2px; font-family: Arial, Helvetica, sans-serif; font-size:13px; font-weight:bold; color:#17243a; line-height:1.3;">${title}</p>
+          <p style="margin:0; font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#4a5568; line-height:1.4;">${sub}</p>
+        </td>`
+
   const followUpBlock = offer?.ok
     ? `
-    <div style="margin:28px 0 0; padding:16px 18px; background-color:#fbfaf7; border:1px solid #ddd6c8; border-radius:6px;">
-      <p style="margin:0 0 4px; font-size:15px; font-weight:bold;">Want to talk it through with ${first}?</p>
-      <p style="margin:0 0 10px; font-size:14px;">An optional, private 15-minute conversation &mdash; $${formatPrice(offer.priceCents)}.</p>
-      <ul style="margin:0 0 12px; padding-left:18px; font-size:13px; color:#4a5568;">
-        <li style="margin:0 0 4px;">${onDmq ? 'An audio call on Drop Me A Question. Your camera starts off.' : `A video meeting on ${first}&rsquo;s own meeting link.`}</li>
-        <li style="margin:0 0 4px;">You propose up to three times; ${first} confirms one.</li>
-        <li style="margin:0 0 4px;">${onDmq ? 'You appear as &ldquo;Guest&rdquo;, and your email address isn&rsquo;t shared.' : 'Your email address isn&rsquo;t shared. Your meeting profile&rsquo;s display name may be visible.'}</li>
-        <li style="margin:0;">Your card is charged after the conversation, unless cancellation or no-show fees apply.</li>
-      </ul>
-      ${renderEmailSecondaryButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
+    <div style="margin:28px 0 0; padding:18px; background-color:#fdeeec; border:1px solid #f6d5d1; border-radius:8px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td width="48" valign="top"><img src="${icon('phone')}" width="36" height="36" alt="" style="display:block; border:0;" /></td>
+          <td valign="top">
+            <p style="margin:0 0 6px; font-size:17px; font-weight:bold; line-height:1.3;">Want to talk it through with ${first}?</p>
+            <p style="margin:0; font-size:14px;">Continue the conversation with a private 15-minute call. This is optional and only if you&rsquo;d like to discuss further.</p>
+          </td>
+        </tr>
+      </table>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 18px;">
+        <tr>${
+          onDmq
+            ? point('video', 'Audio call', 'Audio or video call', 'Camera is off by default') +
+              point('clock', '15 minutes', `15 minutes &middot; $${formatPrice(offer.priceCents)}`, 'You propose up to 3 times') +
+              point('shield', 'Private', 'Join as Guest', 'Your email address isn&rsquo;t shared with the expert')
+            : point('video', 'Video meeting', 'Video meeting', `On ${first}&rsquo;s own meeting link`) +
+              point('clock', '15 minutes', `15 minutes &middot; $${formatPrice(offer.priceCents)}`, 'You propose up to 3 times') +
+              point('shield', 'Private', 'Your email stays private', 'Your meeting profile&rsquo;s display name may be visible')
+        }
+        </tr>
+      </table>
+      ${renderEmailButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
+      <p style="margin:14px 0 0; font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#4a5568;">Your card is charged after the conversation, unless cancellation or no-show fees apply. <a href="${EMAIL_BASE_URL}/conversation-policy" style="color:#4a5568; text-decoration:underline;">Conversation policy</a></p>
     </div>
   `
     : ''

@@ -19,7 +19,7 @@ export function renderEmailLayout(bodyHtml: string): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f6f1;">
       <tr>
         <td align="center" style="padding: 32px 16px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;">
             <tr>
               <td style="background-color:#e45b4f; height:4px; line-height:4px; font-size:1px;">&nbsp;</td>
             </tr>
@@ -31,7 +31,7 @@ export function renderEmailLayout(bodyHtml: string): string {
               </td>
             </tr>
             <tr>
-              <td style="background-color:#ffffff; border:1px solid #ddd6c8; border-radius:6px; padding: 28px 24px; font-family: Georgia, 'Times New Roman', serif; color:#17243a; font-size:15px; line-height:1.6;">
+              <td style="background-color:#ffffff; border:1px solid #ddd6c8; border-radius:6px; padding: 32px 28px; font-family: Georgia, 'Times New Roman', serif; color:#17243a; font-size:15px; line-height:1.6;">
                 ${bodyHtml}
               </td>
             </tr>
@@ -76,20 +76,4 @@ export function renderEmailButton(url: string, label: string): string {
 // type can add markup to an email we send.
 export function renderEmailQuote(text: string): string {
   return `<blockquote style="margin:0 0 20px; padding:12px 16px; background-color:#f8f6f1; border-left:3px solid #ddd6c8; color:#4a5568; font-style:italic; white-space:pre-wrap;">${escapeHtml(text)}</blockquote>`
-}
-
-// A quieter, outlined button for a secondary action, so it never competes with
-// the main one.
-export function renderEmailSecondaryButton(url: string, label: string): string {
-  return `
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 4px 0 0;">
-  <tr>
-    <td style="border-radius:999px; border:1px solid #17243a; background-color:#ffffff;">
-      <a href="${url}" style="display:inline-block; padding:9px 20px; font-family: Arial, Helvetica, sans-serif; font-size:13px; font-weight:bold; color:#17243a; text-decoration:none; border-radius:999px;">
-        ${label}
-      </a>
-    </td>
-  </tr>
-</table>
-`
 }
