@@ -30,6 +30,7 @@ export default function PaymentsPage() {
   const [stripeOnboarded, setStripeOnboarded] = useState(false)
   const [stripeAccountId, setStripeAccountId] = useState<string | null>(null)
   const [connectingStripe, setConnectingStripe] = useState(false)
+  const [stripeError, setStripeError] = useState("")
   const [earnings, setEarnings] = useState<Earning[]>([])
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
 
@@ -67,9 +68,13 @@ export default function PaymentsPage() {
 
   async function connectStripe() {
     setConnectingStripe(true)
+    setStripeError("")
 
     const { data: sessionData } = await supabase.auth.getSession()
-    if (!sessionData.session) return
+    if (!sessionData.session) {
+      setConnectingStripe(false)
+      return
+    }
 
     const userId = sessionData.session.user.id
     const authHeaders = {
@@ -77,36 +82,46 @@ export default function PaymentsPage() {
       Authorization: `Bearer ${sessionData.session.access_token}`,
     }
 
-    const { data: expertData } = await supabase
-      .from("experts")
-      .select("stripe_account_id")
-      .eq("id", userId)
-      .single()
+    try {
+      const { data: expertData } = await supabase
+        .from("experts")
+        .select("stripe_account_id")
+        .eq("id", userId)
+        .single()
 
-    let accountId = expertData?.stripe_account_id
+      let accountId = expertData?.stripe_account_id
 
-    if (!accountId) {
-      const res = await fetch("/api/stripe/create-account", {
+      if (!accountId) {
+        const res = await fetch("/api/stripe/create-account", {
+          method: "POST",
+          headers: authHeaders,
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok || typeof data?.accountId !== "string") {
+          throw new Error(data?.error ?? "Stripe didn't create the account.")
+        }
+        accountId = data.accountId
+
+        await supabase
+          .from("experts")
+          .update({ stripe_account_id: accountId })
+          .eq("id", userId)
+      }
+
+      const linkRes = await fetch("/api/stripe/create-account-link", {
         method: "POST",
         headers: authHeaders,
       })
-      const data = await res.json()
+      const linkData = await linkRes.json().catch(() => null)
+      if (!linkRes.ok || typeof linkData?.url !== "string") {
+        throw new Error(linkData?.error ?? "Stripe didn't give a setup link.")
+      }
 
-      accountId = data.accountId
-
-      await supabase
-        .from("experts")
-        .update({ stripe_account_id: accountId })
-        .eq("id", userId)
+      window.location.href = linkData.url
+    } catch (err) {
+      setStripeError(`We couldn't open Stripe setup: ${(err as Error).message}`)
+      setConnectingStripe(false)
     }
-
-    const linkRes = await fetch("/api/stripe/create-account-link", {
-      method: "POST",
-      headers: authHeaders,
-    })
-    const linkData = await linkRes.json()
-
-    window.location.href = linkData.url
   }
 
   async function openStripeDashboard() {
@@ -188,6 +203,7 @@ export default function PaymentsPage() {
           >
             {connectingStripe ? "Connecting..." : "Connect Stripe to Get Paid"}
           </button>
+          {stripeError && <p className="mt-2 text-sm text-postal-red">{stripeError}</p>}
         </div>
       )}
 

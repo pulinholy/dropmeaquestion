@@ -55,6 +55,7 @@ export default function DashboardHomePage() {
   const [stripeOnboarded, setStripeOnboarded] = useState(true)
   const [stripeStatusLoaded, setStripeStatusLoaded] = useState(false)
   const [connectingStripe, setConnectingStripe] = useState(false)
+  const [stripeError, setStripeError] = useState("")
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -160,6 +161,8 @@ export default function DashboardHomePage() {
 
   async function connectStripe() {
     setConnectingStripe(true)
+    setStripeError("")
+
     const { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) {
       setConnectingStripe(false)
@@ -167,39 +170,51 @@ export default function DashboardHomePage() {
     }
 
     const userId = sessionData.session.user.id
-    const userEmail = sessionData.session.user.email
-
-    const { data: expertData } = await supabase
-      .from("experts")
-      .select("stripe_account_id")
-      .eq("id", userId)
-      .single()
-
-    let accountId = expertData?.stripe_account_id
-
-    if (!accountId) {
-      const res = await fetch("/api/stripe/create-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: userEmail }),
-      })
-      const data = await res.json()
-      accountId = data.accountId
-
-      await supabase
-        .from("experts")
-        .update({ stripe_account_id: accountId })
-        .eq("id", userId)
+    const authHeaders = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${sessionData.session.access_token}`,
     }
 
-    const linkRes = await fetch("/api/stripe/create-account-link", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId }),
-    })
-    const linkData = await linkRes.json()
+    try {
+      const { data: expertData } = await supabase
+        .from("experts")
+        .select("stripe_account_id")
+        .eq("id", userId)
+        .single()
 
-    window.location.href = linkData.url
+      let accountId = expertData?.stripe_account_id
+
+      if (!accountId) {
+        const res = await fetch("/api/stripe/create-account", {
+          method: "POST",
+          headers: authHeaders,
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok || typeof data?.accountId !== "string") {
+          throw new Error(data?.error ?? "Stripe didn't create the account.")
+        }
+        accountId = data.accountId
+
+        await supabase
+          .from("experts")
+          .update({ stripe_account_id: accountId })
+          .eq("id", userId)
+      }
+
+      const linkRes = await fetch("/api/stripe/create-account-link", {
+        method: "POST",
+        headers: authHeaders,
+      })
+      const linkData = await linkRes.json().catch(() => null)
+      if (!linkRes.ok || typeof linkData?.url !== "string") {
+        throw new Error(linkData?.error ?? "Stripe didn't give a setup link.")
+      }
+
+      window.location.href = linkData.url
+    } catch (err) {
+      setStripeError(`We couldn't open Stripe setup: ${(err as Error).message}`)
+      setConnectingStripe(false)
+    }
   }
 
   async function copyLink() {
@@ -271,6 +286,9 @@ export default function DashboardHomePage() {
               >
                 {connectingStripe ? "Connecting..." : "Connect Stripe"}
               </button>
+              {stripeError && (
+                <p className="basis-full text-xs text-postal-red">{stripeError}</p>
+              )}
             </li>
           </ul>
         </div>
@@ -359,6 +377,7 @@ export default function DashboardHomePage() {
               >
                 {connectingStripe ? "Connecting..." : "Connect Stripe"}
               </button>
+              {stripeError && <p className="mt-2 text-xs text-postal-red">{stripeError}</p>}
               <div className="mt-3">
                 <button
                   type="button"
