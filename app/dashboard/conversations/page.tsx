@@ -9,6 +9,7 @@ import {
   UpcomingCard,
   type FollowUpCall,
 } from "./conversation-cards"
+import { FOLLOW_UP_DURATION_MINUTES } from "@/lib/follow-up-rules"
 import ConversationRoom from "@/components/ConversationRoom"
 import ReportProblemForm from "@/components/ReportProblemForm"
 
@@ -178,12 +179,19 @@ export default function ConversationsPage() {
   if (!loaded) return <p className="text-ink-soft">Loading...</p>
 
   const requests = loaded.calls.filter((c) => c.status === "requested")
-  const upcoming = loaded.calls
+  // Confirmed calls: still to come or in progress (Upcoming), or over but not
+  // yet settled, which is waiting for the asker to confirm.
+  const slotMs = FOLLOW_UP_DURATION_MINUTES * 60 * 1000
+  const confirmedCalls = loaded.calls
     .filter((c) => c.status === "confirmed")
     .sort(
       (a, b) =>
         new Date(a.confirmedStart ?? 0).getTime() - new Date(b.confirmedStart ?? 0).getTime()
     )
+  const isOver = (c: FollowUpCall) =>
+    c.confirmedStart !== null && now >= new Date(c.confirmedStart).getTime() + slotMs
+  const upcoming = confirmedCalls.filter((c) => !isOver(c))
+  const waiting = confirmedCalls.filter(isOver)
   const completed = loaded.calls.filter((c) => c.status === "completed")
   const review = loaded.calls.filter((c) => c.status === "disputed")
   const ended = loaded.calls.filter(
@@ -192,13 +200,13 @@ export default function ConversationsPage() {
   const counts: Record<TabKey, number> = {
     requests: requests.length,
     upcoming: upcoming.length,
-    completed: completed.length,
+    completed: completed.length + waiting.length,
     review: review.length,
     ended: ended.length,
   }
   const activeTab: TabKey =
     chosenTab ??
-    (["requests", "upcoming", "review", "completed", "ended"] as TabKey[]).find(
+    (["requests", "upcoming", "completed", "review", "ended"] as TabKey[]).find(
       (key) => counts[key] > 0
     ) ??
     "requests"
@@ -207,6 +215,47 @@ export default function ConversationsPage() {
     setChosenTab(key)
     window.history.replaceState(null, "", `?tab=${key}`)
   }
+
+  const renderUpcoming = (call: FollowUpCall) => (
+      <UpcomingCard
+        key={call.id}
+        call={call}
+        now={now}
+        joining={joiningId === call.id}
+        busy={busyId === call.id}
+        error={errors[call.id] ?? ""}
+        onJoin={() => join(call)}
+        onCancel={() => {
+          if (
+            window.confirm(
+              "Cancel this conversation? The asker won't be charged."
+            )
+          ) {
+            act(call.id, "/api/follow-up/cancel-expert", { id: call.id })
+          }
+        }}
+        onComplete={() => {
+          if (window.confirm("Mark this conversation as completed? The asker is asked to confirm. You're paid when they do, or automatically about a day after if no problem is reported.")) {
+            act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "completed" })
+          }
+        }}
+        onAskerNoShow={() => {
+          if (
+            window.confirm(
+              "The asker never opened the join page. Mark them as not joining? They're asked to confirm, and under the cancellation policy they're charged in full about a day later unless they report a problem. You're paid when they are."
+            )
+          ) {
+            act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
+          }
+        }}
+        onUseOwnLink={(meetingLink) =>
+          act(call.id, "/api/follow-up/use-own-link", { id: call.id, meetingLink })
+        }
+        onReport={(reason, note) =>
+          act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
+        }
+      />
+  )
 
   // In a call, the call is the page: no lists or notices beside it.
   if (room) {
@@ -321,47 +370,7 @@ export default function ConversationsPage() {
                   />
               ))}
 
-            {activeTab === "upcoming" &&
-              upcoming.map((call) => (
-                  <UpcomingCard
-                    key={call.id}
-                    call={call}
-                    now={now}
-                    joining={joiningId === call.id}
-                    busy={busyId === call.id}
-                    error={errors[call.id] ?? ""}
-                    onJoin={() => join(call)}
-                    onCancel={() => {
-                      if (
-                        window.confirm(
-                          "Cancel this conversation? The asker won't be charged."
-                        )
-                      ) {
-                        act(call.id, "/api/follow-up/cancel-expert", { id: call.id })
-                      }
-                    }}
-                    onComplete={() => {
-                      if (window.confirm("Mark this conversation as completed? The asker is asked to confirm. You're paid when they do, or automatically about a day after if no problem is reported.")) {
-                        act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "completed" })
-                      }
-                    }}
-                    onAskerNoShow={() => {
-                      if (
-                        window.confirm(
-                          "The asker never opened the join page. Mark them as not joining? They're asked to confirm, and under the cancellation policy they're charged in full about a day later unless they report a problem. You're paid when they are."
-                        )
-                      ) {
-                        act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
-                      }
-                    }}
-                    onUseOwnLink={(meetingLink) =>
-                      act(call.id, "/api/follow-up/use-own-link", { id: call.id, meetingLink })
-                    }
-                    onReport={(reason, note) =>
-                      act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
-                    }
-                  />
-              ))}
+            {activeTab === "upcoming" && upcoming.map(renderUpcoming)}
 
             {activeTab === "review" && review.length > 0 && (
               <p className="rounded-lg border border-line bg-card p-4 text-sm text-ink-soft">
@@ -370,8 +379,26 @@ export default function ConversationsPage() {
               </p>
             )}
 
+            {activeTab === "completed" && waiting.length > 0 && (
+              <div>
+                <h2 className="font-display text-lg text-ink">
+                  Waiting for confirmation ({waiting.length})
+                </h2>
+                <p className="mt-1 text-sm text-ink-soft">
+                  The conversation is over. It becomes completed when the asker confirms, or
+                  automatically about a day later if no problem is reported.
+                </p>
+                <div className="mt-3 space-y-3">{waiting.map(renderUpcoming)}</div>
+                {completed.length > 0 && (
+                  <h2 className="mt-8 font-display text-lg text-ink">
+                    Completed ({completed.length})
+                  </h2>
+                )}
+              </div>
+            )}
+
             {(activeTab === "completed" || activeTab === "review" || activeTab === "ended") &&
-              counts[activeTab] > 0 && (
+              (activeTab === "completed" ? completed.length : counts[activeTab]) > 0 && (
                 <ul className="divide-y divide-line rounded-lg border border-line bg-card px-4">
                   {(activeTab === "completed" ? completed : activeTab === "review" ? review : ended).map(
                     (call) => (
