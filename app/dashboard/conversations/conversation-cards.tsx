@@ -229,6 +229,8 @@ export function UpcomingCard({
   // has passed, and only if they never opened the join page.
   const noShowAllowed =
     !call.askerJoined && now >= start + FOLLOW_UP_NO_SHOW_AFTER_MINUTES * 60 * 1000
+  // The 15 minutes are over but nobody has said how it went yet.
+  const slotOver = now >= start + FOLLOW_UP_NO_SHOW_AFTER_MINUTES * 60 * 1000
 
   const linkButton =
     "text-xs font-medium text-ink-soft hover:text-ink disabled:opacity-50"
@@ -243,6 +245,15 @@ export function UpcomingCard({
       </div>
       <p className="mt-1 text-base font-semibold text-ink">{formatLocal(call.confirmedStart)}</p>
       <p className="text-xs text-ink-soft">15 minutes</p>
+      {slotOver ? (
+        <p className="mt-2 inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+          Waiting for confirmation
+        </p>
+      ) : started ? (
+        <p className="mt-2 inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-700">
+          In progress
+        </p>
+      ) : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <button
