@@ -105,6 +105,8 @@ type VideoHealth = {
   callsNow: number | null
   maxConcurrent: number
   lastConnectionRecordedAt: string | null
+  reschedulesLast30Days: number | null
+  reschedulesWithoutDataLast30Days: number | null
 }
 
 function timeAgo(iso: string | null): string {
@@ -218,6 +220,15 @@ export default function AdminConversationsPage() {
               <dt className="text-ink-soft">Calls in progress</dt>
               <dd className="text-ink">
                 {health.callsNow ?? "unknown"} of {health.maxConcurrent}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3 sm:col-span-2">
+              <dt className="text-ink-soft">Free reschedules, last 30 days</dt>
+              <dd className="text-ink">
+                {health.reschedulesLast30Days ?? "unknown"}
+                {health.reschedulesLast30Days
+                  ? ` (${health.reschedulesWithoutDataLast30Days ?? 0} with no connection data)`
+                  : ""}
               </dd>
             </div>
             <div className="flex justify-between gap-3 sm:col-span-2">

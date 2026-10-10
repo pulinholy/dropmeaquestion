@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import {
+  FOLLOW_UP_CONNECTION_FAILURE_SECONDS,
   FOLLOW_UP_MIN_SHARED_SECONDS,
   getFollowUpOffer,
   videoRoomWindowFor,
@@ -16,9 +17,13 @@ import { loadConnectionSummary } from '@/lib/video/settlement'
 // emailed (the asker with a link to book again, if that is still possible).
 //
 // Only while the conversation is running (from the start until the room
-// closes), and not once the two have already spent the automatic-completion
-// time together, so it can't be used to avoid paying for a conversation that
-// took place. An expert sends their login token; the asker's private booking
+// closes), and only if the two had little or no time together:
+//   no connection data, or under 2 minutes together: free reschedule
+//   2 to 10 minutes together: refused here; report a problem for a review
+//   10 minutes or more: refused; it counts, so the normal completion applies
+// An asker can't use it while the expert has been waiting in the conversation
+// (that is an asker no-show, decided by the usual rules). So it can't be used
+// to avoid paying for time the other person gave. An expert sends their login token; the asker's private booking
 // id identifies them, as on the join page.
 export async function POST(request: Request) {
   let body: { id?: unknown }
@@ -88,20 +93,41 @@ export async function POST(request: Request) {
     )
   }
 
-  // If we have connection records and the two were together long enough for
-  // the conversation to count, refuse. With no records, the reschedule is
-  // allowed and recorded.
+  // Connection records, counted up to this moment (the conversation is live).
   let sharedSeconds = 0
+  let expertSeconds = 0
+  let anySessions = false
   try {
-    sharedSeconds = (await loadConnectionSummary(call.id, call.confirmed_start)).sharedSeconds
+    const summary = await loadConnectionSummary(call.id, call.confirmed_start, new Date())
+    sharedSeconds = summary.sharedSeconds
+    expertSeconds = summary.expert.totalSeconds
+    anySessions = summary.anySessions
   } catch {
     // Treated as no data.
   }
+  const minutes = Math.max(1, Math.round(sharedSeconds / 60))
   if (sharedSeconds >= FOLLOW_UP_MIN_SHARED_SECONDS) {
     return NextResponse.json(
       {
         error:
-          'You have already spent enough time together for this conversation to count. If something went wrong, report a problem instead.',
+          'You have already spent enough time together for this conversation to count, so it can’t be rescheduled. If something went wrong, report a problem instead.',
+      },
+      { status: 409 }
+    )
+  }
+  if (sharedSeconds >= FOLLOW_UP_CONNECTION_FAILURE_SECONDS) {
+    return NextResponse.json(
+      {
+        error: `You were connected together for about ${minutes} minute${minutes === 1 ? '' : 's'}, so this needs a quick review before any payment decision. Use Report a problem and choose “I couldn’t connect to the call”.`,
+      },
+      { status: 409 }
+    )
+  }
+  if (role === 'asker' && expertSeconds >= FOLLOW_UP_CONNECTION_FAILURE_SECONDS) {
+    return NextResponse.json(
+      {
+        error:
+          'The expert has been waiting in the conversation, so it can’t be rescheduled automatically. If something went wrong, use Report a problem and we’ll review it before any payment decision.',
       },
       { status: 409 }
     )
@@ -119,7 +145,9 @@ export async function POST(request: Request) {
     actor: role,
     expertId,
     rebookAvailable,
-    detail: { shared_seconds: sharedSeconds },
+    // Kept so unusual use (many reschedules, or none with connection data) shows
+    // up in the admin Video card.
+    detail: { shared_seconds: sharedSeconds, no_connection_data: !anySessions },
   })
   if (!result.ok) {
     return NextResponse.json(

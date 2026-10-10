@@ -186,8 +186,7 @@ export default function AskerActions({
             It&apos;s less than 24 hours before the start, so cancelling now
             charges your card ${price} in full, as described in the
             cancellation policy you agreed to. A new time can no longer be
-            requested; if something goes wrong on the day, you can report it once
-            the conversation has started.
+            requested.
           </p>
           <button
             type="button"
@@ -217,10 +216,7 @@ export default function AskerActions({
           <p className="mt-1 text-xs text-ink-soft">
             {ended
               ? `Once the conversation has taken place, confirm it and your card is charged $${price}. If we don't hear from you, it's charged about a day after the conversation ends.`
-              : "You can confirm once the conversation has ended."}{" "}
-            If something went wrong, such as the link not working or the other
-            person not showing up, report it. We&apos;ll hold the charge and
-            review it.
+              : "You can confirm once the conversation has ended."}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button

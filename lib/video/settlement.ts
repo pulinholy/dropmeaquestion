@@ -7,7 +7,11 @@ import { backfillSessionsFromProvider } from './backfill'
 // daily job once the asker has had their chance to confirm or report.
 export async function loadConnectionSummary(
   followUpId: string,
-  confirmedStart: string
+  confirmedStart: string,
+  // A connection with no recorded leave is counted up to this moment. Settling
+  // a finished conversation counts it until the room closed (the default); a
+  // check made during the conversation must use the current time instead.
+  capAt?: Date
 ): Promise<ConnectionSummary & { anySessions: boolean }> {
   const { data, error } = await supabaseAdmin
     .from('follow_up_video_sessions')
@@ -15,10 +19,9 @@ export async function loadConnectionSummary(
     .eq('follow_up_id', followUpId)
   if (error) throw error
 
-  // A connection with no recorded leave is counted until the room closed.
   const { closesAt } = videoRoomWindowFor(confirmedStart)
   const sessions = data ?? []
-  return { ...summarizeSessions(sessions, closesAt), anySessions: sessions.length > 0 }
+  return { ...summarizeSessions(sessions, capAt ?? closesAt), anySessions: sessions.length > 0 }
 }
 
 export async function decideVideoSettlement(row: {

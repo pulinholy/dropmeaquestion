@@ -50,9 +50,12 @@ export default function ConversationPolicyPage() {
 
         <h2 className="mt-10 font-display text-xl text-ink">If something goes wrong</h2>
         <p className="mt-3 text-sm text-ink-soft">
-          Once a conversation has started, use <strong>Report a problem</strong> on your
-          conversation page. We hold the charge, review what happened and decide. If a charge was
-          made and you think it shouldn&apos;t have been, email{" "}
+          If a connection problem stops a conversation, open <strong>Having trouble
+          connecting?</strong> on the conversation screen, try the basics, and reschedule it for
+          free if it still doesn&apos;t work. If something else went wrong, use{" "}
+          <strong>Report a problem</strong> on your conversation page. We hold the charge, review
+          what happened and decide. If a charge was made and you think it shouldn&apos;t have been,
+          email{" "}
           <a
             href="mailto:hello@dropmeaquestion.com"
             className="font-medium text-ink underline underline-offset-2"

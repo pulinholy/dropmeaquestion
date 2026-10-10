@@ -53,8 +53,8 @@ export async function scheduleFollowUpReminders({
       subject: `How was your conversation with ${expertFirstName}?`,
       html: renderEmailLayout(`
         <p style="margin:0 0 12px;">Your 15-minute conversation with ${name}, scheduled for ${when}, has ended. Did it take place?</p>
-        <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">Confirm it and your card is charged ${money(priceCents)} now. If something went wrong &mdash; the link didn&rsquo;t work, or ${name} didn&rsquo;t join &mdash; report it and we&rsquo;ll hold the charge and look into it. If we don&rsquo;t hear from you, your card is charged about a day after the conversation.</p>
-        ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'Confirm, or report a problem &rarr;')}
+        <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">Confirm it and your card is charged ${money(priceCents)} now. If we don&rsquo;t hear from you, your card is charged about a day after the conversation. If something went wrong, you can tell us on your conversation page.</p>
+        ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'Open your conversation page &rarr;')}
       `),
       scheduledAt: new Date(
         new Date(confirmedStart).getTime() + FOLLOW_UP_REVIEW_EMAIL_MINUTES_AFTER_START * 60 * 1000

@@ -135,11 +135,18 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
       opens tips first (microphone, reload, browser, connection). Only after
       "It's still not working" does it show **Reschedule for free** and
       **Report a problem**.
-- [ ] **Reschedule for free:** works for either side from the start until the
-      room closes (20 minutes after the start), asks for confirmation, releases
-      the card (Stripe **Canceled**), makes the booking `cancelled`, and emails
-      both (the asker with a "book another time" link). Refused before the
-      start, after the room closes, and once the two have 10+ minutes together.
+- [ ] **Reschedule for free** (either side, from the start until the room closes,
+      20 minutes after the start; asks for confirmation; releases the card, makes
+      the booking `cancelled`, emails both). Depends on how long the two were
+      connected together at that moment:
+      - no connection data, or under 2 minutes together: allowed (and counted in
+        the admin Video card, noting whether there was no connection data);
+      - 2 to 10 minutes together: refused, with a message to use "Report a
+        problem" (it then goes to review before any payment decision);
+      - 10 minutes or more: refused, because it counts;
+      - an asker who asks while the expert has been in the call for 2+ minutes
+        alone: refused (the expert waited);
+      - before the start or after the room closes: refused.
       With the 14-day offer period over, the asker's email has no booking link.
 - [ ] **Backfill:** with the webhook NOT registered, hold a real call, skip 26
       hours ahead and run the daily job: it still settles from the provider's

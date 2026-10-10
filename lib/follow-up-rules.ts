@@ -44,7 +44,7 @@ export const FOLLOW_UP_PRIVACY_LINES = [
 
 export type FollowUpVideoMode = 'dmq' | 'external'
 
-export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v5-dmq'
+export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v6-dmq'
 
 export function followUpPolicyVersion(mode: FollowUpVideoMode): string {
   return mode === 'dmq' ? FOLLOW_UP_POLICY_VERSION_DMQ : FOLLOW_UP_POLICY_VERSION
@@ -56,7 +56,7 @@ export function followUpPolicyLines(mode: FollowUpVideoMode): string[] {
     ...FOLLOW_UP_POLICY_LINES.map((line) =>
       line.replace(
         'If a connection problem stops the conversation, report it and we’ll review it.',
-        'If a connection problem stops the conversation, either of you can reschedule it for free and you won’t be charged.'
+        'If a connection problem stops the conversation before you’ve had time together, either of you can reschedule it for free and you won’t be charged. Otherwise, report it and we’ll review it.'
       )
     ),
     'The conversation lasts 15 minutes from the scheduled start. The room stays open for 5 minutes after that, then closes.',
@@ -409,7 +409,7 @@ export function problemReasonLabel(
     case 'no_show':
       return reportedBy === 'expert' ? "The asker didn't join" : "The expert didn't join"
     case 'link_failed':
-      return "The meeting link didn't work"
+      return "I couldn't connect to the call"
     case 'ended_early':
       return 'The call ended early'
     case 'other':

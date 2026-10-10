@@ -15,7 +15,8 @@ export async function GET(request: Request) {
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
   const staleBefore = new Date(Date.now() - 2 * 3600 * 1000).toISOString()
 
-  const [rooms, open, last] = await Promise.all([
+  const monthAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()
+  const [rooms, open, last, resched, reschedNoData] = await Promise.all([
     supabaseAdmin
       .from('follow_up_calls')
       .select('id', { count: 'exact', head: true })
@@ -31,6 +32,20 @@ export async function GET(request: Request) {
       .select('created_at')
       .order('created_at', { ascending: false })
       .limit(1),
+    // Free reschedules in the last 30 days, and how many had no connection data.
+    supabaseAdmin
+      .from('follow_up_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('event', 'settled')
+      .eq('detail->>outcome', 'technical_reschedule')
+      .gte('created_at', monthAgo),
+    supabaseAdmin
+      .from('follow_up_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('event', 'settled')
+      .eq('detail->>outcome', 'technical_reschedule')
+      .eq('detail->>no_connection_data', 'true')
+      .gte('created_at', monthAgo),
   ])
 
   return NextResponse.json({
@@ -41,6 +56,8 @@ export async function GET(request: Request) {
     maxRoomsPerDay: limits.maxRoomsPerDay,
     callsNow: open.error ? null : new Set((open.data ?? []).map((r) => r.follow_up_id)).size,
     maxConcurrent: limits.maxConcurrent,
+    reschedulesLast30Days: resched.error ? null : (resched.count ?? 0),
+    reschedulesWithoutDataLast30Days: reschedNoData.error ? null : (reschedNoData.count ?? 0),
     lastConnectionRecordedAt: last.error ? null : (last.data?.[0]?.created_at ?? null),
   })
 }
