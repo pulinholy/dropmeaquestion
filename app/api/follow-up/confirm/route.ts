@@ -38,12 +38,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
-  // With DMQ rooms on, choosing a time is enough: a link is only needed if
-  // the expert wants to use their own. With them off, a link is required, as
-  // before.
-  const providedLink =
-    typeof body.meetingLink === 'string' && body.meetingLink.trim().length > 0
-  const useDmq = videoMode() === 'dmq' && !providedLink
+  // With DMQ rooms on, every confirmed conversation is held on DMQ: choosing a
+  // time is enough, and a link sent along is ignored. An expert's own link is
+  // only a fallback for a call that isn't working (see use-own-link), never a
+  // choice at confirmation. With DMQ rooms off, a link is required, as before.
+  const useDmq = videoMode() === 'dmq'
   const link = useDmq ? null : isAllowedMeetingLink(body.meetingLink)
   if (link && !link.ok) {
     return NextResponse.json({ error: link.error }, { status: 400 })

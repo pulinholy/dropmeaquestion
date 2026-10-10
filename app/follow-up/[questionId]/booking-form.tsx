@@ -6,7 +6,7 @@ import {
   FOLLOW_UP_MAX_SLOTS,
   formatSlot,
 } from "@/lib/follow-up-rules"
-import { CheckIcon, LockIcon, VideoIcon } from "@/components/icons"
+import { CheckIcon, VideoIcon } from "@/components/icons"
 
 const REQUEST_TIMEOUT_MS = 20000
 const REQUEST_ERROR =
@@ -43,8 +43,7 @@ export default function BookingForm({
   expertFirstName,
   referenceId,
   price,
-  policyLines,
-  privacyLines,
+  points,
   policyVersion,
 }: {
   questionId: string
@@ -52,9 +51,8 @@ export default function BookingForm({
   referenceId: string | null
   price: string
   // Chosen on the server, because the wording depends on how conversations
-  // are held.
-  policyLines: string[]
-  privacyLines: string[]
+  // are held. The full policy is on its own page.
+  points: string[]
   policyVersion: string
 }) {
   const [slots, setSlots] = useState<string[]>(
@@ -205,7 +203,7 @@ export default function BookingForm({
         <div>
           <h2 className="text-sm font-semibold text-ink">2. How it works</h2>
           <ul className="mt-2 space-y-2">
-            {policyLines.map((line) => (
+            {points.map((line) => (
               <li key={line} className="flex items-start gap-2 text-xs text-ink-soft">
                 <CheckIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-600" />
                 {line}
@@ -216,18 +214,10 @@ export default function BookingForm({
             href="/conversation-policy"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-block text-xs font-medium text-ink underline underline-offset-2"
+            className="mt-3 inline-block text-xs font-medium text-ink underline underline-offset-2"
           >
-            Read the full conversation policy
+            View conversation policies &rarr;
           </a>
-        </div>
-
-        <div className="rounded-sm bg-line/30 p-3">
-          <p className="flex items-start gap-2 text-xs text-ink">
-            <LockIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-700" />
-            {privacyLines[0]}
-          </p>
-          <p className="mt-2 text-xs text-ink-soft">{privacyLines[1]}</p>
         </div>
 
         <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink">
@@ -237,7 +227,18 @@ export default function BookingForm({
             onChange={(e) => setAccepted(e.target.checked)}
             className="mt-0.5 h-4 w-4 rounded-sm border-line accent-postal-red"
           />
-          I&apos;ve read and agree to the cancellation policy above.
+          <span>
+            I&apos;ve read and agree to the{" "}
+            <a
+              href="/conversation-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline underline-offset-2"
+            >
+              Conversation &amp; Cancellation Policy
+            </a>
+            .
+          </span>
         </label>
 
         {error && <p className="text-sm text-postal-red">{error}</p>}
@@ -255,10 +256,6 @@ export default function BookingForm({
             </>
           )}
         </button>
-        <p className="text-center text-xs text-ink-soft">
-          Your card is only held for now. You&apos;re charged after the
-          conversation takes place.
-        </p>
       </form>
     </div>
   )

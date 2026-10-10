@@ -7,6 +7,7 @@ import {
   PastRow,
   RequestCard,
   UpcomingCard,
+  OwnLinkFallback,
   type FollowUpCall,
 } from "./conversation-cards"
 import { FOLLOW_UP_DURATION_MINUTES } from "@/lib/follow-up-rules"
@@ -75,6 +76,7 @@ export default function ConversationsPage() {
     referenceId: string | null
   } | null>(null)
   const [roomReporting, setRoomReporting] = useState(false)
+  const [roomOwnLink, setRoomOwnLink] = useState(false)
   // The chosen tab; until one is chosen, the first tab that has something in it.
   const [chosenTab, setChosenTab] = useState<TabKey | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -136,6 +138,33 @@ export default function ConversationsPage() {
       }
     } catch {
       setError(id, GENERIC_ERROR)
+    }
+    setReloadKey((k) => k + 1)
+  }
+
+  // The fallback: move a live DMQ conversation to the expert's own link. On
+  // success the call closes here, and the expert opens their link from the
+  // card (the asker has been emailed).
+  async function moveToOwnLink(id: string, meetingLink: string) {
+    setBusyId(id)
+    setError(id, "")
+    try {
+      const res = await authedFetch("/api/follow-up/use-own-link", {
+        method: "POST",
+        body: JSON.stringify({ id, meetingLink }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setError(id, typeof data?.error === "string" ? data.error : GENERIC_ERROR)
+        setBusyId(null)
+        return
+      }
+      setRoom(null)
+      setRoomOwnLink(false)
+    } catch {
+      setError(id, GENERIC_ERROR)
+      setBusyId(null)
+      return
     }
     setReloadKey((k) => k + 1)
   }
@@ -274,6 +303,7 @@ export default function ConversationsPage() {
               setRoomReporting(false)
             }}
             onReport={() => setRoomReporting(true)}
+            onUseOwnLink={() => setRoomOwnLink(true)}
           />
         </div>
         {roomReporting && (
@@ -286,6 +316,15 @@ export default function ConversationsPage() {
                 act(room.id, "/api/follow-up/report-problem", { id: room.id, reason, note })
                 setRoomReporting(false)
               }}
+            />
+          </div>
+        )}
+        {roomOwnLink && (
+          <div className="mt-4 rounded-lg border border-line bg-card p-5">
+            <OwnLinkFallback
+              defaultOpen
+              busy={busyId === room.id}
+              onSubmit={(meetingLink) => moveToOwnLink(room.id, meetingLink)}
             />
           </div>
         )}

@@ -66,6 +66,19 @@ export function followUpPrivacyLines(mode: FollowUpVideoMode): string[] {
   ]
 }
 
+// The three short points shown on the booking page, next to the link to the
+// full policy. The detail lives on the policy page; these only say what the
+// asker most needs to know before paying, and follow how conversations are held.
+export function followUpBookingPoints(mode: FollowUpVideoMode, expertFirstName: string): string[] {
+  return [
+    `Suggest up to three times. ${expertFirstName} will confirm one.`,
+    'Your card is authorized now. Charges follow the conversation and cancellation policy.',
+    mode === 'dmq'
+      ? 'Your email stays private. You’ll join through DMQ.'
+      : `Your email stays private. You’ll join from your private DMQ page, which opens ${expertFirstName}’s own meeting link.`,
+  ]
+}
+
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 
 // Checks the times an asker proposed: 1-3 distinct start times on a 15-minute

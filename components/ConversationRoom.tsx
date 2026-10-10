@@ -20,12 +20,15 @@ export default function ConversationRoom({
   startIso,
   onLeave,
   onReport,
+  onUseOwnLink,
 }: {
   url: string
   startIso: string
   onLeave: () => void
   // Opens the "report a problem" form on the page that shows the call.
   onReport: () => void
+  // Only the expert gets this: move the conversation to their own meeting link.
+  onUseOwnLink?: () => void
 }) {
   const { scheduledEnd, closesAt } = videoRoomWindowFor(startIso)
   const start = new Date(startIso).getTime()
@@ -105,6 +108,15 @@ export default function ConversationRoom({
             >
               Reload the call
             </button>
+            {onUseOwnLink && (
+              <button
+                type="button"
+                onClick={onUseOwnLink}
+                className="rounded-full border border-line bg-white px-4 py-1.5 text-xs font-medium text-ink hover:border-ink"
+              >
+                Use my own meeting link instead
+              </button>
+            )}
             {started ? (
               <button
                 type="button"

@@ -130,7 +130,9 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
       link" button. In a normal browser there is no hint.
 - [ ] **Stalled call:** in the call, "Trouble connecting? Reload" reloads it on
       the same pass; "Leave conversation" then Join makes a fresh pass.
-- [ ] **Move to my own link:** on a confirmed DMQ booking, the expert's card
+- [ ] **Move to my own link (also from inside the live call):** on a confirmed
+      DMQ booking, "Connection help" in the call screen also has "Use my own
+      meeting link instead"; on a confirmed DMQ booking, the expert's card
       shows "Trouble with the call? Use my own meeting link". Submitting a link
       emails the asker, and the asker's join page then opens that link. The
       booking then settles from join clicks, like any own-link booking.
@@ -207,8 +209,8 @@ switch unset, everything above behaves exactly as before.
 
 - [ ] **Confirm without a link:** the request card shows "The conversation takes
       place on DMQ... There is nothing to paste" and **Confirm this time** works
-      with no link. "Use my own meeting link instead" shows the link box and
-      then requires it.
+      with no link. There is no own-link choice at confirmation. If a link is sent
+      anyway the server ignores it.
 - [ ] **Emails:** the asker's confirmation says it takes place on DMQ as an
       audio call (or, for an own-link booking, says it uses the expert's own
       link). Policy lines include "The conversation lasts 15 minutes...".
@@ -221,8 +223,9 @@ switch unset, everything above behaves exactly as before.
       The room closes in...", then the room closes about 5 minutes after the end.
 - [ ] **Leave and rejoin** works; a third person with the address and no pass
       is refused.
-- [ ] **Own-link booking** while the switch is on still works end to end, and
-      the asker's page says it uses the expert's own link.
+- [ ] **Own-link fallback** (see 6c): moving a booking to the expert's own
+      link still works end to end, and the asker's page then says it uses the
+      expert's own link.
 - [ ] **Limit:** set `VIDEO_MAX_ROOMS_PER_DAY=1`, confirm a second DMQ booking
       and try to join: "We can't start the call right now", and an email to
       support.

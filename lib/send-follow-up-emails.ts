@@ -67,7 +67,7 @@ export async function sendFollowUpRequestedEmails({
       <p style="margin:0 0 16px;">Hi ${name}, the person who asked${ref} would like a 15-minute conversation with you &mdash; worth $${net} to you.</p>
       <p style="margin:0 0 8px;">They proposed these times${askerTimezone ? ` (shown in their time zone, ${escapeHtml(askerTimezone)})` : ''}:</p>
       <ul style="margin:0 0 16px; padding-left:20px;">${times}</ul>
-      <p style="margin:0 0 24px; font-size:13px; color:#4a5568;">Confirm one of them within 24 hours${videoMode() === 'dmq' ? ' (the conversation takes place on DMQ, or you can add your own Zoom or Google Meet link instead)' : ', adding your own Zoom or Google Meet link for this call'}, or decline. If you don&rsquo;t respond the request expires and they aren&rsquo;t charged. Their email address stays private.</p>
+      <p style="margin:0 0 24px; font-size:13px; color:#4a5568;">Confirm one of them within 24 hours${videoMode() === 'dmq' ? ' (the conversation takes place on DMQ, so there is nothing to add)' : ', adding your own Zoom or Google Meet link for this call'}, or decline. If you don&rsquo;t respond the request expires and they aren&rsquo;t charged. Their email address stays private.</p>
       ${renderEmailButton(`${EMAIL_BASE_URL}/dashboard/conversations`, 'Review the request &rarr;')}
     `
     await send(

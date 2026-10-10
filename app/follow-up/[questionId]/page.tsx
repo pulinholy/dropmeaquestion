@@ -4,8 +4,7 @@ import SiteFooter from "@/components/SiteFooter"
 import {
   getFollowUpOffer,
   formatPrice,
-  followUpPolicyLines,
-  followUpPrivacyLines,
+  followUpBookingPoints,
   followUpPolicyVersion,
 } from "@/lib/follow-up"
 import { videoMode } from "@/lib/video/config"
@@ -85,8 +84,7 @@ export default async function FollowUpPage({
         expertFirstName={offer.expert.firstName}
         referenceId={offer.question.referenceId}
         price={formatPrice(offer.priceCents)}
-        policyLines={followUpPolicyLines(videoMode())}
-        privacyLines={followUpPrivacyLines(videoMode())}
+        points={followUpBookingPoints(videoMode(), offer.expert.firstName)}
         policyVersion={followUpPolicyVersion(videoMode())}
       />
     )

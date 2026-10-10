@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useId, useState } from "react"
 import {
   ALLOWED_MEETING_SERVICES_TEXT,
   FOLLOW_UP_NO_SHOW_AFTER_MINUTES,
@@ -11,6 +11,7 @@ import {
   type FollowUpProblemReason,
 } from "@/lib/follow-up-rules"
 import ReportProblemForm from "@/components/ReportProblemForm"
+import { InfoIcon, VideoIcon } from "@/components/icons"
 
 export type FollowUpCall = {
   id: string
@@ -66,7 +67,6 @@ export function RequestCard({
 }) {
   const [slot, setSlot] = useState(call.proposedSlots[0] ?? "")
   const [link, setLink] = useState("")
-  const [ownLink, setOwnLink] = useState(false)
   const onDmq = videoMode === "dmq"
 
   return (
@@ -117,24 +117,13 @@ export function RequestCard({
         </div>
       </fieldset>
 
-      {onDmq && (
+      {onDmq ? (
         <p className="mt-4 text-xs text-ink-soft">
-          The conversation takes place on DMQ, as an audio call with an optional
-          camera. There is nothing to paste.{" "}
-          <button
-            type="button"
-            onClick={() => {
-              setOwnLink((v) => !v)
-              setLink("")
-            }}
-            className="font-medium text-ink underline underline-offset-2"
-          >
-            {ownLink ? "Use DMQ instead" : "Use my own meeting link instead"}
-          </button>
+          The conversation takes place on DMQ, as an audio call with an optional camera. There is
+          nothing to paste. If the call ever isn&apos;t working, you can move it to your own
+          meeting link from the call screen.
         </p>
-      )}
-
-      {(!onDmq || ownLink) && (
+      ) : (
         <>
           <label className="mt-4 block text-xs font-medium text-ink" htmlFor={`link-${call.id}`}>
             Meeting link for this call
@@ -152,7 +141,6 @@ export function RequestCard({
             {ALLOWED_MEETING_SERVICES_TEXT}. Use a new link for each call, with a
             waiting room turned on, and never your personal reusable room if you can
             avoid it. The asker only sees it shortly before the start.
-            {onDmq && " The asker will be told this conversation uses your own link."}
           </p>
         </>
       )}
@@ -162,7 +150,7 @@ export function RequestCard({
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
-          disabled={busy || !slot || ((!onDmq || ownLink) && link.trim().length === 0)}
+          disabled={busy || !slot || (!onDmq && link.trim().length === 0)}
           onClick={() => onConfirm(slot, link)}
           className="rounded-full bg-postal-red px-5 py-2 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
         >
@@ -185,6 +173,83 @@ export function RequestCard({
           None of these work
         </button>
       </div>
+    </div>
+  )
+}
+
+// The fallback for a conversation held on DMQ: if it isn't working, the expert
+// can move it to their own meeting link. Collapsed by default, so it reads as an
+// exception, not a choice.
+export function OwnLinkFallback({
+  busy,
+  onSubmit,
+  defaultOpen = false,
+}: {
+  busy: boolean
+  onSubmit: (meetingLink: string) => void
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  const [link, setLink] = useState("")
+  const inputId = useId()
+
+  return (
+    <div className="mt-4 border-t border-line pt-4">
+      <h3 className="text-sm font-semibold text-ink">Having trouble connecting?</h3>
+      <p className="mt-1 text-xs text-ink-soft">
+        If your DMQ conversation isn&apos;t working, you can use your own meeting link instead.
+      </p>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-ink underline underline-offset-2"
+      >
+        Use an external meeting link
+        <svg
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+          className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 6l5 5 5-5" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-2">
+          <label htmlFor={inputId} className="block text-xs font-medium text-ink-soft">
+            Meeting link
+          </label>
+          <input
+            id={inputId}
+            type="url"
+            inputMode="url"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="Paste Google Meet or Zoom link"
+            className="w-full rounded-full border border-line bg-white px-4 py-2.5 text-sm text-ink placeholder:text-ink-soft/60"
+          />
+          <p className="flex items-start gap-1.5 text-xs text-ink-soft">
+            <InfoIcon className="mt-0.5 h-3 w-3 flex-shrink-0" />
+            External services may show your display name or other account details.{" "}
+            {ALLOWED_MEETING_SERVICES_TEXT}. The asker is emailed straight away and their join page
+            then opens this link.
+          </p>
+          <button
+            type="button"
+            disabled={busy || link.trim().length === 0}
+            onClick={() => onSubmit(link)}
+            className="w-full rounded-full border border-line bg-white px-4 py-2.5 text-sm font-medium text-ink hover:border-ink disabled:opacity-50"
+          >
+            {busy ? "Switching..." : "Switch to external meeting"}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -215,8 +280,6 @@ export function UpcomingCard({
   onUseOwnLink: (meetingLink: string) => void
 }) {
   const [reporting, setReporting] = useState(false)
-  const [ownLinkOpen, setOwnLinkOpen] = useState(false)
-  const [ownLink, setOwnLink] = useState("")
   if (!call.confirmedStart) return null
   const { opensAt, closesAt } =
     call.videoProvider === "dmq"
@@ -245,6 +308,17 @@ export function UpcomingCard({
       </div>
       <p className="mt-1 text-base font-semibold text-ink">{formatLocal(call.confirmedStart)}</p>
       <p className="text-xs text-ink-soft">15 minutes</p>
+      {call.videoProvider === "dmq" && (
+        <div className="mt-3">
+          <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+            <VideoIcon className="h-4 w-4" />
+            DMQ private conversation
+          </p>
+          <p className="mt-0.5 text-xs text-ink-soft">
+            Your conversation is hosted securely through Drop Me A Question.
+          </p>
+        </div>
+      )}
       {slotOver ? (
         <p className="mt-2 inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700">
           Waiting for confirmation
@@ -274,45 +348,8 @@ export function UpcomingCard({
         )}
       </div>
 
-      {call.videoProvider === "dmq" && !started && (
-        <div className="mt-3">
-          {!ownLinkOpen ? (
-            <button type="button" onClick={() => setOwnLinkOpen(true)} className={linkButton}>
-              Trouble with the call? Use my own meeting link
-            </button>
-          ) : (
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-ink" htmlFor={`own-${call.id}`}>
-                Your meeting link
-              </label>
-              <input
-                id={`own-${call.id}`}
-                type="url"
-                inputMode="url"
-                value={ownLink}
-                onChange={(e) => setOwnLink(e.target.value)}
-                placeholder="https://meet.google.com/..."
-                className="w-full rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
-              />
-              <p className="text-xs text-ink-soft">
-                The asker is emailed straight away and their join page then opens this link.
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={busy || ownLink.trim().length === 0}
-                  onClick={() => onUseOwnLink(ownLink)}
-                  className="rounded-full bg-ink px-4 py-1.5 text-xs font-medium text-white hover:bg-postal-blue disabled:opacity-50"
-                >
-                  Move to my link
-                </button>
-                <button type="button" onClick={() => setOwnLinkOpen(false)} className={linkButton}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+      {call.videoProvider === "dmq" && !slotOver && (
+        <OwnLinkFallback busy={busy} onSubmit={onUseOwnLink} />
       )}
 
       {started && reporting ? (
