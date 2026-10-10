@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
 import {
   renderEmailLayout,
-  renderEmailButton,
   renderEmailQuote,
+  renderEmailSecondaryButton,
   EMAIL_BASE_URL,
 } from '@/lib/email-layout'
 import { logError } from '@/lib/log-error'
@@ -82,25 +82,20 @@ export async function POST(request: Request) {
   // drop inline graphics and can't be relied on for columns.
   const icon = (name: string) => `${EMAIL_BASE_URL}/email/icon-${name}.png`
   const point = (img: string, alt: string, title: string, sub: string) => `
-        <td width="33%" align="center" valign="top" style="padding:0 4px;">
-          <img src="${icon(img)}" width="40" height="40" alt="${alt}" style="display:block; margin:0 auto 6px; border:0;" />
-          <p style="margin:0 0 2px; font-family: Arial, Helvetica, sans-serif; font-size:13px; font-weight:bold; color:#17243a; line-height:1.3;">${title}</p>
-          <p style="margin:0; font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#4a5568; line-height:1.4;">${sub}</p>
+        <td width="33%" align="center" valign="top" style="padding:0 3px;">
+          <img src="${icon(img)}" width="28" height="28" alt="${alt}" style="display:block; margin:0 auto 4px; border:0;" />
+          <p style="margin:0 0 2px; font-family: Arial, Helvetica, sans-serif; font-size:12px; font-weight:bold; color:#17243a; line-height:1.3;">${title}</p>
+          <p style="margin:0; font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#4a5568; line-height:1.4;">${sub}</p>
         </td>`
 
+  // After the answer, two quiet extras. Neither uses a filled button or a
+  // tinted box, so the answer stays the main thing in the email.
   const followUpBlock = offer?.ok
     ? `
-    <div style="margin:28px 0 0; padding:18px; background-color:#fdeeec; border:1px solid #f6d5d1; border-radius:8px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-          <td width="48" valign="top"><img src="${icon('phone')}" width="36" height="36" alt="" style="display:block; border:0;" /></td>
-          <td valign="top">
-            <p style="margin:0 0 6px; font-size:17px; font-weight:bold; line-height:1.3;">Want to talk it through with ${first}?</p>
-            <p style="margin:0; font-size:14px;">Continue the conversation with a private 15-minute call. This is optional and only if you&rsquo;d like to discuss further.</p>
-          </td>
-        </tr>
-      </table>
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 18px;">
+    <div style="margin:22px 0 0; padding:14px 16px; background-color:#faf8f4; border:1px solid #e6dfd0; border-radius:6px;">
+      <p style="margin:0 0 3px; font-size:15px; font-weight:bold; line-height:1.3;">Want to talk it through with ${first}?</p>
+      <p style="margin:0; font-size:13px; color:#4a5568;">An optional, private 15-minute call, only if you&rsquo;d like to discuss further.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0 14px;">
         <tr>${
           onDmq
             ? point('video', 'Audio call', 'Audio or video call', 'Camera is off by default') +
@@ -112,8 +107,8 @@ export async function POST(request: Request) {
         }
         </tr>
       </table>
-      ${renderEmailButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
-      <p style="margin:14px 0 0; font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#4a5568;">Your card is charged after the conversation, unless cancellation or no-show fees apply. <a href="${EMAIL_BASE_URL}/conversation-policy" style="color:#4a5568; text-decoration:underline;">Conversation policy</a></p>
+      ${renderEmailSecondaryButton(`${EMAIL_BASE_URL}/follow-up/${questionId}`, `Book 15 minutes &mdash; $${formatPrice(offer.priceCents)} &rarr;`)}
+      <p style="margin:10px 0 0; font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#4a5568;">Your card is charged after the conversation, unless cancellation or no-show fees apply. <a href="${EMAIL_BASE_URL}/conversation-policy" style="color:#4a5568; text-decoration:underline;">Conversation policy</a></p>
     </div>
   `
     : ''
@@ -123,11 +118,11 @@ export async function POST(request: Request) {
     <p style="margin:0 0 18px;">${first} has answered your question.</p>
     <p style="margin:0 0 6px; font-family: Arial, Helvetica, sans-serif; font-size:11px; font-weight:bold; letter-spacing:0.06em; text-transform:uppercase; color:#4a5568;">Your question</p>
     ${renderEmailQuote(question.question_text)}
-    <p style="margin:0 0 6px; font-family: Arial, Helvetica, sans-serif; font-size:11px; font-weight:bold; letter-spacing:0.06em; text-transform:uppercase; color:#4a5568;">${first}&rsquo;s answer</p>
-    <div style="margin:0 0 24px; padding:16px 18px; background-color:#ffffff; border:1px solid #ddd6c8; border-radius:6px; font-size:16px; white-space:pre-wrap;">${escapeHtml(question.answer_text ?? '')}</div>
-    <p style="margin:0 0 4px; font-weight:bold;">Was this helpful?</p>
-    <p style="margin:0 0 10px; font-size:14px; color:#4a5568;">Your feedback helps ${first} and other askers.</p>
-    ${renderEmailButton(feedbackUrl, 'Give feedback &rarr;')}
+    <div style="margin:0 0 20px; padding:20px 22px; background-color:#eaf2fb; border:1px solid #cddff2; border-radius:8px;">
+      <p style="margin:0 0 10px; font-size:18px; font-weight:bold; line-height:1.3;">${first}&rsquo;s answer</p>
+      <div style="font-size:16px; line-height:1.65; white-space:pre-wrap;">${escapeHtml(question.answer_text ?? '')}</div>
+    </div>
+    <p style="margin:0; font-size:13px; color:#4a5568;">Was this helpful? <a href="${feedbackUrl}" style="color:#17243a; font-weight:bold; text-decoration:underline;">Give feedback &rarr;</a></p>
     ${followUpBlock}
   `
 
