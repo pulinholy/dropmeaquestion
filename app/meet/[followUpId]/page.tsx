@@ -39,13 +39,14 @@ export default async function MeetPage({
     .from("follow_up_calls")
     .select(
       dmqOn
-        ? "id, status, confirmed_start, asker_timezone, expert_id, price_cents, video_provider"
-        : "id, status, confirmed_start, asker_timezone, expert_id, price_cents"
+        ? "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents, video_provider"
+        : "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents"
     )
     .eq("id", followUpId)
     .maybeSingle()
   const call = callRow as unknown as {
     id: string
+    question_id: string
     status: string
     confirmed_start: string | null
     asker_timezone: string | null
@@ -154,7 +155,13 @@ export default async function MeetPage({
       content = (
         <Message title="This conversation isn’t scheduled">
           It was cancelled or didn&apos;t go ahead. If your card was held, the
-          hold has been released and you weren&apos;t charged.
+          hold has been released and you weren&apos;t charged.{" "}
+          <a
+            href={`/follow-up/${call.question_id}`}
+            className="font-medium text-ink underline underline-offset-2"
+          >
+            Book another time
+          </a>
         </Message>
       )
     }

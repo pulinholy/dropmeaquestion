@@ -7,7 +7,6 @@ import {
   PastRow,
   RequestCard,
   UpcomingCard,
-  OwnLinkFallback,
   type FollowUpCall,
 } from "./conversation-cards"
 import { FOLLOW_UP_DURATION_MINUTES } from "@/lib/follow-up-rules"
@@ -76,7 +75,6 @@ export default function ConversationsPage() {
     referenceId: string | null
   } | null>(null)
   const [roomReporting, setRoomReporting] = useState(false)
-  const [roomOwnLink, setRoomOwnLink] = useState(false)
   // The chosen tab; until one is chosen, the first tab that has something in it.
   const [chosenTab, setChosenTab] = useState<TabKey | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -142,16 +140,15 @@ export default function ConversationsPage() {
     setReloadKey((k) => k + 1)
   }
 
-  // The fallback: move a live DMQ conversation to the expert's own link. On
-  // success the call closes here, and the expert opens their link from the
-  // card (the asker has been emailed).
-  async function moveToOwnLink(id: string, meetingLink: string) {
+  // "Reschedule for free": ends a live DMQ conversation because of a connection
+  // problem. The card is released and both people are emailed.
+  async function rescheduleLive(id: string) {
     setBusyId(id)
     setError(id, "")
     try {
-      const res = await authedFetch("/api/follow-up/use-own-link", {
+      const res = await authedFetch("/api/follow-up/reschedule-live", {
         method: "POST",
-        body: JSON.stringify({ id, meetingLink }),
+        body: JSON.stringify({ id }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
@@ -160,7 +157,7 @@ export default function ConversationsPage() {
         return
       }
       setRoom(null)
-      setRoomOwnLink(false)
+      setRoomReporting(false)
     } catch {
       setError(id, GENERIC_ERROR)
       setBusyId(null)
@@ -277,9 +274,7 @@ export default function ConversationsPage() {
             act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
           }
         }}
-        onUseOwnLink={(meetingLink) =>
-          act(call.id, "/api/follow-up/use-own-link", { id: call.id, meetingLink })
-        }
+        onReschedule={() => rescheduleLive(call.id)}
         onReport={(reason, note) =>
           act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
         }
@@ -303,7 +298,8 @@ export default function ConversationsPage() {
               setRoomReporting(false)
             }}
             onReport={() => setRoomReporting(true)}
-            onUseOwnLink={() => setRoomOwnLink(true)}
+            onReschedule={() => rescheduleLive(room.id)}
+            busy={busyId === room.id}
           />
         </div>
         {roomReporting && (
@@ -316,15 +312,6 @@ export default function ConversationsPage() {
                 act(room.id, "/api/follow-up/report-problem", { id: room.id, reason, note })
                 setRoomReporting(false)
               }}
-            />
-          </div>
-        )}
-        {roomOwnLink && (
-          <div className="mt-4 rounded-lg border border-line bg-card p-5">
-            <OwnLinkFallback
-              defaultOpen
-              busy={busyId === room.id}
-              onSubmit={(meetingLink) => moveToOwnLink(room.id, meetingLink)}
             />
           </div>
         )}

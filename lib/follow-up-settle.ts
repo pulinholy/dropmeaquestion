@@ -27,6 +27,7 @@ const OUTCOMES: Record<FollowUpOutcome, OutcomeSpec> = {
   asker_no_show: { status: 'asker_no_show', cancelledBy: null, money: 'capture' },
   cancelled_by_asker: { status: 'cancelled', cancelledBy: 'asker', money: 'release' },
   cancelled_by_expert: { status: 'cancelled', cancelledBy: 'expert', money: 'release' },
+  technical_reschedule: { status: 'cancelled', cancelledBy: null, money: 'release' },
   expert_no_show: { status: 'expert_no_show', cancelledBy: null, money: 'release' },
   neither_joined: { status: 'expired', cancelledBy: null, money: 'release' },
   admin_release: { status: 'cancelled', cancelledBy: null, money: 'release' },
@@ -44,6 +45,7 @@ export async function settleFollowUp({
   actor = 'system',
   problem,
   rescheduling = false,
+  rebookAvailable = true,
   detail,
   systemNote,
 }: {
@@ -63,6 +65,8 @@ export async function settleFollowUp({
   problem?: { reason: FollowUpProblemReason; note: string | null }
   // The asker cancelled in order to pick new times (changes the emails).
   rescheduling?: boolean
+  // For a technical reschedule: whether the asker can still book again.
+  rebookAvailable?: boolean
   // Extra facts for the evidence timeline (for example connection times).
   detail?: Record<string, unknown>
   // For a booking the system itself held for review: why, in words, for the
@@ -150,6 +154,7 @@ export async function settleFollowUp({
       referenceId: question?.reference_id ?? null,
       priceCents: call.price_cents,
       rescheduling,
+      rebookAvailable,
     })
 
     if (outcome === 'disputed') {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useState } from "react"
+import { useState } from "react"
 import {
   ALLOWED_MEETING_SERVICES_TEXT,
   FOLLOW_UP_NO_SHOW_AFTER_MINUTES,
@@ -11,7 +11,8 @@ import {
   type FollowUpProblemReason,
 } from "@/lib/follow-up-rules"
 import ReportProblemForm from "@/components/ReportProblemForm"
-import { InfoIcon, VideoIcon } from "@/components/icons"
+import { VideoIcon } from "@/components/icons"
+import ConnectionHelp from "@/components/ConnectionHelp"
 
 export type FollowUpCall = {
   id: string
@@ -120,8 +121,7 @@ export function RequestCard({
       {onDmq ? (
         <p className="mt-4 text-xs text-ink-soft">
           The conversation takes place on DMQ, as an audio call with an optional camera. There is
-          nothing to paste. If the call ever isn&apos;t working, you can move it to your own
-          meeting link from the call screen.
+          nothing to paste.
         </p>
       ) : (
         <>
@@ -177,83 +177,6 @@ export function RequestCard({
   )
 }
 
-// The fallback for a conversation held on DMQ: if it isn't working, the expert
-// can move it to their own meeting link. Collapsed by default, so it reads as an
-// exception, not a choice.
-export function OwnLinkFallback({
-  busy,
-  onSubmit,
-  defaultOpen = false,
-}: {
-  busy: boolean
-  onSubmit: (meetingLink: string) => void
-  defaultOpen?: boolean
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  const [link, setLink] = useState("")
-  const inputId = useId()
-
-  return (
-    <div className="mt-4 border-t border-line pt-4">
-      <h3 className="text-sm font-semibold text-ink">Having trouble connecting?</h3>
-      <p className="mt-1 text-xs text-ink-soft">
-        If your DMQ conversation isn&apos;t working, you can use your own meeting link instead.
-      </p>
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-ink underline underline-offset-2"
-      >
-        Use an external meeting link
-        <svg
-          viewBox="0 0 16 16"
-          aria-hidden="true"
-          className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M3 6l5 5 5-5" />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="mt-3 space-y-2">
-          <label htmlFor={inputId} className="block text-xs font-medium text-ink-soft">
-            Meeting link
-          </label>
-          <input
-            id={inputId}
-            type="url"
-            inputMode="url"
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            placeholder="Paste Google Meet or Zoom link"
-            className="w-full rounded-full border border-line bg-white px-4 py-2.5 text-sm text-ink placeholder:text-ink-soft/60"
-          />
-          <p className="flex items-start gap-1.5 text-xs text-ink-soft">
-            <InfoIcon className="mt-0.5 h-3 w-3 flex-shrink-0" />
-            External services may show your display name or other account details.{" "}
-            {ALLOWED_MEETING_SERVICES_TEXT}. The asker is emailed straight away and their join page
-            then opens this link.
-          </p>
-          <button
-            type="button"
-            disabled={busy || link.trim().length === 0}
-            onClick={() => onSubmit(link)}
-            className="w-full rounded-full border border-line bg-white px-4 py-2.5 text-sm font-medium text-ink hover:border-ink disabled:opacity-50"
-          >
-            {busy ? "Switching..." : "Switch to external meeting"}
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export function UpcomingCard({
   call,
   now,
@@ -265,7 +188,7 @@ export function UpcomingCard({
   onComplete,
   onAskerNoShow,
   onReport,
-  onUseOwnLink,
+  onReschedule,
 }: {
   call: FollowUpCall
   now: number
@@ -277,9 +200,10 @@ export function UpcomingCard({
   onComplete: () => void
   onAskerNoShow: () => void
   onReport: (reason: FollowUpProblemReason, note: string) => void
-  onUseOwnLink: (meetingLink: string) => void
+  onReschedule: () => void
 }) {
   const [reporting, setReporting] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
   if (!call.confirmedStart) return null
   const { opensAt, closesAt } =
     call.videoProvider === "dmq"
@@ -348,8 +272,27 @@ export function UpcomingCard({
         )}
       </div>
 
-      {call.videoProvider === "dmq" && !slotOver && (
-        <OwnLinkFallback busy={busy} onSubmit={onUseOwnLink} />
+      {call.videoProvider === "dmq" && started && !slotOver && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setHelpOpen((v) => !v)}
+            aria-expanded={helpOpen}
+            className="text-xs font-medium text-ink-soft underline underline-offset-2 hover:text-ink"
+          >
+            Having trouble connecting?
+          </button>
+          {helpOpen && (
+            <div className="mt-2">
+              <ConnectionHelp
+                started
+                busy={busy}
+                onReschedule={onReschedule}
+                onReport={() => setReporting(true)}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       {started && reporting ? (

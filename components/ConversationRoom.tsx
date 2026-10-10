@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { videoRoomWindowFor } from "@/lib/follow-up-rules"
+import ConnectionHelp from "@/components/ConnectionHelp"
 
 function mmss(ms: number): string {
   const total = Math.max(0, Math.round(ms / 1000))
@@ -20,15 +21,17 @@ export default function ConversationRoom({
   startIso,
   onLeave,
   onReport,
-  onUseOwnLink,
+  onReschedule,
+  busy = false,
 }: {
   url: string
   startIso: string
   onLeave: () => void
   // Opens the "report a problem" form on the page that shows the call.
   onReport: () => void
-  // Only the expert gets this: move the conversation to their own meeting link.
-  onUseOwnLink?: () => void
+  // Ends the conversation for free because of a connection problem.
+  onReschedule: () => void
+  busy?: boolean
 }) {
   const { scheduledEnd, closesAt } = videoRoomWindowFor(startIso)
   const start = new Date(startIso).getTime()
@@ -95,40 +98,14 @@ export default function ConversationRoom({
       </p>
 
       {helpOpen && (
-        <div className="mt-3 rounded-sm bg-line/30 p-3 text-xs text-ink-soft">
-          <p>
-            No sound or no picture? Reloading the call usually fixes it. If something went
-            wrong on our side or the other person&apos;s, report it and we&apos;ll review it.
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setReloadKey((k) => k + 1)}
-              className="rounded-full border border-line bg-white px-4 py-1.5 text-xs font-medium text-ink hover:border-ink"
-            >
-              Reload the call
-            </button>
-            {onUseOwnLink && (
-              <button
-                type="button"
-                onClick={onUseOwnLink}
-                className="rounded-full border border-line bg-white px-4 py-1.5 text-xs font-medium text-ink hover:border-ink"
-              >
-                Use my own meeting link instead
-              </button>
-            )}
-            {started ? (
-              <button
-                type="button"
-                onClick={onReport}
-                className="rounded-full border border-line bg-white px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red"
-              >
-                Report a problem
-              </button>
-            ) : (
-              <span>You can report a problem once the conversation has started.</span>
-            )}
-          </div>
+        <div className="mt-3">
+          <ConnectionHelp
+            started={started}
+            busy={busy}
+            onReload={() => setReloadKey((k) => k + 1)}
+            onReschedule={onReschedule}
+            onReport={onReport}
+          />
         </div>
       )}
 

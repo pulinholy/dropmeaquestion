@@ -130,12 +130,17 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
       link" button. In a normal browser there is no hint.
 - [ ] **Stalled call:** in the call, "Trouble connecting? Reload" reloads it on
       the same pass; "Leave conversation" then Join makes a fresh pass.
-- [ ] **Move to my own link (also from inside the live call):** on a confirmed
-      DMQ booking, "Connection help" in the call screen also has "Use my own
-      meeting link instead"; on a confirmed DMQ booking, the expert's card
-      shows "Trouble with the call? Use my own meeting link". Submitting a link
-      emails the asker, and the asker's join page then opens that link. The
-      booking then settles from join clicks, like any own-link booking.
+- [ ] **Having trouble connecting?** It is one quiet link (inside the call, on
+      the asker's page and on the expert's card once the call has started). It
+      opens tips first (microphone, reload, browser, connection). Only after
+      "It's still not working" does it show **Reschedule for free** and
+      **Report a problem**.
+- [ ] **Reschedule for free:** works for either side from the start until the
+      room closes (20 minutes after the start), asks for confirmation, releases
+      the card (Stripe **Canceled**), makes the booking `cancelled`, and emails
+      both (the asker with a "book another time" link). Refused before the
+      start, after the room closes, and once the two have 10+ minutes together.
+      With the 14-day offer period over, the asker's email has no booking link.
 - [ ] **Backfill:** with the webhook NOT registered, hold a real call, skip 26
       hours ahead and run the daily job: it still settles from the provider's
       own record (look for "video_sessions_backfilled" in the booking's
@@ -223,9 +228,8 @@ switch unset, everything above behaves exactly as before.
       The room closes in...", then the room closes about 5 minutes after the end.
 - [ ] **Leave and rejoin** works; a third person with the address and no pass
       is refused.
-- [ ] **Own-link fallback** (see 6c): moving a booking to the expert's own
-      link still works end to end, and the asker's page then says it uses the
-      expert's own link.
+- [ ] **Free reschedule** (see 6c): a call that won't connect can be rescheduled
+      from "Having trouble connecting?"; nobody is charged and both are emailed.
 - [ ] **Limit:** set `VIDEO_MAX_ROOMS_PER_DAY=1`, confirm a second DMQ booking
       and try to join: "We can't start the call right now", and an email to
       support.

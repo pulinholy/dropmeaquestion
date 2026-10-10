@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { cancellationKind, reviewOpensAt } from "@/lib/follow-up-rules"
 import ReportProblemForm from "@/components/ReportProblemForm"
+import ConnectionHelp from "@/components/ConnectionHelp"
 
 const GENERIC_ERROR = "Something went wrong. Please try again."
 
@@ -19,6 +20,8 @@ export default function AskerActions({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [reporting, setReporting] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [inRoom, setInRoom] = useState(false)
 
   // The call's "Report a problem" asks this page to open its report form.
   useEffect(() => {
@@ -29,8 +32,15 @@ export default function AskerActions({
         50
       )
     }
+    function roomState(e: Event) {
+      setInRoom(Boolean((e as CustomEvent).detail))
+    }
     window.addEventListener("dmq-open-report", open)
-    return () => window.removeEventListener("dmq-open-report", open)
+    window.addEventListener("dmq-room-state", roomState)
+    return () => {
+      window.removeEventListener("dmq-open-report", open)
+      window.removeEventListener("dmq-room-state", roomState)
+    }
   }, [])
 
   // Starts null so the server-rendered page and first client render match.
@@ -89,6 +99,10 @@ export default function AskerActions({
     }
   }
 
+  function rescheduleLive() {
+    post("/api/follow-up/reschedule-live", { id: followUpId })
+  }
+
   function confirmCompleted() {
     if (
       window.confirm(
@@ -100,20 +114,35 @@ export default function AskerActions({
   }
 
 
-  // While the conversation is live there is only a small way to report a
-  // problem. The confirmation comes after the scheduled end.
+  // While the conversation is live there is one quiet link. The tips come
+  // first; rescheduling and reporting are behind them.
+  if (kind === "started" && !ended && !reporting && inRoom) {
+    // The call on this page has its own Connection help.
+    return error ? <p className="mt-3 text-center text-sm text-postal-red">{error}</p> : null
+  }
   if (kind === "started" && !ended && !reporting) {
     return (
-      <p id="report-problem" className="mt-3 text-center text-xs text-ink-soft">
-        Problem with the call?{" "}
+      <div id="report-problem" className="mt-3 text-center text-xs text-ink-soft">
         <button
           type="button"
-          onClick={() => setReporting(true)}
-          className="font-medium text-ink underline underline-offset-2"
+          onClick={() => setHelpOpen((open) => !open)}
+          aria-expanded={helpOpen}
+          className="font-medium text-ink-soft underline underline-offset-2 hover:text-ink"
         >
-          Report it
+          Having trouble connecting?
         </button>
-      </p>
+        {helpOpen && (
+          <div className="mt-3 text-left">
+            <ConnectionHelp
+              started
+              busy={busy}
+              onReschedule={rescheduleLive}
+              onReport={() => setReporting(true)}
+            />
+          </div>
+        )}
+        {error && <p className="mt-3 text-sm text-postal-red">{error}</p>}
+      </div>
     )
   }
 
@@ -206,9 +235,9 @@ export default function AskerActions({
               type="button"
               disabled={busy}
               onClick={() => setReporting(true)}
-              className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
+              className="text-xs font-medium text-ink-soft underline underline-offset-2 hover:text-ink disabled:opacity-50"
             >
-              Report a problem
+              Something went wrong?
             </button>
           </div>
         </>

@@ -38,6 +38,7 @@ export default function JoinPanel({
   // browser often can't use the microphone.
   const [browserHint, setBrowserHint] = useState<string | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [rescheduling, setRescheduling] = useState(false)
 
   // Starts null so the server-rendered page and the first client render match.
   useEffect(() => {
@@ -49,6 +50,39 @@ export default function JoinPanel({
       clearInterval(timer)
     }
   }, [])
+
+  // Lets the actions below the call know whether the call is open here.
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("dmq-room-state", { detail: Boolean(roomUrl) }))
+  }, [roomUrl])
+
+  // The call's "Reschedule for free" ends this conversation; the page then
+  // shows that it's released and offers a new time.
+  useEffect(() => {
+    async function reschedule() {
+      setRescheduling(true)
+      setError("")
+      try {
+        const res = await fetch("/api/follow-up/reschedule-live", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: followUpId }),
+        })
+        const data = await res.json().catch(() => null)
+        if (!res.ok) {
+          setError(typeof data?.error === "string" ? data.error : JOIN_ERROR)
+          setRescheduling(false)
+          return
+        }
+        window.location.reload()
+      } catch {
+        setError(JOIN_ERROR)
+        setRescheduling(false)
+      }
+    }
+    window.addEventListener("dmq-reschedule", reschedule)
+    return () => window.removeEventListener("dmq-reschedule", reschedule)
+  }, [followUpId])
 
   useEffect(() => {
     if (videoProvider !== "dmq") return
@@ -115,12 +149,17 @@ export default function JoinPanel({
 
   if (roomUrl) {
     return (
-      <ConversationRoom
-        url={roomUrl}
-        startIso={startIso}
-        onLeave={() => setRoomUrl(null)}
-        onReport={() => window.dispatchEvent(new Event("dmq-open-report"))}
-      />
+      <>
+        <ConversationRoom
+          url={roomUrl}
+          startIso={startIso}
+          onLeave={() => setRoomUrl(null)}
+          onReport={() => window.dispatchEvent(new Event("dmq-open-report"))}
+          onReschedule={() => window.dispatchEvent(new Event("dmq-reschedule"))}
+          busy={rescheduling}
+        />
+        {error && <p className="mt-3 text-center text-sm text-postal-red">{error}</p>}
+      </>
     )
   }
 

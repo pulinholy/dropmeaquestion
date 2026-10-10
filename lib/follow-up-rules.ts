@@ -44,7 +44,7 @@ export const FOLLOW_UP_PRIVACY_LINES = [
 
 export type FollowUpVideoMode = 'dmq' | 'external'
 
-export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v4-dmq'
+export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v5-dmq'
 
 export function followUpPolicyVersion(mode: FollowUpVideoMode): string {
   return mode === 'dmq' ? FOLLOW_UP_POLICY_VERSION_DMQ : FOLLOW_UP_POLICY_VERSION
@@ -53,7 +53,12 @@ export function followUpPolicyVersion(mode: FollowUpVideoMode): string {
 export function followUpPolicyLines(mode: FollowUpVideoMode): string[] {
   if (mode !== 'dmq') return FOLLOW_UP_POLICY_LINES
   return [
-    ...FOLLOW_UP_POLICY_LINES,
+    ...FOLLOW_UP_POLICY_LINES.map((line) =>
+      line.replace(
+        'If a connection problem stops the conversation, report it and we’ll review it.',
+        'If a connection problem stops the conversation, either of you can reschedule it for free and you won’t be charged.'
+      )
+    ),
     'The conversation lasts 15 minutes from the scheduled start. The room stays open for 5 minutes after that, then closes.',
   ]
 }
@@ -382,6 +387,7 @@ export type FollowUpOutcome =
   | 'asker_no_show'
   | 'cancelled_by_asker'
   | 'cancelled_by_expert'
+  | 'technical_reschedule'
   | 'expert_no_show'
   | 'neither_joined'
   | 'admin_release'
