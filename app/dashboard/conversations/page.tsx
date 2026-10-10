@@ -140,7 +140,7 @@ export default function ConversationsPage() {
     setReloadKey((k) => k + 1)
   }
 
-  // "Reschedule for free": ends a live DMQ conversation because of a connection
+  // "Request a new time": ends a live DMQ conversation because of a connection
   // problem. The card is released and both people are emailed.
   async function rescheduleLive(id: string) {
     setBusyId(id)

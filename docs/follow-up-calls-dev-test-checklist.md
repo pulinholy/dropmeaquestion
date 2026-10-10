@@ -133,9 +133,9 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
 - [ ] **Having trouble connecting?** It is one quiet link (inside the call, on
       the asker's page and on the expert's card once the call has started). It
       opens tips first (microphone, reload, browser, connection). Only after
-      "It's still not working" does it show **Reschedule for free** and
+      "It's still not working" does it show **Request a new time — no charge** and
       **Report a problem**.
-- [ ] **Reschedule for free** (either side, from the start until the room closes,
+- [ ] **Request a new time — no charge** (either side, from the start until the room closes,
       20 minutes after the start; asks for confirmation; releases the card, makes
       the booking `cancelled`, emails both). Depends on how long the two were
       connected together at that moment:
@@ -147,7 +147,11 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
       - an asker who asks while the expert has been in the call for 2+ minutes
         alone: refused (the expert waited);
       - before the start or after the room closes: refused.
-      With the 14-day offer period over, the asker's email has no booking link.
+      After a connection failure, the asker's email links to the booking page. Past
+      the 14-day offer period there is ONE replacement booking, for 7 days after
+      the failure (test by setting the question's `answered_at` to 15 days ago
+      before the failure). A second failure on the same question gets no further
+      exception, and the email then has no booking link.
 - [ ] **Backfill:** with the webhook NOT registered, hold a real call, skip 26
       hours ahead and run the daily job: it still settles from the provider's
       own record (look for "video_sessions_backfilled" in the booking's

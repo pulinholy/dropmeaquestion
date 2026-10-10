@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   if (!call || call.status !== 'confirmed' || !call.confirmed_start) {
     return NextResponse.json(
-      { error: 'This conversation can’t be rescheduled.' },
+      { error: 'A new time can’t be requested for this conversation.' },
       { status: 409 }
     )
   }

@@ -26,7 +26,7 @@ export default function ConnectionHelp({
   function reschedule() {
     if (
       window.confirm(
-        "Reschedule this conversation for free? Your card won't be charged, and you'll both be emailed so a new time can be booked."
+        "Request a new time at no charge? This conversation will be cancelled and your card won't be charged. You'll both be emailed, and a new booking can be requested."
       )
     ) {
       onReschedule()
@@ -67,7 +67,7 @@ export default function ConnectionHelp({
         <div className="mt-3 border-t border-line pt-3">
           <p className="font-medium text-ink">Still not working?</p>
           <p className="mt-1">
-            If a connection problem stops the conversation, you can reschedule it for free.
+            If a connection problem stops the conversation, you can cancel it at no charge and request a new time.
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <button
@@ -76,7 +76,7 @@ export default function ConnectionHelp({
               onClick={reschedule}
               className="rounded-full border border-line bg-white px-4 py-1.5 text-xs font-medium text-ink hover:border-ink disabled:opacity-50"
             >
-              {busy ? "Working..." : "Reschedule for free"}
+              {busy ? "Working..." : "Request a new time — no charge"}
             </button>
             <button
               type="button"
@@ -91,7 +91,7 @@ export default function ConnectionHelp({
       ) : (
         <p className="mt-3 border-t border-line pt-3">
           If it still isn&apos;t working once the conversation has started, you&apos;ll be able to
-          reschedule it for free from here.
+          request a new time at no charge from here.
         </p>
       )}
     </div>

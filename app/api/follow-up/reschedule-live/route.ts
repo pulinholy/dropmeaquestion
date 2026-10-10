@@ -18,7 +18,7 @@ import { loadConnectionSummary } from '@/lib/video/settlement'
 //
 // Only while the conversation is running (from the start until the room
 // closes), and only if the two had little or no time together:
-//   no connection data, or under 2 minutes together: free reschedule
+//   no connection data, or under 2 minutes together: a new time at no charge
 //   2 to 10 minutes together: refused here; report a problem for a review
 //   10 minutes or more: refused; it counts, so the normal completion applies
 // An asker can't use it while the expert has been waiting in the conversation
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   if (limited) return limited
 
   if (videoMode() !== 'dmq') {
-    return NextResponse.json({ error: 'This conversation can’t be rescheduled.' }, { status: 409 })
+    return NextResponse.json({ error: 'A new time can’t be requested for this conversation.' }, { status: 409 })
   }
 
   let query = supabaseAdmin
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     call.video_provider !== 'dmq' ||
     !call.confirmed_start
   ) {
-    return NextResponse.json({ error: 'This conversation can’t be rescheduled.' }, { status: 409 })
+    return NextResponse.json({ error: 'A new time can’t be requested for this conversation.' }, { status: 409 })
   }
 
   const now = Date.now()
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   }
   if (now > closesAt.getTime()) {
     return NextResponse.json(
-      { error: 'The conversation has ended, so it can’t be rescheduled. You can report a problem instead.' },
+      { error: 'The conversation has ended, so a new time can’t be requested this way. You can report a problem instead.' },
       { status: 409 }
     )
   }
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          'You have already spent enough time together for this conversation to count, so it can’t be rescheduled. If something went wrong, report a problem instead.',
+          'You have already spent enough time together for this conversation to count, so this can’t be used. If something went wrong, report a problem instead.',
       },
       { status: 409 }
     )
@@ -127,15 +127,35 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          'The expert has been waiting in the conversation, so it can’t be rescheduled automatically. If something went wrong, use Report a problem and we’ll review it before any payment decision.',
+          'The expert has been waiting in the conversation, so this can’t be done automatically. If something went wrong, use Report a problem and we’ll review it before any payment decision.',
       },
       { status: 409 }
     )
   }
 
-  // Whether the asker can still book again (the 14-day offer period).
+  // Whether the asker can still book again: within the 14-day offer period, or,
+  // past it, once: a conversation that fails because of a connection problem
+  // may be replaced by one more booking. A question that has already had one
+  // such failure gets no further exception.
+  let rebookAvailable = false
   const offer = await getFollowUpOffer(call.question_id, { ignoreBookingId: call.id })
-  const rebookAvailable = offer.ok
+  if (offer.ok) {
+    rebookAvailable = true
+  } else if (offer.reason === 'offer_expired') {
+    const { count: earlierFailures } = await supabaseAdmin
+      .from('follow_up_calls')
+      .select('id', { count: 'exact', head: true })
+      .eq('question_id', call.question_id)
+      .neq('id', call.id)
+      .like('settlement_reason', '%_rescheduled_technical')
+    if ((earlierFailures ?? 0) === 0) {
+      const exception = await getFollowUpOffer(call.question_id, {
+        ignoreBookingId: call.id,
+        allowExpired: true,
+      })
+      rebookAvailable = exception.ok
+    }
+  }
 
   const result = await settleFollowUp({
     id: call.id,

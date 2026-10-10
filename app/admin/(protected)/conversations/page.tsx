@@ -223,7 +223,7 @@ export default function AdminConversationsPage() {
               </dd>
             </div>
             <div className="flex justify-between gap-3 sm:col-span-2">
-              <dt className="text-ink-soft">Free reschedules, last 30 days</dt>
+              <dt className="text-ink-soft">New-time requests (no charge), last 30 days</dt>
               <dd className="text-ink">
                 {health.reschedulesLast30Days ?? "unknown"}
                 {health.reschedulesLast30Days

@@ -56,7 +56,7 @@ export default function JoinPanel({
     window.dispatchEvent(new CustomEvent("dmq-room-state", { detail: Boolean(roomUrl) }))
   }, [roomUrl])
 
-  // The call's "Reschedule for free" ends this conversation; the page then
+  // The call's "Request a new time" ends this conversation; the page then
   // shows that it's released and offers a new time.
   useEffect(() => {
     async function reschedule() {

@@ -41,6 +41,39 @@ export type FollowUpOffer =
 
 let loggedOfferFailure = false
 
+// How long after a connection failure the asker can still book the replacement.
+export const FOLLOW_UP_REPLACEMENT_DAYS = 7
+
+// Past the 14-day offer period, a conversation that ended because of a
+// connection problem may be replaced by ONE more booking:
+//  - the failure must be recent (within FOLLOW_UP_REPLACEMENT_DAYS),
+//  - it must be the only such failure for this question, so a replacement that
+//    fails again isn't replaced again, and
+//  - no replacement may have been requested yet (an abandoned checkout doesn't
+//    count).
+export async function replacementBookingOpen(questionId: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from('follow_up_calls')
+    .select('id, status, settlement_reason, cancelled_at, created_at, requested_at')
+    .eq('question_id', questionId)
+    .order('created_at', { ascending: true })
+  if (error || !data) return false
+
+  const failures = data.filter(
+    (r) =>
+      r.status === 'cancelled' &&
+      typeof r.settlement_reason === 'string' &&
+      r.settlement_reason.endsWith('_rescheduled_technical')
+  )
+  if (failures.length !== 1) return false
+
+  const failure = failures[0]
+  const failedAt = new Date(failure.cancelled_at ?? failure.created_at).getTime()
+  if (Date.now() > failedAt + FOLLOW_UP_REPLACEMENT_DAYS * 24 * 3600 * 1000) return false
+
+  return !data.some((r) => r.id !== failure.id && r.created_at > failure.created_at && r.requested_at)
+}
+
 // Decides whether this question's asker may be offered a follow-up call. Any
 // trouble reading the data means "no offer" -- never an offer that might not
 // be honoured.
@@ -48,7 +81,12 @@ export async function getFollowUpOffer(
   questionId: string,
   // When an asker is replacing a booking they're about to cancel, that
   // booking mustn't count as blocking the new one.
-  options: { ignoreBookingId?: string } = {}
+  options: {
+    ignoreBookingId?: string
+    // Offer as if the 14-day offer period were still open. Used when working
+    // out whether a replacement can still be booked after a technical failure.
+    allowExpired?: boolean
+  } = {}
 ): Promise<FollowUpOffer> {
   try {
     const { data: question } = await supabaseAdmin
@@ -68,7 +106,13 @@ export async function getFollowUpOffer(
         : `${question.answered_at}Z`
     )
     const offerEndsAt = answeredAt.getTime() + FOLLOW_UP_OFFER_DAYS * 24 * 3600 * 1000
-    if (Date.now() > offerEndsAt) return { ok: false, reason: 'offer_expired' }
+    if (Date.now() > offerEndsAt && !options.allowExpired) {
+      // One exception: a conversation that ended because of a connection
+      // problem can be replaced by one more booking, for a short while.
+      if (!(await replacementBookingOpen(questionId))) {
+        return { ok: false, reason: 'offer_expired' }
+      }
+    }
 
     // The expert can switch the offer off for a single answer. A separate
     // query so the offer still works before supabase/follow_up_per_answer.sql

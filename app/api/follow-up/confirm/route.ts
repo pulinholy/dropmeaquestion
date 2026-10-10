@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
   // With DMQ rooms on, every confirmed conversation is held on DMQ: choosing a
   // time is enough, and a link sent along is ignored. There is no own-link
-  // choice; a call that isn't working is rescheduled for free instead (see
+  // choice; a call that isn't working is cancelled with a new time requested at no charge instead (see
   // reschedule-live). With DMQ rooms off, a link is required, as before.
   const useDmq = videoMode() === 'dmq'
   const link = useDmq ? null : isAllowedMeetingLink(body.meetingLink)

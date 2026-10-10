@@ -44,7 +44,7 @@ export const FOLLOW_UP_PRIVACY_LINES = [
 
 export type FollowUpVideoMode = 'dmq' | 'external'
 
-export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v6-dmq'
+export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v8-dmq'
 
 export function followUpPolicyVersion(mode: FollowUpVideoMode): string {
   return mode === 'dmq' ? FOLLOW_UP_POLICY_VERSION_DMQ : FOLLOW_UP_POLICY_VERSION
@@ -56,7 +56,7 @@ export function followUpPolicyLines(mode: FollowUpVideoMode): string[] {
     ...FOLLOW_UP_POLICY_LINES.map((line) =>
       line.replace(
         'If a connection problem stops the conversation, report it and we’ll review it.',
-        'If a connection problem stops the conversation before you’ve had time together, either of you can reschedule it for free and you won’t be charged. Otherwise, report it and we’ll review it.'
+        'If technical problems prevent your conversation from taking place, either of you may request a new time at no additional charge, subject to the rescheduling rules on the Conversation & Cancellation Policy page. If the conversation has substantially taken place, the normal completion and payment policies apply.'
       )
     ),
     'The conversation lasts 15 minutes from the scheduled start. The room stays open for 5 minutes after that, then closes.',
