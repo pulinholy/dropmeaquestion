@@ -52,8 +52,8 @@ export async function scheduleFollowUpReminders({
       to: askerEmail,
       subject: `How was your conversation with ${expertFirstName}?`,
       html: renderEmailLayout(`
-        <p style="margin:0 0 12px;">Your 15-minute conversation with ${name}, scheduled for ${when}, has ended. Did it take place?</p>
-        <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">Confirm it and your card is charged ${money(priceCents)} now. If we don&rsquo;t hear from you, your card is charged about a day after the conversation. If something went wrong, you can tell us on your conversation page.</p>
+        <p style="margin:0 0 12px;">Your 15-minute conversation with ${name} was scheduled for ${when}. If it took place, you can confirm it on your conversation page.</p>
+        <p style="margin:0 0 20px; font-size:13px; color:#4a5568;">Confirming charges your card ${money(priceCents)} now. If it didn&rsquo;t take place, you don&rsquo;t need to do anything. If we don&rsquo;t hear from you, we settle it about a day later based on who joined, under the cancellation policy you agreed to. If something went wrong, you can tell us on the page.</p>
         ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'Open your conversation page &rarr;')}
       `),
       scheduledAt: new Date(

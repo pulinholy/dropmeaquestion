@@ -204,7 +204,7 @@ export default function AskerActions({
           <h2 className="text-sm font-semibold text-ink">How did it go?</h2>
           <p className="mt-1 text-xs text-ink-soft">
             {ended
-              ? `Once the conversation has taken place, confirm it and your card is charged $${price}. If we don't hear from you, it's charged about a day after the conversation ends.`
+              ? `If it took place, confirm it and your card is charged $${price} now. If it didn't, you don't need to do anything. If we don't hear from you, we settle it about a day later based on who joined, under the cancellation policy you agreed to.`
               : "You can confirm once the conversation has ended."}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
