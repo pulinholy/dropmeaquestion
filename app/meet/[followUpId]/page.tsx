@@ -4,6 +4,7 @@ import SiteFooter from "@/components/SiteFooter"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import {
   formatPrice,
+  formatSlot,
 } from "@/lib/follow-up-rules"
 import { ExternalLinkIcon, LockIcon, ShieldCheckIcon, VideoIcon } from "@/components/icons"
 import { videoMode } from "@/lib/video/config"
@@ -39,8 +40,8 @@ export default async function MeetPage({
     .from("follow_up_calls")
     .select(
       dmqOn
-        ? "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents, video_provider"
-        : "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents"
+        ? "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents, proposed_slots, confirm_by, video_provider"
+        : "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents, proposed_slots, confirm_by"
     )
     .eq("id", followUpId)
     .maybeSingle()
@@ -52,6 +53,8 @@ export default async function MeetPage({
     asker_timezone: string | null
     expert_id: string
     price_cents: number
+    proposed_slots?: unknown
+    confirm_by?: string | null
     video_provider?: string | null
   } | null
   const videoProvider = dmqOn && call?.video_provider === "dmq" ? "dmq" : "external"
@@ -131,11 +134,30 @@ export default async function MeetPage({
         </Message>
       )
     } else if (call.status === "requested") {
+      const proposed = Array.isArray(call.proposed_slots)
+        ? (call.proposed_slots as unknown[]).filter((s): s is string => typeof s === "string")
+        : []
       content = (
-        <Message title="Waiting for confirmation">
-          {expertFirstName} hasn&apos;t confirmed a time yet. We&apos;ll email you
-          as soon as they do. Your card is held, not charged.
-        </Message>
+        <div className="mx-auto max-w-md px-6 py-16 text-center">
+          <h1 className="font-display text-3xl text-ink">Waiting for confirmation</h1>
+          <p className="mt-3 text-ink-soft">
+            {expertFirstName} hasn&apos;t confirmed a time yet
+            {call.confirm_by ? ` and has until ${formatSlot(call.confirm_by, call.asker_timezone)}` : ""}
+            . We&apos;ll email you when it&apos;s confirmed. Your card is held, not charged.
+          </p>
+          {proposed.length > 0 && (
+            <div className="mt-6 rounded-lg border border-line bg-white p-4 text-left">
+              <p className="text-sm font-semibold text-ink">
+                {proposed.length === 1 ? "The time you proposed" : "The times you proposed"}
+              </p>
+              <ul className="mt-2 space-y-1 text-sm text-ink-soft">
+                {proposed.map((slot) => (
+                  <li key={slot}>{formatSlot(slot, call.asker_timezone)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       )
     } else if (call.status === "late_cancelled" || call.status === "asker_no_show") {
       content = (

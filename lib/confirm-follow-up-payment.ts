@@ -151,6 +151,7 @@ export async function confirmFollowUpPayment({
 
     if (question?.asker_email) {
       await sendFollowUpRequestedEmails({
+        followUpId,
         expertEmail,
         expertFirstName,
         askerEmail: question.asker_email,

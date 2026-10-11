@@ -5,7 +5,7 @@ import { enforceRateLimit } from '@/lib/rate-limit'
 // Lets the asker's "processing your request" page find out whether their
 // booking went through, without waiting for an email. The question id in
 // their link is the unguessable key (as on the booking page itself), and
-// only a coarse state comes back: still waiting, sent, or not booked.
+// only a coarse state comes back: still waiting, sent (with the times they proposed), or not booked.
 export async function GET(request: Request) {
   const limited = await enforceRateLimit(request, [
     { name: 'follow-up-status', limit: 120, windowSeconds: 60 },
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
   const { data: call, error } = await supabaseAdmin
     .from('follow_up_calls')
-    .select('status, released_at')
+    .select('status, released_at, proposed_slots, asker_timezone')
     .eq('question_id', questionId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -38,5 +38,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ state: 'not_booked' })
   }
 
-  return NextResponse.json({ state: 'sent' })
+  // The times they proposed are theirs to see again. The private booking id is
+  // deliberately not returned: the question id alone mustn't unlock the page
+  // that can cancel or confirm. That link is in the email instead.
+  return NextResponse.json({
+    state: 'sent',
+    proposedSlots: Array.isArray(call.proposed_slots)
+      ? (call.proposed_slots as unknown[]).filter((s): s is string => typeof s === 'string')
+      : [],
+    timezone: typeof call.asker_timezone === 'string' ? call.asker_timezone : null,
+  })
 }

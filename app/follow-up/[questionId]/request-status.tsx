@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import { formatSlot } from "@/lib/follow-up-rules"
 
 const POLL_MS = 1500
 const MAX_ATTEMPTS = 40
@@ -19,6 +20,8 @@ export default function RequestStatus({
   expertFirstName: string
 }) {
   const [state, setState] = useState<State>("pending")
+  const [slots, setSlots] = useState<string[]>([])
+  const [timezone, setTimezone] = useState<string | null>(null)
   const attempts = useRef(0)
 
   useEffect(() => {
@@ -35,6 +38,10 @@ export default function RequestStatus({
         const data = await res.json().catch(() => null)
         if (cancelled) return
         if (res.ok && (data?.state === "sent" || data?.state === "not_booked")) {
+          if (Array.isArray(data.proposedSlots)) {
+            setSlots(data.proposedSlots.filter((s: unknown): s is string => typeof s === "string"))
+          }
+          setTimezone(typeof data.timezone === "string" ? data.timezone : null)
           setState(data.state)
           return
         }
@@ -62,10 +69,25 @@ export default function RequestStatus({
   if (state === "sent") {
     return (
       <div className={box}>
-        <h1 className="font-display text-3xl text-ink">Your request has been sent</h1>
+        <h1 className="font-display text-3xl text-ink">Your conversation request has been sent</h1>
         <p className="mt-3 text-ink-soft">
-          {expertFirstName} has 24 hours to confirm a time. We&apos;ll email you as soon as they
-          do. Your card is held, not charged.
+          {expertFirstName} has 24 hours to confirm one of your proposed times. We&apos;ll email
+          you when it&apos;s confirmed. Your card is held, not charged.
+        </p>
+        {slots.length > 0 && (
+          <div className="mt-6 rounded-lg border border-line bg-white p-4 text-left">
+            <p className="text-sm font-semibold text-ink">
+              {slots.length === 1 ? "The time you proposed" : "The times you proposed"}
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-ink-soft">
+              {slots.map((slot) => (
+                <li key={slot}>{formatSlot(slot, timezone)}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <p className="mt-4 text-xs text-ink-soft">
+          We&apos;ve also emailed you these details, with a link to your private request page.
         </p>
       </div>
     )

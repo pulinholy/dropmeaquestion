@@ -36,6 +36,7 @@ function listItems(lines: string[]): string {
 // Sent once the asker's card hold is in place: tells the expert there's a
 // request to confirm, and the asker that it's with the expert.
 export async function sendFollowUpRequestedEmails({
+  followUpId,
   expertEmail,
   expertFirstName,
   askerEmail,
@@ -44,6 +45,7 @@ export async function sendFollowUpRequestedEmails({
   askerTimezone,
   priceCents,
 }: {
+  followUpId: string
   expertEmail: string | null
   expertFirstName: string
   askerEmail: string
@@ -82,7 +84,8 @@ export async function sendFollowUpRequestedEmails({
     <p style="margin:0 0 16px;">Your request for a 15-minute conversation with ${name} has been sent.</p>
     <p style="margin:0 0 8px;">The times you proposed:</p>
     <ul style="margin:0 0 16px; padding-left:20px;">${times}</ul>
-    <p style="margin:0 0 8px;">${name} has 24 hours to confirm one. You&rsquo;ll get an email as soon as they do. Your card is held, not charged.</p>
+    <p style="margin:0 0 16px;">${name} has 24 hours to confirm one of your proposed times. You&rsquo;ll get an email when it&rsquo;s confirmed. Your card is held, not charged.</p>
+    ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'View your request &rarr;')}
     <p style="margin:16px 0 4px; font-size:13px; font-weight:bold; color:#17243a;">How it works</p>
     <ul style="margin:0 0 16px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(followUpPolicyLines(videoMode()))}</ul>
     <ul style="margin:0; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(followUpPrivacyLines(videoMode()))}</ul>
