@@ -39,6 +39,8 @@ export default function JoinPanel({
   const [browserHint, setBrowserHint] = useState<string | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
   const [rescheduling, setRescheduling] = useState(false)
+  // True once they have left the call on this page.
+  const [left, setLeft] = useState(false)
 
   // Starts null so the server-rendered page and the first client render match.
   useEffect(() => {
@@ -51,10 +53,16 @@ export default function JoinPanel({
     }
   }, [])
 
+  // The call is only shown while its room is open; once the room has closed
+  // the person is moved to the post-call screen, not left on an empty video.
+  const roomClosed =
+    now !== null && videoProvider === "dmq" && now > videoRoomWindowFor(startIso).closesAt.getTime()
+  const inCall = Boolean(roomUrl) && !roomClosed
+
   // Lets the actions below the call know whether the call is open here.
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent("dmq-room-state", { detail: Boolean(roomUrl) }))
-  }, [roomUrl])
+    window.dispatchEvent(new CustomEvent("dmq-room-state", { detail: inCall }))
+  }, [inCall])
 
   // The call's "Request a new time" ends this conversation; the page then
   // shows that it's released and offers a new time.
@@ -147,19 +155,58 @@ export default function JoinPanel({
     }
   }
 
-  if (roomUrl) {
+  if (inCall && roomUrl) {
     return (
       <>
         <ConversationRoom
           url={roomUrl}
           startIso={startIso}
-          onLeave={() => setRoomUrl(null)}
+          onLeave={() => {
+            setRoomUrl(null)
+            setLeft(true)
+          }}
           onReport={() => window.dispatchEvent(new Event("dmq-open-report"))}
           onReschedule={() => window.dispatchEvent(new Event("dmq-reschedule"))}
           busy={rescheduling}
         />
         {error && <p className="mt-3 text-center text-sm text-postal-red">{error}</p>}
       </>
+    )
+  }
+
+  // After the call, once the 15 minutes are up: a plain screen that points to
+  // the next step below, not the join card.
+  const joinedHere = left || Boolean(roomUrl)
+  if (
+    videoProvider === "dmq" &&
+    joinedHere &&
+    now !== null &&
+    now >= videoRoomWindowFor(startIso).scheduledEnd.getTime()
+  ) {
+    return (
+      <div className="rounded-lg border border-line bg-white p-6 text-center shadow-sm">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+          <VideoIcon className="h-6 w-6" />
+        </span>
+        <h1 className="mt-4 font-display text-2xl text-ink">Your conversation has ended</h1>
+        <p className="mt-2 text-sm text-ink-soft">
+          Thank you for talking with {expertFirstName}. Let us know how it went below.
+        </p>
+        {state === "open" && (
+          <p className="mt-4 text-xs text-ink-soft">
+            Left by mistake?{" "}
+            <button
+              type="button"
+              onClick={handleJoin}
+              disabled={joining}
+              className="font-medium text-ink underline underline-offset-2 hover:text-postal-blue disabled:opacity-50"
+            >
+              {joining ? "Opening..." : "Rejoin the conversation"}
+            </button>
+          </p>
+        )}
+        {error && <p className="mt-3 text-sm text-postal-red">{error}</p>}
+      </div>
     )
   }
 
@@ -212,7 +259,7 @@ export default function JoinPanel({
             disabled={joining}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-ink disabled:opacity-50"
           >
-            {joining ? "Opening..." : <>Join conversation <span aria-hidden>→</span></>}
+            {joining ? "Opening..." : <>{left ? "Rejoin conversation" : "Join conversation"} <span aria-hidden>→</span></>}
           </button>
           <p className="mt-2 text-xs text-ink-soft">
             {videoProvider === "dmq"

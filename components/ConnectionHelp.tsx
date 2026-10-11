@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import ConfirmDialog from "@/components/ConfirmDialog"
 
 // Help for a conversation that isn't connecting. It starts with the basics
 // people can try themselves, and only when those haven't worked does it show
@@ -22,16 +23,7 @@ export default function ConnectionHelp({
   onReport: () => void
 }) {
   const [stillStuck, setStillStuck] = useState(false)
-
-  function reschedule() {
-    if (
-      window.confirm(
-        "Request a new time at no charge? This conversation will be cancelled and your card won't be charged. You'll both be emailed, and a new booking can be requested."
-      )
-    ) {
-      onReschedule()
-    }
-  }
+  const [confirming, setConfirming] = useState(false)
 
   return (
     <div className="rounded-sm bg-line/30 p-3 text-xs text-ink-soft">
@@ -73,7 +65,7 @@ export default function ConnectionHelp({
             <button
               type="button"
               disabled={busy}
-              onClick={reschedule}
+              onClick={() => setConfirming(true)}
               className="rounded-full border border-line bg-white px-4 py-1.5 text-xs font-medium text-ink hover:border-ink disabled:opacity-50"
             >
               {busy ? "Working..." : "Request a new time — no charge"}
@@ -94,6 +86,24 @@ export default function ConnectionHelp({
           request a new time at no charge from here.
         </p>
       )}
+
+      <ConfirmDialog
+        open={confirming}
+        title="Request a new time?"
+        confirmLabel="Cancel and request a new time"
+        cancelLabel="Keep trying"
+        busy={busy}
+        onConfirm={() => {
+          setConfirming(false)
+          onReschedule()
+        }}
+        onCancel={() => setConfirming(false)}
+      >
+        <p>
+          This conversation will be cancelled and your card won&apos;t be charged. You&apos;ll both
+          be emailed, and a new booking can be requested.
+        </p>
+      </ConfirmDialog>
     </div>
   )
 }

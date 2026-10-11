@@ -135,6 +135,10 @@ Set `confirmed_start` to 26 hours ago, set the join times, then run the job:
       opens tips first (microphone, reload, browser, connection). Only after
       "It's still not working" does it show **Request a new time — no charge** and
       **Report a problem**.
+- [ ] Asker, after the 15 minutes: "Leave conversation" shows a plain "Your conversation has
+      ended" card (no empty video), with a quiet "Rejoin" link until the room closes. "Yes, it
+      took place" opens a DMQ dialog (not a browser alert) naming the amount; Escape and "Not yet"
+      close it without charging. The same dialog style is used for cancel and new-time requests.
 - [ ] **Request a new time — no charge** (either side, from the start until the room closes,
       20 minutes after the start; asks for confirmation; releases the card, makes
       the booking `cancelled`, emails both). Depends on how long the two were

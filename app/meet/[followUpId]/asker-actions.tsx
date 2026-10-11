@@ -4,8 +4,11 @@ import { useEffect, useState } from "react"
 import { cancellationKind, reviewOpensAt } from "@/lib/follow-up-rules"
 import ReportProblemForm from "@/components/ReportProblemForm"
 import ConnectionHelp from "@/components/ConnectionHelp"
+import ConfirmDialog from "@/components/ConfirmDialog"
 
 const GENERIC_ERROR = "Something went wrong. Please try again."
+
+type Pending = "cancel-free" | "cancel-late" | "new-time" | "confirm" | null
 
 export default function AskerActions({
   followUpId,
@@ -22,6 +25,7 @@ export default function AskerActions({
   const [reporting, setReporting] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   const [inRoom, setInRoom] = useState(false)
+  const [pending, setPending] = useState<Pending>(null)
 
   // The call's "Report a problem" asks this page to open its report form.
   useEffect(() => {
@@ -70,6 +74,7 @@ export default function AskerActions({
       if (!res.ok) {
         setError(typeof data?.error === "string" ? data.error : GENERIC_ERROR)
         setBusy(false)
+        setPending(null)
         return
       }
       if (typeof data?.url === "string") window.location.assign(data.url)
@@ -77,40 +82,24 @@ export default function AskerActions({
     } catch {
       setError(GENERIC_ERROR)
       setBusy(false)
+      setPending(null)
     }
   }
 
-  function cancel(late: boolean) {
-    const message = late
-      ? `Cancel now and be charged $${price}? This is the late-cancellation charge you agreed to when booking.`
-      : "Cancel this conversation? Your card won't be charged."
-    if (window.confirm(message)) {
-      post("/api/follow-up/cancel-asker", { id: followUpId, acknowledgeLateCharge: late })
-    }
-  }
-
-  function requestNewTime() {
-    if (
-      window.confirm(
-        "Request a different time? This cancels the current booking for free, and your card won't be charged. You'll then choose new times and the expert will confirm one."
-      )
-    ) {
+  // Each of these opens a confirmation in DMQ's own style; the request is only
+  // sent from `proceed`, and the server checks everything again.
+  function proceed() {
+    if (pending === "cancel-free" || pending === "cancel-late") {
+      post("/api/follow-up/cancel-asker", { id: followUpId, acknowledgeLateCharge: pending === "cancel-late" })
+    } else if (pending === "new-time") {
       post("/api/follow-up/rebook", { id: followUpId })
+    } else if (pending === "confirm") {
+      post("/api/follow-up/confirm-completed", { id: followUpId })
     }
   }
 
   function rescheduleLive() {
     post("/api/follow-up/reschedule-live", { id: followUpId })
-  }
-
-  function confirmCompleted() {
-    if (
-      window.confirm(
-        `Confirm that this conversation took place? Your card will be charged $${price}.`
-      )
-    ) {
-      post("/api/follow-up/confirm-completed", { id: followUpId })
-    }
   }
 
 
@@ -158,7 +147,7 @@ export default function AskerActions({
           <button
             type="button"
             disabled={busy}
-            onClick={() => cancel(false)}
+            onClick={() => setPending("cancel-free")}
             className="mt-3 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
           >
             {busy ? "Working..." : "Cancel conversation"}
@@ -171,7 +160,7 @@ export default function AskerActions({
           <button
             type="button"
             disabled={busy}
-            onClick={requestNewTime}
+            onClick={() => setPending("new-time")}
             className="mt-3 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
           >
             {busy ? "Working..." : "Request a different time"}
@@ -191,7 +180,7 @@ export default function AskerActions({
           <button
             type="button"
             disabled={busy}
-            onClick={() => cancel(true)}
+            onClick={() => setPending("cancel-late")}
             className="mt-3 rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink hover:border-postal-red hover:text-postal-red disabled:opacity-50"
           >
             {busy ? "Working..." : `Cancel and pay $${price}`}
@@ -222,7 +211,7 @@ export default function AskerActions({
             <button
               type="button"
               disabled={busy || !ended}
-              onClick={confirmCompleted}
+              onClick={() => setPending("confirm")}
               className="rounded-full bg-ink px-4 py-1.5 text-xs font-medium text-white hover:bg-postal-blue disabled:opacity-50"
             >
               {busy ? "Working..." : "Yes, it took place"}
@@ -240,6 +229,65 @@ export default function AskerActions({
       )}
 
       {error && <p className="mt-3 text-sm text-postal-red">{error}</p>}
+
+      <ConfirmDialog
+        open={pending === "confirm"}
+        title="Confirm your conversation"
+        confirmLabel={`Confirm and pay $${price}`}
+        busy={busy}
+        onConfirm={proceed}
+        onCancel={() => setPending(null)}
+      >
+        <p>Confirm that your conversation took place.</p>
+        <p>
+          Your card will be charged <strong className="text-ink">${price}</strong> now. If
+          something went wrong, choose “Not yet” and use “Something went wrong?” instead.
+        </p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={pending === "cancel-free"}
+        title="Cancel this conversation?"
+        confirmLabel="Cancel conversation"
+        cancelLabel="Keep it"
+        busy={busy}
+        onConfirm={proceed}
+        onCancel={() => setPending(null)}
+      >
+        <p>Your card won&apos;t be charged, and the expert will be told.</p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={pending === "cancel-late"}
+        title={`Cancel and pay $${price}?`}
+        confirmLabel={`Cancel and pay $${price}`}
+        cancelLabel="Keep it"
+        tone="danger"
+        busy={busy}
+        onConfirm={proceed}
+        onCancel={() => setPending(null)}
+      >
+        <p>
+          It&apos;s less than 24 hours before the start, so cancelling now charges your card{" "}
+          <strong className="text-ink">${price}</strong>. This is the late-cancellation charge you
+          agreed to when booking.
+        </p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={pending === "new-time"}
+        title="Request a different time?"
+        confirmLabel="Cancel and choose a new time"
+        cancelLabel="Keep it"
+        busy={busy}
+        onConfirm={proceed}
+        onCancel={() => setPending(null)}
+      >
+        <p>
+          This cancels the current booking for free, and your card won&apos;t be charged. You&apos;ll
+          then choose new times and the expert will confirm one.
+        </p>
+      </ConfirmDialog>
     </div>
   )
 }
