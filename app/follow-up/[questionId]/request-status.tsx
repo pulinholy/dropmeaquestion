@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { formatSlot } from "@/lib/follow-up-rules"
+import { formatPrice, formatSlot } from "@/lib/follow-up-rules"
 
 const POLL_MS = 1500
 const MAX_ATTEMPTS = 40
@@ -22,6 +22,7 @@ export default function RequestStatus({
   const [state, setState] = useState<State>("pending")
   const [slots, setSlots] = useState<string[]>([])
   const [timezone, setTimezone] = useState<string | null>(null)
+  const [priceCents, setPriceCents] = useState<number | null>(null)
   const attempts = useRef(0)
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function RequestStatus({
             setSlots(data.proposedSlots.filter((s: unknown): s is string => typeof s === "string"))
           }
           setTimezone(typeof data.timezone === "string" ? data.timezone : null)
+          setPriceCents(typeof data.priceCents === "number" ? data.priceCents : null)
           setState(data.state)
           return
         }
@@ -72,7 +74,14 @@ export default function RequestStatus({
         <h1 className="font-display text-3xl text-ink">Your conversation request has been sent</h1>
         <p className="mt-3 text-ink-soft">
           {expertFirstName} has 24 hours to confirm one of your proposed times. We&apos;ll email
-          you when it&apos;s confirmed. Your card is held, not charged.
+          you when it&apos;s confirmed. If {expertFirstName} can&apos;t make any of them, we&apos;ll
+          let you know and release the hold.
+        </p>
+        <p className="mt-3 text-ink-soft">
+          {priceCents
+            ? `Your card has a temporary $${formatPrice(priceCents)} hold.`
+            : "Your card has a temporary hold."}{" "}
+          You&apos;re only charged after the conversation takes place.
         </p>
         {slots.length > 0 && (
           <div className="mt-6 rounded-lg border border-line bg-white p-4 text-left">
@@ -87,7 +96,7 @@ export default function RequestStatus({
           </div>
         )}
         <p className="mt-4 text-xs text-ink-soft">
-          We&apos;ve also emailed you these details, with a link to your private request page.
+          Keep the email we just sent you: it has the link to your private request page.
         </p>
       </div>
     )

@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
   const { data: call, error } = await supabaseAdmin
     .from('follow_up_calls')
-    .select('status, released_at, proposed_slots, asker_timezone')
+    .select('status, released_at, proposed_slots, asker_timezone, price_cents')
     .eq('question_id', questionId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -47,5 +47,6 @@ export async function GET(request: Request) {
       ? (call.proposed_slots as unknown[]).filter((s): s is string => typeof s === 'string')
       : [],
     timezone: typeof call.asker_timezone === 'string' ? call.asker_timezone : null,
+    priceCents: typeof call.price_cents === 'number' ? call.price_cents : null,
   })
 }

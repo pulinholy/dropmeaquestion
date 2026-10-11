@@ -84,7 +84,8 @@ export async function sendFollowUpRequestedEmails({
     <p style="margin:0 0 16px;">Your request for a 15-minute conversation with ${name} has been sent.</p>
     <p style="margin:0 0 8px;">The times you proposed:</p>
     <ul style="margin:0 0 16px; padding-left:20px;">${times}</ul>
-    <p style="margin:0 0 16px;">${name} has 24 hours to confirm one of your proposed times. You&rsquo;ll get an email when it&rsquo;s confirmed. Your card is held, not charged.</p>
+    <p style="margin:0 0 12px;">${name} has 24 hours to confirm one of your proposed times. You&rsquo;ll get an email when it&rsquo;s confirmed. If ${name} can&rsquo;t make any of them, we&rsquo;ll let you know and release the hold.</p>
+    <p style="margin:0 0 16px;">Your card has a temporary $${formatPrice(priceCents)} hold. You&rsquo;re only charged after the conversation takes place.</p>
     ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'View your request &rarr;')}
     <p style="margin:16px 0 4px; font-size:13px; font-weight:bold; color:#17243a;">How it works</p>
     <ul style="margin:0 0 16px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(followUpPolicyLines(videoMode()))}</ul>

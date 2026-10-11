@@ -311,7 +311,7 @@ export default function QuestionsByStatusPage() {
                         </span>
                         <span className="mt-1 block text-xs text-ink-soft">
                           They&apos;ll receive an invitation with your answer and can request a
-                          conversation for ${formatPrice(followUpPriceCents)}.
+                          conversation at your set price of ${formatPrice(followUpPriceCents)}.
                         </span>
                       </span>
                     </label>

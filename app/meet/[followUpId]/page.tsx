@@ -143,7 +143,12 @@ export default async function MeetPage({
           <p className="mt-3 text-ink-soft">
             {expertFirstName} hasn&apos;t confirmed a time yet
             {call.confirm_by ? ` and has until ${formatSlot(call.confirm_by, call.asker_timezone)}` : ""}
-            . We&apos;ll email you when it&apos;s confirmed. Your card is held, not charged.
+            . We&apos;ll email you when it&apos;s confirmed. If {expertFirstName} can&apos;t make any of
+            the times, we&apos;ll let you know and release the hold.
+          </p>
+          <p className="mt-3 text-ink-soft">
+            Your card has a temporary ${formatPrice(call.price_cents)} hold. You&apos;re only charged
+            after the conversation takes place.
           </p>
           {proposed.length > 0 && (
             <div className="mt-6 rounded-lg border border-line bg-white p-4 text-left">
