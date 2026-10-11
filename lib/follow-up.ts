@@ -1,6 +1,7 @@
 import { supabaseAdmin } from './supabase-admin'
 import { logError } from './log-error'
 import { FOLLOW_UP_OFFER_DAYS } from './follow-up-rules'
+import { videoAvailable } from './video/config'
 
 // Re-exported so server code can keep importing everything from one place.
 export * from './follow-up-rules'
@@ -88,6 +89,10 @@ export async function getFollowUpOffer(
     allowExpired?: boolean
   } = {}
 ): Promise<FollowUpOffer> {
+  // Conversations only take place in DMQ rooms, so without the video
+  // provider's keys (or with the emergency stop on) nothing is offered.
+  if (!videoAvailable()) return { ok: false, reason: 'not_offered' }
+
   try {
     const { data: question } = await supabaseAdmin
       .from('questions')

@@ -1,8 +1,10 @@
+import Link from "next/link"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { formatPrice, formatResponseWindow } from "@/lib/format"
+import { videoAvailable } from "@/lib/video/config"
 import {
   TagIcon,
   LinkIcon,
@@ -23,6 +25,7 @@ import {
   UsersIcon,
   BarChartIcon,
   StarIcon,
+  VideoIcon,
 } from "@/components/icons"
 
 // The hero card mirrors a live demo profile -- never statically cache this
@@ -69,6 +72,30 @@ const howItWorks = [
   },
 ]
 
+const conversationPoints = [
+  {
+    icon: TagIcon,
+    title: "You set the price",
+    body: "Choose what a conversation costs. Turn it off for any answer you'd rather not offer it on.",
+    iconBg: "bg-postal-red/10",
+    iconText: "text-postal-red",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: "Paid when it happens",
+    body: "Their card is held when they book and charged after the conversation. You're paid once it takes place.",
+    iconBg: "bg-green-500/10",
+    iconText: "text-green-700",
+  },
+  {
+    icon: LockIcon,
+    title: "Private by default",
+    body: "Your email stays private. Conversations take place on Drop Me A Question and aren't recorded.",
+    iconBg: "bg-blue-500/10",
+    iconText: "text-blue-600",
+  },
+]
+
 const whoThisIsFor = [
   { label: "Consultants", icon: BriefcaseIcon, iconBg: "bg-blue-500/10", iconText: "text-blue-600" },
   { label: "Creators", icon: DocumentIcon, iconBg: "bg-postal-red/10", iconText: "text-postal-red" },
@@ -108,6 +135,7 @@ export default async function Home() {
   let demoPrice: string | null = null
   let demoResponseWindow: string | null = null
   let demoTopics: string[] = []
+  let demoFollowUpPrice: string | null = null
 
   if (demoProfile) {
     const { data: expert } = await supabaseAdmin
@@ -129,6 +157,21 @@ export default async function Home() {
       .order("sort_order", { ascending: true })
 
     demoTopics = topicsData?.map((t) => t.name) ?? []
+
+    // A separate read, so the page still works if these columns are missing.
+    const { data: followUp } = await supabaseAdmin
+      .from("experts")
+      .select("follow_up_allowed, follow_up_enabled, follow_up_price_cents")
+      .eq("id", demoProfile.id)
+      .maybeSingle()
+    if (
+      videoAvailable() &&
+      followUp?.follow_up_allowed &&
+      followUp.follow_up_enabled &&
+      followUp.follow_up_price_cents
+    ) {
+      demoFollowUpPrice = formatPrice(followUp.follow_up_price_cents)
+    }
   }
 
   const hero = {
@@ -138,6 +181,7 @@ export default async function Home() {
     price: demoPrice ?? FALLBACK_HERO.price,
     responseWindow: demoResponseWindow ?? FALLBACK_HERO.responseWindow,
     avatarUrl: demoProfile?.avatar_url ?? null,
+    followUpPrice: demoFollowUpPrice,
     href: demoProfile ? `/${DEMO_USERNAME}` : "/register",
   }
 
@@ -255,6 +299,13 @@ export default async function Home() {
                   </span>
                 </div>
 
+                {hero.followUpPrice && (
+                  <p className="mt-3 flex items-center gap-1.5 text-sm text-ink-soft">
+                    <VideoIcon className="h-4 w-4 text-postal-red" />
+                    Follow-up conversation · 15 min · ${hero.followUpPrice}
+                  </p>
+                )}
+
                 <span className="mt-5 flex w-full items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper">
                   Ask a question — ${hero.price}
                 </span>
@@ -301,19 +352,35 @@ export default async function Home() {
             )}
           </ol>
 
-          <div className="mx-auto mt-6 flex max-w-xl flex-col items-center gap-1 rounded-lg border border-line bg-white px-5 py-3 text-center">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
-                <LockIcon className="h-3.5 w-3.5" />
-              </span>
-              <p className="text-sm font-semibold text-ink">
-                Your email stays private
+          <div className="mx-auto mt-6 grid max-w-3xl gap-4 sm:grid-cols-2">
+            <div className="flex flex-col items-center gap-1 rounded-lg border border-line bg-white px-5 py-3 text-center">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+                  <VideoIcon className="h-3.5 w-3.5" />
+                </span>
+                <p className="text-sm font-semibold text-ink">
+                  Optional: offer a 15-minute follow-up
+                </p>
+              </div>
+              <p className="text-sm text-ink-soft">
+                When you send an answer, you can invite the asker to book a
+                conversation with you, at a price you set.
               </p>
             </div>
-            <p className="text-sm text-ink-soft">
-              Askers never see your email address. Questions and answers are
-              handled through Drop Me A Question.
-            </p>
+            <div className="flex flex-col items-center gap-1 rounded-lg border border-line bg-white px-5 py-3 text-center">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+                  <LockIcon className="h-3.5 w-3.5" />
+                </span>
+                <p className="text-sm font-semibold text-ink">
+                  Your email stays private
+                </p>
+              </div>
+              <p className="text-sm text-ink-soft">
+                Askers never see your email address. Questions and answers are
+                handled through Drop Me A Question.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -372,6 +439,52 @@ export default async function Home() {
               </span>
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Follow-up conversations */}
+      <section id="conversations" className="border-t border-line">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-3xl text-ink">
+              Some answers deserve{" "}
+              <span className="text-postal-red">a conversation</span>.
+            </h2>
+            <p className="mt-4 text-lg text-ink-soft">
+              Along with your answer, you can offer a 15-minute follow-up
+              conversation. The asker proposes times, you confirm one, and you
+              talk right on Drop Me A Question, in the browser, with nothing to
+              install and no meeting link to send.
+            </p>
+          </div>
+
+          <ul className="mt-10 grid gap-4 sm:grid-cols-3">
+            {conversationPoints.map(({ icon: Icon, title, body, iconBg, iconText }) => (
+              <li
+                key={title}
+                className="rounded-xl border border-line bg-white p-6 text-center"
+              >
+                <span
+                  className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full ${iconBg} ${iconText}`}
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                <p className="mt-4 font-display text-lg font-semibold text-ink">
+                  {title}
+                </p>
+                <p className="mt-2 text-sm text-ink-soft">{body}</p>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-6 text-center text-sm text-ink-soft">
+            <Link
+              href="/conversation-policy"
+              className="font-medium text-ink underline underline-offset-2 hover:text-postal-blue"
+            >
+              How conversations work
+            </Link>
+          </p>
         </div>
       </section>
 

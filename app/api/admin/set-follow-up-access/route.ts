@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireAdmin } from '@/lib/require-admin'
 import { logError } from '@/lib/log-error'
 
-// Private beta: switches follow-up conversations on or off for one expert.
+// Switches follow-up conversations on or off for one expert (on by default).
 // Turning access off hides the setting and stops new offers; conversations
 // already booked carry on as normal.
 export async function POST(request: Request) {
