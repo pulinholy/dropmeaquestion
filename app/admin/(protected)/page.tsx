@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import ConfirmDialog from "@/components/ConfirmDialog"
 import { supabase } from "@/lib/supabase"
 
 type ExpertRow = {
@@ -28,6 +29,13 @@ export default function AdminExpertsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  // A failed admin action, shown on the page instead of in a browser alert.
+  const [actionError, setActionError] = useState("")
+  // An action waiting for the admin's confirmation, in DMQ's own dialog.
+  const [pending, setPending] = useState<{
+    kind: "deactivate" | "follow-up"
+    row: ExpertRow
+  } | null>(null)
 
   useEffect(() => {
     load()
@@ -56,13 +64,6 @@ export default function AdminExpertsPage() {
   async function toggleDeactivated(row: ExpertRow) {
     const deactivate = !row.deactivatedAt
 
-    const confirmed = window.confirm(
-      deactivate
-        ? `Deactivate ${row.fullName}? This blocks them from logging in and hides their public page entirely. This is stronger than pausing -- use it for abuse/ToS situations, not routine availability.`
-        : `Reactivate ${row.fullName}? They'll be able to log in again, but their page stays paused until they (or you) turn it back on.`
-    )
-    if (!confirmed) return
-
     setUpdatingId(row.id)
 
     const { data: sessionData } = await supabase.auth.getSession()
@@ -82,7 +83,7 @@ export default function AdminExpertsPage() {
     const data = await res.json()
 
     if (data.error) {
-      alert(data.error)
+      setActionError(data.error)
     } else {
       await load()
     }
@@ -91,13 +92,6 @@ export default function AdminExpertsPage() {
 
   async function toggleFollowUpAccess(row: ExpertRow) {
     const allowed = !row.followUpAllowed
-
-    const confirmed = window.confirm(
-      allowed
-        ? `Allow follow-up conversations for ${row.fullName}? They'll see the setting on their Pricing page and can start offering paid 15-minute conversations.`
-        : `Turn off follow-up conversations for ${row.fullName}? New offers stop. Conversations already booked carry on.`
-    )
-    if (!confirmed) return
 
     setUpdatingId(row.id)
 
@@ -118,7 +112,7 @@ export default function AdminExpertsPage() {
     const data = await res.json()
 
     if (data.error) {
-      alert(data.error)
+      setActionError(data.error)
     } else {
       await load()
     }
@@ -145,7 +139,7 @@ export default function AdminExpertsPage() {
     const data = await res.json()
 
     if (data.error) {
-      alert(data.error)
+      setActionError(data.error)
     } else {
       // New tab -- keeps this admin session intact in the current one.
       window.open(data.actionLink, "_blank", "noopener")
@@ -166,8 +160,76 @@ export default function AdminExpertsPage() {
   if (loading) return <p className="text-ink-soft">Loading...</p>
   if (error) return <p className="text-postal-red">{error}</p>
 
+  const pendingRow = pending?.row
+  const pendingDeactivate = pending?.kind === "deactivate"
+  const pendingTurningOn = pending?.kind === "follow-up" && pendingRow && !pendingRow.followUpAllowed
+  const pendingReactivate = pendingDeactivate && pendingRow && Boolean(pendingRow.deactivatedAt)
+
   return (
     <section>
+      <ConfirmDialog
+        open={pending !== null}
+        title={
+          pending?.kind === "deactivate"
+            ? pendingReactivate
+              ? `Reactivate ${pendingRow?.fullName}?`
+              : `Deactivate ${pendingRow?.fullName}?`
+            : pendingTurningOn
+              ? `Allow follow-ups for ${pendingRow?.fullName}?`
+              : `Turn off follow-ups for ${pendingRow?.fullName}?`
+        }
+        confirmLabel={
+          pending?.kind === "deactivate"
+            ? pendingReactivate
+              ? "Reactivate"
+              : "Deactivate"
+            : pendingTurningOn
+              ? "Allow follow-ups"
+              : "Turn off follow-ups"
+        }
+        cancelLabel="Cancel"
+        tone={pending?.kind === "deactivate" && !pendingReactivate ? "danger" : "default"}
+        onConfirm={() => {
+          const current = pending
+          setPending(null)
+          if (!current) return
+          if (current.kind === "deactivate") toggleDeactivated(current.row)
+          else toggleFollowUpAccess(current.row)
+        }}
+        onCancel={() => setPending(null)}
+      >
+        {pending?.kind === "deactivate" ? (
+          pendingReactivate ? (
+            <p>
+              They&apos;ll be able to log in again, but their page stays paused until they (or you)
+              turn it back on.
+            </p>
+          ) : (
+            <p>
+              This blocks them from logging in and hides their public page entirely. It&apos;s
+              stronger than pausing; use it for abuse or terms situations, not routine
+              availability.
+            </p>
+          )
+        ) : pendingTurningOn ? (
+          <p>
+            They&apos;ll see the setting on their Pricing page and can start offering paid
+            15-minute conversations.
+          </p>
+        ) : (
+          <p>New offers stop. Conversations already booked carry on.</p>
+        )}
+      </ConfirmDialog>
+
+      {actionError && (
+        <p
+          role="alert"
+          className="mb-4 rounded-lg border border-postal-red/30 bg-postal-red/10 px-4 py-3 text-sm text-postal-red"
+        >
+          {actionError}
+        </p>
+      )}
+
       <h1 className="font-display text-2xl text-ink">Experts</h1>
       <p className="mt-1 text-sm text-ink-soft">
         {rows.length} expert{rows.length === 1 ? "" : "s"} total.
@@ -309,7 +371,7 @@ export default function AdminExpertsPage() {
                     {!r.deactivatedAt && (
                       <button
                         type="button"
-                        onClick={() => toggleFollowUpAccess(r)}
+                        onClick={() => setPending({ kind: "follow-up", row: r })}
                         disabled={updatingId === r.id}
                         className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink hover:bg-line/40 disabled:opacity-50"
                       >
@@ -318,7 +380,7 @@ export default function AdminExpertsPage() {
                     )}
                   <button
                     type="button"
-                    onClick={() => toggleDeactivated(r)}
+                    onClick={() => setPending({ kind: "deactivate", row: r })}
                     disabled={updatingId === r.id}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium disabled:opacity-50 ${
                       r.deactivatedAt

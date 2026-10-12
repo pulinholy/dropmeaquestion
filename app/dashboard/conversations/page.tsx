@@ -12,6 +12,7 @@ import {
 import { FOLLOW_UP_DURATION_MINUTES } from "@/lib/follow-up-rules"
 import ConversationRoom from "@/components/ConversationRoom"
 import ReportProblemForm from "@/components/ReportProblemForm"
+import ConfirmDialog from "@/components/ConfirmDialog"
 
 type Loaded = {
   available: boolean
@@ -66,6 +67,11 @@ export default function ConversationsPage() {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [loadError, setLoadError] = useState("")
   const [busyId, setBusyId] = useState<string | null>(null)
+  // A confirmation waiting for the expert's answer, in DMQ's own dialog.
+  const [confirming, setConfirming] = useState<{
+    kind: "cancel" | "complete" | "no-show"
+    id: string
+  } | null>(null)
   const [joiningId, setJoiningId] = useState<string | null>(null)
   // A conversation held on DMQ, while the expert is in it.
   const [room, setRoom] = useState<{
@@ -251,29 +257,9 @@ export default function ConversationsPage() {
         busy={busyId === call.id}
         error={errors[call.id] ?? ""}
         onJoin={() => join(call)}
-        onCancel={() => {
-          if (
-            window.confirm(
-              "Cancel this conversation? The asker won't be charged."
-            )
-          ) {
-            act(call.id, "/api/follow-up/cancel-expert", { id: call.id })
-          }
-        }}
-        onComplete={() => {
-          if (window.confirm("Mark this conversation as completed? The asker is asked to confirm. You're paid when they do, or automatically about a day after if no problem is reported.")) {
-            act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "completed" })
-          }
-        }}
-        onAskerNoShow={() => {
-          if (
-            window.confirm(
-              "The asker never opened the join page. Mark them as not joining? They're asked to confirm, and under the cancellation policy they're charged in full about a day later unless they report a problem. You're paid when they are."
-            )
-          ) {
-            act(call.id, "/api/follow-up/complete", { id: call.id, outcome: "asker_no_show" })
-          }
-        }}
+        onCancel={() => setConfirming({ kind: "cancel", id: call.id })}
+        onComplete={() => setConfirming({ kind: "complete", id: call.id })}
+        onAskerNoShow={() => setConfirming({ kind: "no-show", id: call.id })}
         onReschedule={() => rescheduleLive(call.id)}
         onReport={(reason, note) =>
           act(call.id, "/api/follow-up/report-problem", { id: call.id, reason, note })
@@ -320,8 +306,58 @@ export default function ConversationsPage() {
     )
   }
 
+  function proceedConfirming() {
+    if (!confirming) return
+    const { kind, id } = confirming
+    setConfirming(null)
+    if (kind === "cancel") act(id, "/api/follow-up/cancel-expert", { id })
+    else if (kind === "complete") act(id, "/api/follow-up/complete", { id, outcome: "completed" })
+    else act(id, "/api/follow-up/complete", { id, outcome: "asker_no_show" })
+  }
+
   return (
     <section>
+      <ConfirmDialog
+        open={confirming?.kind === "cancel"}
+        title="Cancel this conversation?"
+        confirmLabel="Cancel conversation"
+        cancelLabel="Keep it"
+        onConfirm={proceedConfirming}
+        onCancel={() => setConfirming(null)}
+      >
+        <p>The asker won&apos;t be charged, and they&apos;ll be told it was cancelled.</p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirming?.kind === "complete"}
+        title="Mark this conversation as completed?"
+        confirmLabel="Mark completed"
+        cancelLabel="Not yet"
+        onConfirm={proceedConfirming}
+        onCancel={() => setConfirming(null)}
+      >
+        <p>The asker is asked to confirm it took place.</p>
+        <p>
+          You&apos;re paid when they do, or automatically about a day after if no problem is
+          reported.
+        </p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirming?.kind === "no-show"}
+        title="The asker didn't join?"
+        confirmLabel="Mark as not joining"
+        cancelLabel="Not yet"
+        onConfirm={proceedConfirming}
+        onCancel={() => setConfirming(null)}
+      >
+        <p>The asker never opened the join page. They&apos;re asked to confirm.</p>
+        <p>
+          Under the cancellation policy they&apos;re charged in full about a day later unless
+          they report a problem. You&apos;re paid when they are.
+        </p>
+      </ConfirmDialog>
+
       <h1 className="font-display text-2xl text-ink">Conversations</h1>
       <p className="mt-1 text-sm text-ink-soft">
         Optional 15-minute follow-ups that askers request after you&apos;ve

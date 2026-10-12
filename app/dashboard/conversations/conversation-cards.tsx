@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import ConfirmDialog from "@/components/ConfirmDialog"
 import {
   ALLOWED_MEETING_SERVICES_TEXT,
   FOLLOW_UP_NO_SHOW_AFTER_MINUTES,
@@ -68,6 +69,7 @@ export function RequestCard({
 }) {
   const [slot, setSlot] = useState(call.proposedSlots[0] ?? "")
   const [link, setLink] = useState("")
+  const [declining, setDeclining] = useState(false)
   const onDmq = videoMode === "dmq"
 
   return (
@@ -159,20 +161,26 @@ export function RequestCard({
         <button
           type="button"
           disabled={busy}
-          onClick={() => {
-            if (
-              window.confirm(
-                "Decline all of these times? The asker isn't charged and is invited to propose new times."
-              )
-            ) {
-              onDecline()
-            }
-          }}
+          onClick={() => setDeclining(true)}
           className="text-sm font-medium text-ink-soft hover:text-ink disabled:opacity-50"
         >
           None of these work
         </button>
       </div>
+
+      <ConfirmDialog
+        open={declining}
+        title="Decline these times?"
+        confirmLabel="Decline all times"
+        cancelLabel="Keep request"
+        onConfirm={() => {
+          setDeclining(false)
+          onDecline()
+        }}
+        onCancel={() => setDeclining(false)}
+      >
+        <p>The asker isn&apos;t charged and is invited to propose new times.</p>
+      </ConfirmDialog>
     </div>
   )
 }

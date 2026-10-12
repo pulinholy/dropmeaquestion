@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import ConfirmDialog from "@/components/ConfirmDialog"
 import { supabase } from "@/lib/supabase"
 import { problemReasonLabel } from "@/lib/follow-up-rules"
 import { formatDuration } from "@/lib/video/connection-summary"
@@ -124,6 +125,11 @@ export default function AdminConversationsPage() {
   const [disputes, setDisputes] = useState<Dispute[] | null>(null)
   const [error, setError] = useState("")
   const [busyId, setBusyId] = useState<string | null>(null)
+  // A resolution waiting for confirmation, in DMQ's own dialog.
+  const [resolving, setResolving] = useState<{
+    id: string
+    resolution: (typeof RESOLUTIONS)[number]
+  } | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
@@ -190,6 +196,21 @@ export default function AdminConversationsPage() {
 
   return (
     <section>
+      <ConfirmDialog
+        open={resolving !== null}
+        title={resolving?.resolution.label ?? ""}
+        confirmLabel="Confirm decision"
+        cancelLabel="Not yet"
+        onConfirm={() => {
+          const current = resolving
+          setResolving(null)
+          if (current) resolve(current.id, current.resolution.key)
+        }}
+        onCancel={() => setResolving(null)}
+      >
+        <p>{resolving?.resolution.confirm}</p>
+      </ConfirmDialog>
+
       <h1 className="font-display text-2xl text-ink">Conversations needing a decision</h1>
       <p className="mt-1 text-sm text-ink-soft">
         Follow-up conversations held for review. If nobody decides, the card
@@ -368,9 +389,7 @@ export default function AdminConversationsPage() {
                   key={r.key}
                   type="button"
                   disabled={busyId === d.id}
-                  onClick={() => {
-                    if (window.confirm(r.confirm)) resolve(d.id, r.key)
-                  }}
+                  onClick={() => setResolving({ id: d.id, resolution: r })}
                   className={`rounded-full px-4 py-1.5 text-xs font-medium disabled:opacity-50 ${r.style}`}
                 >
                   {r.label}
