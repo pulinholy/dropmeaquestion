@@ -50,6 +50,7 @@ export async function POST(request: Request) {
       await confirmQuestionPayment({
         questionId,
         paymentIntentId: session.payment_intent,
+        authorizedAt: new Date(event.created * 1000),
       })
     }
   }

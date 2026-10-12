@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { captureQuestionPayment } from '@/lib/stripe-capture'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { logError } from '@/lib/log-error'
@@ -51,11 +51,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No payment intent on this question' }, { status: 400 })
   }
 
-  try {
-    await stripe.paymentIntents.capture(question.stripe_payment_intent_id)
-    return NextResponse.json({ success: true })
-  } catch (err) {
-    await logError('stripe/capture-payment', err, { questionId, expertId: user.id })
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 })
+  // Safe to repeat: a payment that was already taken counts as done, and brief
+  // trouble reaching Stripe is retried. If it still fails, the nightly job tries
+  // again while the hold is certainly valid.
+  const result = await captureQuestionPayment(question.stripe_payment_intent_id)
+  if (!result.ok) {
+    await logError('stripe/capture-payment', new Error(result.detail), {
+      questionId,
+      expertId: user.id,
+      reason: result.reason,
+    })
+    return NextResponse.json(
+      { error: 'The payment could not be completed yet.', retrying: result.reason === 'stripe_error' },
+      { status: 502 }
+    )
   }
+  return NextResponse.json({ success: true })
 }

@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { logError } from '@/lib/log-error'
 import { confirmQuestionPayment } from '@/lib/confirm-question-payment'
 import { maintainFollowUps } from '@/lib/follow-up-maintenance'
+import { captureAnsweredQuestions } from '@/lib/stripe-capture'
 
 // This runs once/day (Vercel Hobby plan caps cron jobs at daily) -- it's a
 // backstop for the rare webhook delivery that never fired, not a fast-follow
@@ -61,12 +62,20 @@ export async function GET(request: Request) {
       )
 
       if (session.status === 'complete') {
+        const paymentIntentId =
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id
+        // The response time runs from when the card was authorized.
+        let authorizedAt: Date | undefined
+        if (paymentIntentId) {
+          const intent = await stripe.paymentIntents.retrieve(paymentIntentId)
+          authorizedAt = new Date(intent.created * 1000)
+        }
         await confirmQuestionPayment({
           questionId: question.id,
-          paymentIntentId:
-            typeof session.payment_intent === 'string'
-              ? session.payment_intent
-              : session.payment_intent?.id,
+          paymentIntentId,
+          authorizedAt,
         })
         results.push({ id: question.id, status: 'promoted_to_pending' })
         continue
@@ -101,5 +110,14 @@ export async function GET(request: Request) {
     await logError('cron/reconcile-payments:follow-ups', err)
   }
 
-  return NextResponse.json({ checked: stuck?.length ?? 0, results, followUps })
+  // Safety net: take the payment for any answered question whose capture
+  // didn't go through at the time. Isolated like the step above.
+  let answeredCaptures = null
+  try {
+    answeredCaptures = await captureAnsweredQuestions()
+  } catch (err) {
+    await logError('cron/reconcile-payments:capture-answered', err)
+  }
+
+  return NextResponse.json({ checked: stuck?.length ?? 0, results, followUps, answeredCaptures })
 }

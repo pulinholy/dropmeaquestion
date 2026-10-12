@@ -84,6 +84,9 @@ export default function QuestionsByStatusPage() {
   const [followUpPriceCents, setFollowUpPriceCents] = useState<number | null>(null)
   const [offerFollowUp, setOfferFollowUp] = useState(true)
   const [answerError, setAnswerError] = useState<{ id: string; message: string } | null>(null)
+  // Shown when an answer was saved and sent but its payment didn't go through
+  // at once. It is retried automatically, so this is only a heads-up.
+  const [paymentNotice, setPaymentNotice] = useState("")
 
   useEffect(() => {
     loadQuestions()
@@ -235,11 +238,18 @@ export default function QuestionsByStatusPage() {
       return
     }
 
-    await fetch("/api/stripe/capture-payment", {
+    const captureRes = await fetch("/api/stripe/capture-payment", {
       method: "POST",
       headers: authHeaders,
       body: JSON.stringify({ questionId }),
-    })
+    }).catch(() => null)
+    if (!captureRes || !captureRes.ok) {
+      setPaymentNotice(
+        "Your answer was sent, but its payment didn't go through straight away. We'll keep trying automatically, and you don't need to do anything."
+      )
+    } else {
+      setPaymentNotice("")
+    }
 
     await fetch("/api/send-answer-email", {
       method: "POST",
@@ -261,6 +271,11 @@ export default function QuestionsByStatusPage() {
   return (
     <section>
       <h1 className="font-display text-2xl text-ink">Questions</h1>
+      {paymentNotice && (
+        <p role="status" className="mt-3 rounded-lg border border-line bg-card px-4 py-3 text-sm text-ink-soft">
+          {paymentNotice}
+        </p>
+      )}
       <div className="mt-4 flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {statusTabs.map((tab) => {
           const active = tab.status === status

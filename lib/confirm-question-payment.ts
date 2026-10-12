@@ -9,9 +9,14 @@ import { videoAvailable } from './video/config'
 export async function confirmQuestionPayment({
   questionId,
   paymentIntentId,
+  authorizedAt,
 }: {
   questionId: string
   paymentIntentId: string | null | undefined
+  // When the card was authorized. The response time runs from then, not from
+  // whenever this happens to run, so a late webhook can't stretch the time the
+  // card hold has to survive.
+  authorizedAt?: Date
 }) {
   const { data: question } = await supabaseAdmin
     .from('questions')
@@ -32,8 +37,8 @@ export async function confirmQuestionPayment({
     .eq('id', question.expert_id)
     .maybeSingle()
 
-  const deadline = new Date()
-  deadline.setHours(deadline.getHours() + (expert?.response_window_hours ?? 24))
+  const windowMs = (expert?.response_window_hours ?? 24) * 3600 * 1000
+  const deadline = new Date((authorizedAt ?? new Date()).getTime() + windowMs)
 
   // The status guard makes this idempotent: a second delivery of the same
   // Stripe event, or a reconciliation pass after the webhook already ran,
@@ -60,6 +65,12 @@ export async function confirmQuestionPayment({
   }
 
   if (expert?.email_notifications === false) {
+    return
+  }
+
+  // Already past its response time (a very late confirmation): there is
+  // nothing to answer. The nightly job releases the card and tells the asker.
+  if (deadline.getTime() <= Date.now()) {
     return
   }
 
