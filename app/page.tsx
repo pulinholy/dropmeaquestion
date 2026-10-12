@@ -359,12 +359,12 @@ export default async function Home() {
                   <VideoIcon className="h-3.5 w-3.5" />
                 </span>
                 <p className="text-sm font-semibold text-ink">
-                  Optional: offer a 15-minute follow-up
+                  Optional: Offer 15-minute conversations
                 </p>
               </div>
               <p className="text-sm text-ink-soft">
-                When you send an answer, you can invite the asker to book a
-                conversation with you, at a price you set.
+                After answering a question, invite the asker to a private, paid
+                15-minute conversation at a price you set.
               </p>
             </div>
             <div className="flex flex-col items-center gap-1 rounded-lg border border-line bg-white px-5 py-3 text-center">
@@ -373,12 +373,12 @@ export default async function Home() {
                   <LockIcon className="h-3.5 w-3.5" />
                 </span>
                 <p className="text-sm font-semibold text-ink">
-                  Your email stays private
+                  Your contact information stays private
                 </p>
               </div>
               <p className="text-sm text-ink-soft">
-                Askers never see your email address. Questions and answers are
-                handled through Drop Me A Question.
+                Your email isn&apos;t shared with askers. Questions and answers are
+                delivered through Drop Me A Question.
               </p>
             </div>
           </div>
