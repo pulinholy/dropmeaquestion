@@ -42,7 +42,8 @@ export default function PrivacyPage() {
             <p className="mt-2">
               Your email and password (used to create your account), your
               full name, username, profile photo, headline, and bio, and the
-              price and response time you set. If you connect payouts, Stripe
+              price and response time you set, and whether you offer follow-up
+              conversations and at what price. If you connect payouts, Stripe
               collects and verifies your identity, bank account, and tax
               information directly — DMQ only stores your Stripe account ID,
               not your bank details.
@@ -54,6 +55,19 @@ export default function PrivacyPage() {
               single image or PDF attachment. Your payment is handled
               entirely by Stripe — DMQ never receives or stores your card
               number.
+            </p>
+            <p className="mt-3 font-medium text-ink">
+              If you book or hold a follow-up conversation
+            </p>
+            <p className="mt-2">
+              The start times proposed and confirmed, the time zone of the
+              Asker&apos;s browser, the price, and the status of the booking.
+              When the conversation takes place, we keep records of when each
+              participant joined and left, and of any problem reported and
+              the notes sent with it. Askers appear in the call as
+              &quot;Guest&quot; and Experts under their profile name. The
+              conversation&apos;s audio and video are not recorded or stored
+              by DMQ.
             </p>
             <p className="mt-3 font-medium text-ink">Automatically</p>
             <p className="mt-2">
@@ -74,6 +88,7 @@ export default function PrivacyPage() {
               <li>To operate the core service — matching questions to Experts, processing payment, and delivering answers by email.</li>
               <li>To run the payment and payout flow through Stripe, including authorizing, capturing, or releasing a charge depending on whether a question is answered, declined, or expires.</li>
               <li>To send you service emails — an answer to your question, a notice that your payment was released because a question expired, or account-related messages if you&apos;re an Expert.</li>
+              <li>To hold follow-up conversations, charge or release the payment depending on what happened, and review any problem that is reported, using the join and leave records and reports described above.</li>
               <li>To keep the Service secure and prevent abuse.</li>
             </ul>
             <p className="mt-3">
@@ -96,6 +111,7 @@ export default function PrivacyPage() {
               <li><strong className="text-ink">Stripe</strong> — payment processing and Expert payouts.</li>
               <li><strong className="text-ink">Supabase</strong> — our database, authentication, and file storage (profile photos and question attachments).</li>
               <li><strong className="text-ink">Resend</strong> — delivering answer and notification emails.</li>
+              <li><strong className="text-ink">Daily</strong> — carrying the audio (and camera, if turned on) of follow-up conversations in real time, and keeping technical connection records of each session.</li>
               <li><strong className="text-ink">Vercel</strong> — hosting the website.</li>
             </ul>
             <p className="mt-3">
@@ -123,7 +139,9 @@ export default function PrivacyPage() {
               or personal information deleted, contact us at the address
               below and we&apos;ll do so, except where we&apos;re required to
               retain records (for example, payment records) for legal or
-              accounting purposes.
+              accounting purposes. We keep conversation booking and
+              connection records for as long as we need them to handle
+              payment disputes and to meet legal and accounting obligations.
             </p>
           </section>
 

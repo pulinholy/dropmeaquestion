@@ -44,7 +44,7 @@ export const FOLLOW_UP_PRIVACY_LINES = [
 
 export type FollowUpVideoMode = 'dmq' | 'external'
 
-export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v8-dmq'
+export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v9-dmq'
 
 export function followUpPolicyVersion(mode: FollowUpVideoMode): string {
   return mode === 'dmq' ? FOLLOW_UP_POLICY_VERSION_DMQ : FOLLOW_UP_POLICY_VERSION
@@ -67,7 +67,7 @@ export function followUpPrivacyLines(mode: FollowUpVideoMode): string[] {
   if (mode !== 'dmq') return FOLLOW_UP_PRIVACY_LINES
   return [
     'Your email address isn’t shared by Drop Me A Question.',
-    'The conversation takes place on Drop Me A Question as an audio call with an optional camera. You appear as “Guest”, and it isn’t recorded. Our video provider handles the call. If the expert chooses their own video meeting link instead, you’ll be told, and your meeting profile’s display name may be visible.',
+    'The conversation takes place on Drop Me A Question as an audio call with an optional camera. You appear as “Guest”, and it isn’t recorded. Our video provider carries the call.',
   ]
 }
 

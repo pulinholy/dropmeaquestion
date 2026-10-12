@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "Terms of Service — Drop Me A Question",
@@ -34,10 +35,10 @@ export default function TermsPage() {
             <p className="mt-3">
               There are two kinds of people who use DMQ, and these Terms
               apply to both: <strong className="text-ink">Experts</strong>{" "}
-              — people who create a page, set a price, and answer questions
-              — and{" "}
+              — people who create a page, set a price, and answer questions,
+              and who can also offer paid follow-up conversations — and{" "}
               <strong className="text-ink">Askers</strong> — people who pay
-              to ask an Expert a question. We refer to both together as
+              to ask an Expert a question, or to book a follow-up conversation. We refer to both together as
               &quot;users&quot; or &quot;you.&quot;
             </p>
           </section>
@@ -122,6 +123,79 @@ export default function TermsPage() {
             </p>
           </section>
 
+          <section id="conversations">
+            <h2 className="font-display text-xl text-ink">
+              Follow-up conversations
+            </h2>
+            <p className="mt-3">
+              An Expert can choose to offer Askers an optional, paid
+              15-minute conversation after answering a question. Experts
+              decide whether to offer it, can turn it off for any answer,
+              and set the price. A conversation takes place on DMQ, as an
+              audio call in the browser with an optional camera. It is
+              not recorded.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">Booking.</strong> An Asker can
+              request a conversation within 14 days of receiving the answer
+              by proposing up to three start times, each at least 24 hours
+              away. The Asker&apos;s card is authorized when the request is
+              made. The Expert has 24 hours to confirm one of the times or
+              decline. If the Expert declines or doesn&apos;t respond, the
+              authorization is released and the Asker is not charged.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">Payment.</strong> The Asker&apos;s
+              card is charged after the conversation takes place: when the
+              Asker confirms that it did, or automatically about a day after
+              it ends if no problem has been reported. DMQ keeps a platform
+              fee from each conversation payment and the remainder is paid
+              to the Expert through Stripe Connect.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">Cancellations and no-shows.</strong>{" "}
+              An Asker can cancel for free until 24 hours before the start.
+              Cancelling later, or not joining, is charged in full. If the
+              Expert cancels or doesn&apos;t join, the Asker is not
+              charged.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">Technical problems.</strong> If a
+              technical problem prevents a conversation from taking place,
+              either participant may request a new time at no additional
+              charge, subject to the rules in our{" "}
+              <Link
+                href="/conversation-policy"
+                className="text-postal-red underline decoration-line underline-offset-4 hover:text-ink"
+              >
+                Conversation &amp; Cancellation Policy
+              </Link>
+              . If a conversation has substantially taken place, the normal
+              completion and payment rules apply.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">Disputes and records.</strong> If
+              either participant reports a problem, DMQ holds the payment
+              and reviews what happened. To decide, we may use the records
+              we keep of the conversation, such as the booking details,
+              when each participant joined and left, and any report or note
+              they send us. We make these decisions in good faith, and
+              we may release or capture the payment as a result.
+              Disagreeing with the Expert&apos;s opinion or advice is not
+              grounds for a refund. An Asker who believes a charge was made
+              in error should contact us within 24 hours.
+            </p>
+            <p className="mt-3">
+              <strong className="text-ink">Conduct.</strong> Don&apos;t record
+              a conversation, or share a recording of one, without the
+              consent of everyone in it. Everything in the Acceptable use
+              section also applies to conversations. DMQ may end a
+              conversation or restrict an account that breaks these
+              rules. The Conversation &amp; Cancellation Policy forms part
+              of these Terms.
+            </p>
+          </section>
+
           <section>
             <h2 className="font-display text-xl text-ink">
               Answers are not professional advice
@@ -182,6 +256,11 @@ export default function TermsPage() {
                 Use the Service to send unsolicited advertising or spam to
                 Experts or Askers.
               </li>
+              <li>
+                Record or share a conversation without the consent of
+                everyone in it, or take a conversation or payment outside
+                DMQ to avoid its fees.
+              </li>
             </ul>
             <p className="mt-3">
               We may suspend or terminate accounts that violate these rules.
@@ -209,7 +288,7 @@ export default function TermsPage() {
             <p className="mt-3">
               DMQ relies on third-party providers to operate — including
               Stripe for payments, Supabase for account and data storage,
-              and Resend for email delivery. Your use of DMQ is also subject
+              Resend for email delivery, and Daily for audio conversations. Your use of DMQ is also subject
               to those providers&apos; own terms, and we aren&apos;t
               responsible for their performance or downtime.
             </p>

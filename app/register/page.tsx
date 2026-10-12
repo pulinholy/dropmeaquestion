@@ -13,6 +13,7 @@ import {
   DollarSignIcon,
   EyeIcon,
   EyeOffIcon,
+  VideoIcon,
 } from "@/components/icons"
 
 const MIN_PRICE = 5
@@ -523,6 +524,19 @@ export default function RegisterPage() {
               <p className="mt-1 text-xs text-ink-soft">
                 Let people know when they can expect your answer.
               </p>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <VideoIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-ink" />
+              <div>
+                <p className="text-base font-semibold text-ink">
+                  You can offer follow-up conversations, too
+                </p>
+                <p className="mt-1 text-sm text-ink-soft">
+                  After answering a question, invite the asker to a paid 15-minute conversation.
+                  You can enable this later from your dashboard.
+                </p>
+              </div>
             </div>
           </FormSection>
 
