@@ -11,7 +11,6 @@ import {
   LightningIcon,
   LockIcon,
   SparkleIcon,
-  VideoIcon,
 } from "@/components/icons"
 import { videoAvailable } from "@/lib/video/config"
 import { PUBLIC_SITE_URL } from "@/lib/site"
@@ -204,13 +203,6 @@ export default async function ExpertPage({
             <p className="mt-1 text-xs text-ink-soft/70">
               @{profile.username}
             </p>
-
-            {followUpPrice && (
-              <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-postal-red/10 px-3 py-1 text-xs font-medium text-ink">
-                <VideoIcon className="h-3.5 w-3.5 text-postal-red" />
-                Offers 15-minute conversations
-              </p>
-            )}
 
             {expert.bio && <ExpertBio bio={expert.bio} />}
 
