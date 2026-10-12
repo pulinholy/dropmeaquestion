@@ -355,12 +355,12 @@ export default async function Home() {
             )}
           </ol>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center gap-4 rounded-lg border border-line/70 bg-amber-50/60 px-5 py-3.5 sm:col-span-2 lg:col-span-2">
-              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center gap-3 rounded-lg border border-line/70 bg-amber-50/60 px-4 py-3.5 sm:col-span-2 sm:gap-4 sm:px-5 lg:col-span-2">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red sm:h-12 sm:w-12">
                 <VideoIcon className="h-6 w-6" />
               </span>
-              <span aria-hidden="true" className="h-12 w-px flex-shrink-0 bg-line" />
+              <span aria-hidden="true" className="hidden h-12 w-px flex-shrink-0 bg-line sm:block" />
               <div>
                 <p className="text-sm font-semibold text-ink">
                   Optional: Offer 15-minute conversations
@@ -371,18 +371,18 @@ export default async function Home() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4 rounded-lg border border-line/70 bg-amber-50/60 px-5 py-3.5 sm:col-span-2 lg:col-span-2">
-              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+            <div className="flex items-center gap-3 rounded-lg border border-line/70 bg-amber-50/60 px-4 py-3.5 sm:col-span-2 sm:gap-4 sm:px-5 lg:col-span-2">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700 sm:h-12 sm:w-12">
                 <LockIcon className="h-6 w-6" />
               </span>
-              <span aria-hidden="true" className="h-12 w-px flex-shrink-0 bg-line" />
+              <span aria-hidden="true" className="hidden h-12 w-px flex-shrink-0 bg-line sm:block" />
               <div>
                 <p className="text-sm font-semibold text-ink">
                   Your contact information stays private
                 </p>
                 <p className="mt-1 text-sm text-ink-soft">
-                  Your email isn&apos;t shared with askers. Questions and answers are
-                  delivered through Drop Me A Question.
+                  Your email isn&apos;t shared with askers. Questions, answers, and
+                  private conversations are handled through Drop Me A Question.
                 </p>
               </div>
             </div>
