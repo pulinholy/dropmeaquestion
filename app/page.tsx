@@ -547,37 +547,41 @@ export default async function Home() {
             <h2 className="mt-4 font-display text-2xl text-ink">
               Here to ask a question?
             </h2>
-            <p className="mt-2 text-ink-soft">
-              To ask someone a question, you&apos;ll need their Drop Me A
-              Question link.
+            <p className="mt-2 text-sm text-ink-soft">
+              You&apos;ll need a personal link from the expert you want to ask.
             </p>
 
             <div className="mt-6 space-y-3 text-left">
-              <div className="flex items-start gap-3 rounded-lg bg-green-500/10 p-4">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-500/15 text-green-700">
-                  <LinkIcon className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className="font-medium text-ink">
-                    Already have their link?
-                  </p>
-                  <p className="mt-0.5 text-sm text-ink-soft">
-                    Open it to ask your question directly.
-                  </p>
-                </div>
+              <div className="rounded-lg bg-green-500/10 p-4">
+                <p className="flex items-center gap-2 font-medium text-ink">
+                  <LinkIcon className="h-4 w-4 flex-shrink-0 text-green-700" />
+                  Already have their link?
+                </p>
+                <p className="mt-1.5 text-sm text-ink-soft">
+                  Open the link the expert shared with you to ask your question.
+                </p>
               </div>
-              <div className="flex items-start gap-3 rounded-lg bg-blue-500/10 p-4">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/15 text-blue-700">
-                  <UsersIcon className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className="font-medium text-ink">Don&apos;t have one?</p>
-                  <p className="mt-0.5 text-sm text-ink-soft">
-                    Ask the expert to share their Drop Me A Question page
-                    with you.
-                  </p>
-                </div>
+              <div className="rounded-lg bg-blue-500/10 p-4">
+                <p className="flex items-center gap-2 font-medium text-ink">
+                  <UsersIcon className="h-4 w-4 flex-shrink-0 text-blue-700" />
+                  Don&apos;t have a link yet?
+                </p>
+                <p className="mt-1.5 text-sm text-ink-soft">
+                  Ask the expert to share their Drop Me A Question page with you.
+                </p>
               </div>
+            </div>
+
+            <div className="mt-6 border-t border-line pt-5">
+              <p className="text-xs text-ink-soft">
+                Are you an expert who wants to receive paid questions?
+              </p>
+              <Link
+                href="/register"
+                className="mt-3 flex w-full items-center justify-center rounded-full border border-line px-6 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink"
+              >
+                Create your page <span aria-hidden className="ml-2">→</span>
+              </Link>
             </div>
           </div>
         </div>
