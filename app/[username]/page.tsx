@@ -11,7 +11,9 @@ import {
   LightningIcon,
   LockIcon,
   SparkleIcon,
+  VideoIcon,
 } from "@/components/icons"
+import { videoAvailable } from "@/lib/video/config"
 import { PUBLIC_SITE_URL } from "@/lib/site"
 import { formatResponseWindow, formatPrice } from "@/lib/format"
 
@@ -128,6 +130,24 @@ export default async function ExpertPage({
     .eq("expert_id", profile.id)
     .order("sort_order", { ascending: true })
 
+  // Whether this expert can invite a follow-up conversation after answering.
+  // A separate read, so the page still works if these columns are missing.
+  let followUpPrice: string | null = null
+  if (videoAvailable() && (expert.is_demo || (expert.is_active && expert.stripe_onboarded))) {
+    const { data: followUp } = await supabaseAdmin
+      .from("experts")
+      .select("follow_up_allowed, follow_up_enabled, follow_up_price_cents")
+      .eq("id", profile.id)
+      .maybeSingle()
+    if (
+      followUp?.follow_up_allowed &&
+      followUp.follow_up_enabled &&
+      followUp.follow_up_price_cents
+    ) {
+      followUpPrice = formatPrice(followUp.follow_up_price_cents)
+    }
+  }
+
   const price = formatPrice(expert.price_cents)
   const firstName = profile.full_name?.split(" ")[0] || profile.full_name
   const topicNames = topics?.map((t) => t.name) ?? []
@@ -185,6 +205,13 @@ export default async function ExpertPage({
               @{profile.username}
             </p>
 
+            {followUpPrice && (
+              <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-postal-red/10 px-3 py-1 text-xs font-medium text-ink">
+                <VideoIcon className="h-3.5 w-3.5 text-postal-red" />
+                Offers 15-minute conversations · ${followUpPrice}
+              </p>
+            )}
+
             {expert.bio && <ExpertBio bio={expert.bio} />}
 
             {topicNames.length > 0 && (
@@ -232,6 +259,7 @@ export default async function ExpertPage({
                       expertFirstName={firstName}
                       responseWindowHours={expert.response_window_hours}
                       topics={topicNames}
+                      followUpPrice={followUpPrice}
                       demo={isDemo}
                     />
                   ) : (

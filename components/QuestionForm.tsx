@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { MailIcon, ShieldCheckIcon, InfoIcon, PaperclipIcon } from "./icons"
+import { MailIcon, ShieldCheckIcon, InfoIcon, PaperclipIcon, VideoIcon } from "./icons"
 import { formatResponseWindow } from "@/lib/format"
 import DemoProfileModal from "./DemoProfileModal"
 
@@ -17,6 +17,7 @@ export default function QuestionForm({
   expertFirstName,
   responseWindowHours,
   topics,
+  followUpPrice = null,
   demo = false,
 }: {
   expertId: string
@@ -25,6 +26,8 @@ export default function QuestionForm({
   expertFirstName: string
   responseWindowHours: number
   topics: string[]
+  // Set only when this expert can really invite a follow-up conversation.
+  followUpPrice?: string | null
   // Example profile: looks and behaves like the real form, but submitting
   // opens an explainer instead of ever contacting the checkout API.
   demo?: boolean
@@ -200,6 +203,16 @@ export default function QuestionForm({
           </div>
         )}
       </div>
+
+      {followUpPrice && (
+        <p className="flex items-start gap-2 text-xs text-ink-soft">
+          <VideoIcon className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <span>
+            After answering your question, {expertFirstName} may invite you to a private
+            15-minute conversation for ${followUpPrice}. It&apos;s completely optional.
+          </span>
+        </p>
+      )}
     </form>
     {showDemoModal && (
       <DemoProfileModal onClose={() => setShowDemoModal(false)} />
