@@ -352,31 +352,31 @@ export default async function Home() {
             )}
           </ol>
 
-          <div className="mx-auto mt-6 grid max-w-3xl gap-4 sm:grid-cols-2">
-            <div className="flex flex-col items-center gap-1 rounded-lg border border-line bg-white px-5 py-3 text-center">
+          <div className="mt-6 divide-y divide-line/60 rounded-lg border border-line/60 bg-line/20 sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+            <div className="px-5 py-2.5">
               <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
-                  <VideoIcon className="h-3.5 w-3.5" />
+                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+                  <VideoIcon className="h-3 w-3" />
                 </span>
                 <p className="text-sm font-semibold text-ink">
                   Optional: Offer 15-minute conversations
                 </p>
               </div>
-              <p className="text-sm text-ink-soft">
+              <p className="mt-1 text-sm text-ink-soft">
                 After answering a question, invite the asker to a private, paid
                 15-minute conversation at a price you set.
               </p>
             </div>
-            <div className="flex flex-col items-center gap-1 rounded-lg border border-line bg-white px-5 py-3 text-center">
+            <div className="px-5 py-2.5">
               <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
-                  <LockIcon className="h-3.5 w-3.5" />
+                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+                  <LockIcon className="h-3 w-3" />
                 </span>
                 <p className="text-sm font-semibold text-ink">
                   Your contact information stays private
                 </p>
               </div>
-              <p className="text-sm text-ink-soft">
+              <p className="mt-1 text-sm text-ink-soft">
                 Your email isn&apos;t shared with askers. Questions and answers are
                 delivered through Drop Me A Question.
               </p>
