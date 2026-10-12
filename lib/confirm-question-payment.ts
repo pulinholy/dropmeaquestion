@@ -1,6 +1,7 @@
 import { supabaseAdmin } from './supabase-admin'
 import { logError } from './log-error'
 import { sendNewQuestionEmail } from './send-new-question-email'
+import { videoAvailable } from './video/config'
 
 // Shared by the Stripe webhook (fast path) and the reconciliation cron
 // (eventual-consistency backstop) -- both need the exact same idempotent
@@ -74,6 +75,20 @@ export async function confirmQuestionPayment({
       .eq('id', question.expert_id)
       .maybeSingle()
 
+    // Whether this expert can invite a follow-up conversation with their
+    // answer. A separate read, so a missing column just means no mention.
+    const { data: followUp } = await supabaseAdmin
+      .from('experts')
+      .select('follow_up_allowed, follow_up_enabled, follow_up_price_cents')
+      .eq('id', question.expert_id)
+      .maybeSingle()
+    const canInviteFollowUp = Boolean(
+      videoAvailable() &&
+        followUp?.follow_up_allowed &&
+        followUp.follow_up_enabled &&
+        followUp.follow_up_price_cents
+    )
+
     const expertEmail = authUser?.user?.email
     if (expertEmail) {
       await sendNewQuestionEmail({
@@ -82,6 +97,7 @@ export async function confirmQuestionPayment({
         questionText: question.question_text,
         priceCents: question.price_cents ?? 0,
         referenceId: question.reference_id,
+        canInviteFollowUp,
       })
     }
   } catch (notifyErr) {

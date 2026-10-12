@@ -3,11 +3,9 @@
 import { useState } from "react"
 import ConfirmDialog from "@/components/ConfirmDialog"
 import {
-  ALLOWED_MEETING_SERVICES_TEXT,
   FOLLOW_UP_NO_SHOW_AFTER_MINUTES,
   FOLLOW_UP_PLATFORM_FEE_RATE,
   formatPrice,
-  joinWindowFor,
   videoRoomWindowFor,
   type FollowUpProblemReason,
 } from "@/lib/follow-up-rules"
@@ -22,9 +20,6 @@ export type FollowUpCall = {
   referenceId: string | null
   proposedSlots: string[]
   confirmedStart: string | null
-  meetingLink: string | null
-  // How the conversation is held: on DMQ or on the expert's own link.
-  videoProvider?: "dmq" | "external"
   confirmBy: string | null
   askerTimezone: string | null
   cancelledBy: string | null
@@ -57,20 +52,15 @@ export function RequestCard({
   error,
   onConfirm,
   onDecline,
-  videoMode,
 }: {
   call: FollowUpCall
   busy: boolean
   error: string
-  onConfirm: (slot: string, meetingLink: string) => void
+  onConfirm: (slot: string) => void
   onDecline: () => void
-  // "dmq" when conversations are held on DMQ: a link is then optional.
-  videoMode?: "dmq" | "external"
 }) {
   const [slot, setSlot] = useState(call.proposedSlots[0] ?? "")
-  const [link, setLink] = useState("")
   const [declining, setDeclining] = useState(false)
-  const onDmq = videoMode === "dmq"
 
   return (
     <div className="rounded-lg border border-line bg-card p-5">
@@ -120,40 +110,18 @@ export function RequestCard({
         </div>
       </fieldset>
 
-      {onDmq ? (
-        <p className="mt-4 text-xs text-ink-soft">
-          The conversation takes place on DMQ, as an audio call with an optional camera. There is
-          nothing to paste.
-        </p>
-      ) : (
-        <>
-          <label className="mt-4 block text-xs font-medium text-ink" htmlFor={`link-${call.id}`}>
-            Meeting link for this call
-          </label>
-          <input
-            id={`link-${call.id}`}
-            type="url"
-            inputMode="url"
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            placeholder="https://meet.google.com/..."
-            className="mt-1 w-full rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
-          />
-          <p className="mt-1 text-xs text-ink-soft">
-            {ALLOWED_MEETING_SERVICES_TEXT}. Use a new link for each call, with a
-            waiting room turned on, and never your personal reusable room if you can
-            avoid it. The asker only sees it shortly before the start.
-          </p>
-        </>
-      )}
+      <p className="mt-4 text-xs text-ink-soft">
+        The conversation takes place on DMQ, as an audio call with an optional camera. There is
+        nothing to paste.
+      </p>
 
       {error && <p className="mt-3 text-sm text-postal-red">{error}</p>}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
-          disabled={busy || !slot || (!onDmq && link.trim().length === 0)}
-          onClick={() => onConfirm(slot, link)}
+          disabled={busy || !slot}
+          onClick={() => onConfirm(slot)}
           className="rounded-full bg-postal-red px-5 py-2 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
         >
           {busy ? "Working..." : "Confirm this time"}
@@ -213,10 +181,7 @@ export function UpcomingCard({
   const [reporting, setReporting] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   if (!call.confirmedStart) return null
-  const { opensAt, closesAt } =
-    call.videoProvider === "dmq"
-      ? videoRoomWindowFor(call.confirmedStart)
-      : joinWindowFor(call.confirmedStart)
+  const { opensAt, closesAt } = videoRoomWindowFor(call.confirmedStart)
   const open = now >= opensAt.getTime() && now <= closesAt.getTime()
   const start = new Date(call.confirmedStart).getTime()
   const started = now >= start
@@ -240,17 +205,15 @@ export function UpcomingCard({
       </div>
       <p className="mt-1 text-base font-semibold text-ink">{formatLocal(call.confirmedStart)}</p>
       <p className="text-xs text-ink-soft">15 minutes</p>
-      {call.videoProvider === "dmq" && (
-        <div className="mt-3">
-          <p className="flex items-center gap-2 text-sm font-semibold text-ink">
-            <VideoIcon className="h-4 w-4" />
-            DMQ private conversation
-          </p>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            Your conversation is hosted securely through Drop Me A Question.
-          </p>
-        </div>
-      )}
+      <div className="mt-3">
+        <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <VideoIcon className="h-4 w-4" />
+          DMQ private conversation
+        </p>
+        <p className="mt-0.5 text-xs text-ink-soft">
+          Your conversation is hosted securely through Drop Me A Question.
+        </p>
+      </div>
       {slotOver ? (
         <p className="mt-2 inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700">
           Waiting for confirmation
@@ -280,7 +243,7 @@ export function UpcomingCard({
         )}
       </div>
 
-      {call.videoProvider === "dmq" && started && !slotOver && (
+      {started && !slotOver && (
         <div className="mt-3">
           <button
             type="button"

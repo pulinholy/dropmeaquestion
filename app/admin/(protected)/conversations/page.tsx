@@ -98,7 +98,8 @@ function eventDetail(detail: Record<string, unknown> | null): string {
 }
 
 type VideoHealth = {
-  mode: "dmq" | "external"
+  // Whether new conversations can currently be offered.
+  offered: boolean
   apiKeyConfigured: boolean
   webhookSecretConfigured: boolean
   roomsLast24h: number | null
@@ -222,8 +223,8 @@ export default function AdminConversationsPage() {
           <p className="font-semibold text-ink">Video on DMQ</p>
           <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
             <div className="flex justify-between gap-3">
-              <dt className="text-ink-soft">Switch</dt>
-              <dd className="text-ink">{health.mode === "dmq" ? "On" : "Off (experts paste their own link)"}</dd>
+              <dt className="text-ink-soft">New conversations</dt>
+              <dd className="text-ink">{health.offered ? "Offered" : "Not offered (keys missing, or stopped)"}</dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-ink-soft">Provider key and webhook secret</dt>
@@ -257,7 +258,7 @@ export default function AdminConversationsPage() {
               <dd className="text-ink">{timeAgo(health.lastConnectionRecordedAt)}</dd>
             </div>
           </dl>
-          {health.mode === "dmq" && !health.lastConnectionRecordedAt && (
+          {!health.lastConnectionRecordedAt && (
             <p className="mt-2 text-xs text-ink-soft">
               No connections have been recorded yet. If calls have happened, check that the
               provider&apos;s webhook is registered and reaching us.

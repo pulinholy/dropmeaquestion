@@ -22,65 +22,31 @@ export const FOLLOW_UP_FALLBACK_HOLD_HOURS = 4 * 24 + 18
 
 // Bump when the wording below changes; it's stored with each booking so a
 // dispute can show exactly what the asker agreed to.
-export const FOLLOW_UP_POLICY_VERSION = '2026-10-v3'
+export const FOLLOW_UP_POLICY_VERSION = '2026-10-v9-dmq'
 
 export const FOLLOW_UP_POLICY_LINES = [
   'Your card is held when you request the conversation. You are charged only after it takes place.',
   'The expert has 24 hours to confirm a time. If they decline or don’t respond, your hold is released and you are not charged.',
   'You can cancel for free until 24 hours before the conversation. Cancelling later, or not joining, is charged in full, unless something went wrong on our side or the expert’s. Tell us within 24 hours and we’ll review it.',
-  'If the expert cancels or doesn’t join, you are not charged. If a connection problem stops the conversation, report it and we’ll review it.',
+  'If the expert cancels or doesn’t join, you are not charged. If technical problems prevent your conversation from taking place, either of you may request a new time at no additional charge, subject to the rescheduling rules on the Conversation & Cancellation Policy page. If the conversation has substantially taken place, the normal completion and payment policies apply.',
   'After the conversation we’ll ask you to confirm it took place. If you report a problem, we hold the charge and review it. If we don’t hear from you, your card is charged about a day after it ends.',
   'The conversation is the expert’s own opinion. A conversation that didn’t take place isn’t charged, but disagreeing with the advice isn’t a reason for a refund.',
+  'The conversation lasts 15 minutes from the scheduled start. The room stays open for 5 minutes after that, then closes.',
 ]
 
 export const FOLLOW_UP_PRIVACY_LINES = [
   'Your email address isn’t shared by Drop Me A Question.',
-  'The conversation takes place using the expert’s video meeting service. Information from your meeting profile, such as your display name, may be visible during the conversation.',
+  'The conversation takes place on Drop Me A Question as an audio call with an optional camera. You appear as “Guest”, and it isn’t recorded. Our video provider carries the call.',
 ]
-
-// ---- Wording for DMQ-hosted conversations ---------------------------------
-// With DMQ-hosted rooms switched off these return exactly the lines above, so
-// nothing changes until the switch is on.
-
-export type FollowUpVideoMode = 'dmq' | 'external'
-
-export const FOLLOW_UP_POLICY_VERSION_DMQ = '2026-10-v9-dmq'
-
-export function followUpPolicyVersion(mode: FollowUpVideoMode): string {
-  return mode === 'dmq' ? FOLLOW_UP_POLICY_VERSION_DMQ : FOLLOW_UP_POLICY_VERSION
-}
-
-export function followUpPolicyLines(mode: FollowUpVideoMode): string[] {
-  if (mode !== 'dmq') return FOLLOW_UP_POLICY_LINES
-  return [
-    ...FOLLOW_UP_POLICY_LINES.map((line) =>
-      line.replace(
-        'If a connection problem stops the conversation, report it and we’ll review it.',
-        'If technical problems prevent your conversation from taking place, either of you may request a new time at no additional charge, subject to the rescheduling rules on the Conversation & Cancellation Policy page. If the conversation has substantially taken place, the normal completion and payment policies apply.'
-      )
-    ),
-    'The conversation lasts 15 minutes from the scheduled start. The room stays open for 5 minutes after that, then closes.',
-  ]
-}
-
-export function followUpPrivacyLines(mode: FollowUpVideoMode): string[] {
-  if (mode !== 'dmq') return FOLLOW_UP_PRIVACY_LINES
-  return [
-    'Your email address isn’t shared by Drop Me A Question.',
-    'The conversation takes place on Drop Me A Question as an audio call with an optional camera. You appear as “Guest”, and it isn’t recorded. Our video provider carries the call.',
-  ]
-}
 
 // The three short points shown on the booking page, next to the link to the
 // full policy. The detail lives on the policy page; these only say what the
-// asker most needs to know before paying, and follow how conversations are held.
-export function followUpBookingPoints(mode: FollowUpVideoMode, expertFirstName: string): string[] {
+// asker most needs to know before paying.
+export function followUpBookingPoints(expertFirstName: string): string[] {
   return [
     `Suggest up to three times. ${expertFirstName} will confirm one.`,
     'Your card is authorized now. Charges follow the conversation and cancellation policy.',
-    mode === 'dmq'
-      ? 'Your email stays private. You’ll join through DMQ.'
-      : `Your email stays private. You’ll join from your private DMQ page, which opens ${expertFirstName}’s own meeting link.`,
+    'Your email stays private. You’ll join through DMQ.',
   ]
 }
 
@@ -185,16 +151,6 @@ export function formatSlot(iso: string, timeZone: string | null | undefined): st
 // joining a couple of minutes early, and closes a while after the start for
 // late arrivals and overruns.
 export const FOLLOW_UP_JOIN_OPENS_MINUTES_BEFORE = 10
-export const FOLLOW_UP_JOIN_CLOSES_MINUTES_AFTER = 30
-
-export function joinWindowFor(confirmedStartIso: string): { opensAt: Date; closesAt: Date } {
-  const start = new Date(confirmedStartIso).getTime()
-  return {
-    opensAt: new Date(start - FOLLOW_UP_JOIN_OPENS_MINUTES_BEFORE * 60 * 1000),
-    closesAt: new Date(start + FOLLOW_UP_JOIN_CLOSES_MINUTES_AFTER * 60 * 1000),
-  }
-}
-
 // ---- Settling a DMQ-hosted conversation from who was in the room -----------
 
 // Shared time (both people connected at once) at or above this makes a
@@ -285,56 +241,6 @@ export function videoRoomWindowFor(confirmedStartIso: string): {
     scheduledEnd: new Date(scheduledEnd),
     closesAt: new Date(scheduledEnd + FOLLOW_UP_VIDEO_GRACE_MINUTES * 60 * 1000),
   }
-}
-
-export function isJoinWindowOpen(confirmedStartIso: string, now: Date = new Date()): boolean {
-  const { opensAt, closesAt } = joinWindowFor(confirmedStartIso)
-  return now >= opensAt && now <= closesAt
-}
-
-// Meeting links are sent to askers, so only well-known video services are
-// accepted -- an expert can't point someone at an arbitrary website. Matches
-// the host exactly or as a subdomain (us02web.zoom.us), never as a lookalike
-// (evil-zoom.us, zoom.us.evil.com).
-const ALLOWED_MEETING_DOMAINS = [
-  'zoom.us',
-  'meet.google.com',
-  'teams.microsoft.com',
-  'teams.live.com',
-  'webex.com',
-  'whereby.com',
-]
-
-export const ALLOWED_MEETING_SERVICES_TEXT =
-  'Zoom, Google Meet, Microsoft Teams, Webex or Whereby'
-
-export function isAllowedMeetingLink(
-  raw: unknown
-): { ok: true; url: string } | { ok: false; error: string } {
-  const invalid = {
-    ok: false as const,
-    error: `Paste a meeting link from ${ALLOWED_MEETING_SERVICES_TEXT} (it must start with https://).`,
-  }
-  if (typeof raw !== 'string') return invalid
-  const text = raw.trim()
-  if (text.length === 0 || text.length > 500) return invalid
-
-  let url: URL
-  try {
-    url = new URL(text)
-  } catch {
-    return invalid
-  }
-
-  if (url.protocol !== 'https:' || url.username || url.password || url.port) return invalid
-
-  const host = url.hostname.toLowerCase()
-  const allowed = ALLOWED_MEETING_DOMAINS.some(
-    (domain) => host === domain || host.endsWith(`.${domain}`)
-  )
-  if (!allowed) return invalid
-
-  return { ok: true, url: url.toString() }
 }
 
 // ---- Cancellation, no-show and settlement rules ---------------------------

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { formatSlot, joinWindowFor, videoRoomWindowFor } from "@/lib/follow-up-rules"
+import { formatSlot, videoRoomWindowFor } from "@/lib/follow-up-rules"
 import { VideoIcon } from "@/components/icons"
 import ConversationRoom from "@/components/ConversationRoom"
 import { detectInAppBrowser } from "@/lib/video/in-app-browser"
@@ -21,13 +21,11 @@ export default function JoinPanel({
   expertFirstName,
   startIso,
   timezone,
-  videoProvider,
 }: {
   followUpId: string
   expertFirstName: string
   startIso: string
   timezone: string | null
-  videoProvider: "dmq" | "external"
 }) {
   const [now, setNow] = useState<number | null>(null)
   const [joining, setJoining] = useState(false)
@@ -56,7 +54,7 @@ export default function JoinPanel({
   // The call is only shown while its room is open; once the room has closed
   // the person is moved to the post-call screen, not left on an empty video.
   const roomClosed =
-    now !== null && videoProvider === "dmq" && now > videoRoomWindowFor(startIso).closesAt.getTime()
+    now !== null && now > videoRoomWindowFor(startIso).closesAt.getTime()
   const inCall = Boolean(roomUrl) && !roomClosed
 
   // Lets the actions below the call know whether the call is open here.
@@ -93,7 +91,6 @@ export default function JoinPanel({
   }, [followUpId])
 
   useEffect(() => {
-    if (videoProvider !== "dmq") return
     const t = setTimeout(() => {
       const app = detectInAppBrowser(navigator.userAgent)
       if (app) {
@@ -107,7 +104,7 @@ export default function JoinPanel({
       }
     }, 0)
     return () => clearTimeout(t)
-  }, [videoProvider])
+  }, [])
 
   useEffect(() => {
     function onPageShow(e: PageTransitionEvent) {
@@ -117,8 +114,7 @@ export default function JoinPanel({
     return () => window.removeEventListener("pageshow", onPageShow)
   }, [])
 
-  const { opensAt, closesAt } =
-    videoProvider === "dmq" ? videoRoomWindowFor(startIso) : joinWindowFor(startIso)
+  const { opensAt, closesAt } = videoRoomWindowFor(startIso)
   const state =
     now === null
       ? "loading"
@@ -178,7 +174,6 @@ export default function JoinPanel({
   // the next step below, not the join card.
   const joinedHere = left || Boolean(roomUrl)
   if (
-    videoProvider === "dmq" &&
     joinedHere &&
     now !== null &&
     now >= videoRoomWindowFor(startIso).scheduledEnd.getTime()
@@ -262,9 +257,7 @@ export default function JoinPanel({
             {joining ? "Opening..." : <>{left ? "Rejoin conversation" : "Join conversation"} <span aria-hidden>→</span></>}
           </button>
           <p className="mt-2 text-xs text-ink-soft">
-            {videoProvider === "dmq"
-              ? "This opens your conversation right here. Your camera starts off."
-              : `This opens ${expertFirstName}'s video meeting.`}
+            This opens your conversation right here. Your camera starts off.
           </p>
         </div>
       )}

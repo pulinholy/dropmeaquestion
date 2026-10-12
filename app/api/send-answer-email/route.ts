@@ -11,7 +11,6 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { escapeHtml, formatPrice, getFollowUpOffer } from '@/lib/follow-up'
-import { videoMode } from '@/lib/video/config'
 
 export async function POST(request: Request) {
   const user = await requireUser(request)
@@ -75,7 +74,6 @@ export async function POST(request: Request) {
   }
   const offer = optedOut ? null : await getFollowUpOffer(questionId)
   const first = escapeHtml(expertFirstName)
-  const onDmq = videoMode() === 'dmq'
 
   // The invitation comes after the answer and the request for feedback. The
   // three points beside it are plain images and text, because email programs
@@ -97,13 +95,9 @@ export async function POST(request: Request) {
       <p style="margin:0; font-size:13px; color:#4a5568;">An optional, private 15-minute call, only if you&rsquo;d like to discuss further.</p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0 14px;">
         <tr>${
-          onDmq
-            ? point('video', 'Audio call', 'Audio or video call', 'Camera is off by default') +
-              point('clock', '15 minutes', `15 minutes &middot; $${formatPrice(offer.priceCents)}`, 'You propose up to 3 times') +
-              point('shield', 'Private', 'Join as Guest', 'Your email address isn&rsquo;t shared with the expert')
-            : point('video', 'Video meeting', 'Video meeting', `On ${first}&rsquo;s own meeting link`) +
-              point('clock', '15 minutes', `15 minutes &middot; $${formatPrice(offer.priceCents)}`, 'You propose up to 3 times') +
-              point('shield', 'Private', 'Your email stays private', 'Your meeting profile&rsquo;s display name may be visible')
+          point('video', 'Audio call', 'Audio or video call', 'Camera is off by default') +
+          point('clock', '15 minutes', `15 minutes &middot; $${formatPrice(offer.priceCents)}`, 'You propose up to 3 times') +
+          point('shield', 'Private', 'Join as Guest', 'Your email address isn&rsquo;t shared with the expert')
         }
         </tr>
       </table>

@@ -7,7 +7,6 @@ import {
   formatSlot,
 } from "@/lib/follow-up-rules"
 import { ExternalLinkIcon, LockIcon, ShieldCheckIcon, VideoIcon } from "@/components/icons"
-import { videoMode } from "@/lib/video/config"
 import JoinPanel from "./join-panel"
 import AskerActions from "./asker-actions"
 
@@ -36,16 +35,10 @@ export default async function MeetPage({
 }) {
   const { followUpId } = await params
 
-  // Never selects the meeting link: it only leaves the server through the
-  // join endpoint, while the join window is open.
-  // The new column is only read when DMQ rooms are switched on.
-  const dmqOn = videoMode() === "dmq"
   const { data: callRow } = await supabaseAdmin
     .from("follow_up_calls")
     .select(
-      dmqOn
-        ? "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents, proposed_slots, confirm_by, video_provider"
-        : "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents, proposed_slots, confirm_by"
+      "id, question_id, status, confirmed_start, asker_timezone, expert_id, price_cents, proposed_slots, confirm_by"
     )
     .eq("id", followUpId)
     .maybeSingle()
@@ -59,9 +52,7 @@ export default async function MeetPage({
     price_cents: number
     proposed_slots?: unknown
     confirm_by?: string | null
-    video_provider?: string | null
   } | null
-  const videoProvider = dmqOn && call?.video_provider === "dmq" ? "dmq" : "external"
 
   let content: React.ReactNode
 
@@ -87,14 +78,7 @@ export default async function MeetPage({
             expertFirstName={expertFirstName}
             startIso={call.confirmed_start}
             timezone={call.asker_timezone}
-            videoProvider={videoProvider}
           />
-          {dmqOn && videoProvider === "external" && (
-            <p className="mt-3 rounded-lg border border-line bg-white p-3 text-center text-xs text-ink-soft">
-              This conversation uses {expertFirstName}&apos;s own meeting link, which opens
-              when you join.
-            </p>
-          )}
           <AskerActions
             followUpId={call.id}
             startIso={call.confirmed_start}
@@ -114,9 +98,7 @@ export default async function MeetPage({
               </li>
               <li className="flex items-start gap-2">
                 <VideoIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-                {videoProvider === "dmq"
-                  ? "Your camera starts off. This conversation isn't recorded."
-                  : `This conversation uses ${expertFirstName}'s own meeting link, so Drop Me A Question doesn't control the call.`}
+                Your camera starts off. This conversation isn&apos;t recorded.
               </li>
             </ul>
             <a

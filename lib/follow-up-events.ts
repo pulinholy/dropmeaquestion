@@ -27,13 +27,3 @@ export async function logFollowUpEvent(
   }
 }
 
-// Only the host of a meeting link goes in the timeline: enough to show where
-// the conversation was meant to happen without copying a passcode.
-export function meetingLinkHost(link: string | null | undefined): string | null {
-  if (!link) return null
-  try {
-    return new URL(link).hostname
-  } catch {
-    return null
-  }
-}

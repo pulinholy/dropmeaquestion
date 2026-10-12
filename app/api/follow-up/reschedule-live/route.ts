@@ -9,7 +9,6 @@ import {
   videoRoomWindowFor,
 } from '@/lib/follow-up'
 import { settleFollowUp } from '@/lib/follow-up-settle'
-import { videoMode } from '@/lib/video/config'
 import { loadConnectionSummary } from '@/lib/video/settlement'
 
 // "Reschedule for free": either side ends a conversation held on DMQ because of
@@ -54,10 +53,6 @@ export async function POST(request: Request) {
       : [{ name: 'follow-up-report-asker', limit: 20, windowSeconds: 3600 }]
   )
   if (limited) return limited
-
-  if (videoMode() !== 'dmq') {
-    return NextResponse.json({ error: 'A new time can’t be requested for this conversation.' }, { status: 409 })
-  }
 
   let query = supabaseAdmin
     .from('follow_up_calls')

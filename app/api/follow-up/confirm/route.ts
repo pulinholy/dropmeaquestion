@@ -3,9 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { logError } from '@/lib/log-error'
-import { isAllowedMeetingLink } from '@/lib/follow-up'
-import { videoMode } from '@/lib/video/config'
-import { logFollowUpEvent, meetingLinkHost } from '@/lib/follow-up-events'
+import { logFollowUpEvent } from '@/lib/follow-up-events'
 import { sendFollowUpConfirmedEmails } from '@/lib/send-follow-up-emails'
 import {
   cancelScheduledEmails,
@@ -14,9 +12,11 @@ import {
 
 const MIN_LEAD_MINUTES = 120
 
-// The expert accepts one of the proposed times and adds a meeting link for
-// this call. Only the expert it was requested of can do this, and only while
-// the request is still waiting.
+// The expert accepts one of the proposed times. Every conversation is held
+// on DMQ, so choosing a time is enough: there is no link to add. Only the
+// expert it was requested of can do this, and only while the request is
+// still waiting. A call that isn't working is cancelled with a new time
+// requested at no charge instead (see reschedule-live).
 export async function POST(request: Request) {
   const user = await requireUser(request)
   if (!user) {
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   ])
   if (limited) return limited
 
-  let body: { id?: unknown; slot?: unknown; meetingLink?: unknown }
+  let body: { id?: unknown; slot?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -37,17 +37,6 @@ export async function POST(request: Request) {
   if (typeof body.id !== 'string' || typeof body.slot !== 'string') {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
-
-  // With DMQ rooms on, every confirmed conversation is held on DMQ: choosing a
-  // time is enough, and a link sent along is ignored. There is no own-link
-  // choice; a call that isn't working is cancelled with a new time requested at no charge instead (see
-  // reschedule-live). With DMQ rooms off, a link is required, as before.
-  const useDmq = videoMode() === 'dmq'
-  const link = useDmq ? null : isAllowedMeetingLink(body.meetingLink)
-  if (link && !link.ok) {
-    return NextResponse.json({ error: link.error }, { status: 400 })
-  }
-  const meetingUrl = link && link.ok ? link.url : null
 
   const { data: call } = await supabaseAdmin
     .from('follow_up_calls')
@@ -94,10 +83,7 @@ export async function POST(request: Request) {
     .update({
       status: 'confirmed',
       confirmed_start: new Date(chosenMs).toISOString(),
-      meeting_link: meetingUrl,
-      // Only written when DMQ rooms are on, so nothing depends on the new
-      // column until then.
-      ...(useDmq ? { video_provider: 'dmq' } : {}),
+      video_provider: 'dmq',
       confirmed_at: new Date().toISOString(),
     })
     .eq('id', call.id)
@@ -118,7 +104,7 @@ export async function POST(request: Request) {
 
   await logFollowUpEvent(call.id, 'confirmed', 'expert', {
     confirmed_start: new Date(chosenMs).toISOString(),
-    meeting_service: useDmq ? 'dmq' : meetingLinkHost(meetingUrl),
+    meeting_service: 'dmq',
   })
 
   // Isolated: a failed email must never undo the confirmation.
@@ -146,7 +132,6 @@ export async function POST(request: Request) {
         referenceId: question.reference_id,
         confirmedStart,
         askerTimezone: call.asker_timezone,
-        videoProvider: useDmq ? 'dmq' : 'external',
       })
 
       // Reminders 24 hours and 1 hour ahead. Their ids are kept so a

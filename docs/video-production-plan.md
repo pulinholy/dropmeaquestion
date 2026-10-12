@@ -49,8 +49,9 @@ remembers which way it was set up.
   - Promote the PoC webhook to `/api/video/webhook`: verify the signature,
     find the booking from the room name, upsert sessions, write timeline
     events. Unknown rooms are ignored.
-- **Config:** `FOLLOW_UP_VIDEO=dmq|external` (default `external`).
-  `DAILY_API_KEY` and `DAILY_WEBHOOK_HMAC` in Vercel.
+- **Config:** conversations are always held on DMQ. `DAILY_API_KEY` and
+  `DAILY_WEBHOOK_HMAC` in Vercel are required, or no conversation is offered.
+  `FOLLOW_UP_VIDEO=off` is an emergency stop for new ones.
 - **Spending guard (server side):** before creating a room, check two limits
   and refuse if either is hit: rooms created in the last 24 hours
   (`VIDEO_MAX_ROOMS_PER_DAY`) and calls connected right now

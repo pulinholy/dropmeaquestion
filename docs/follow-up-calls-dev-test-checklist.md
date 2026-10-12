@@ -225,8 +225,9 @@ it's empty and the Stripe state is wrong, that's a bug to report.
 ## 6b. DMQ-hosted conversations (slice 2)
 
 Needs `supabase/video_rooms.sql`, `DAILY_API_KEY` and `DAILY_WEBHOOK_HMAC` in
-`.env.local`, and `FOLLOW_UP_VIDEO=dmq` (restart the dev server). With the
-switch unset, everything above behaves exactly as before.
+`.env.local` (restart the dev server). Conversations are always held on DMQ now;
+without the two keys, or with `FOLLOW_UP_VIDEO=off`, none is offered. Sections
+above that describe an own meeting link are historical and no longer apply.
 
 - [ ] **Confirm without a link:** the request card shows "The conversation takes
       place on DMQ... There is nothing to paste" and **Confirm this time** works

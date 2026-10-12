@@ -8,12 +8,16 @@ export async function sendNewQuestionEmail({
   questionText,
   priceCents,
   referenceId,
+  canInviteFollowUp = false,
 }: {
   expertEmail: string
   expertFirstName: string
   questionText: string
   priceCents: number
   referenceId?: string | null
+  // True when this expert has follow-up conversations switched on, so the
+  // email can remind them they may invite the asker when they answer.
+  canInviteFollowUp?: boolean
 }) {
   const price = (priceCents / 100).toFixed(2)
   const dashboardUrl = `${EMAIL_BASE_URL}/dashboard/questions/pending`
@@ -23,6 +27,7 @@ export async function sendNewQuestionEmail({
     ${referenceId ? `<p style="margin:0 0 16px; font-size:13px; color:#4a5568;">Question #${referenceId}</p>` : ''}
     ${renderEmailQuote(questionText)}
     <p style="margin:0 0 8px;">Answer within your response window to get paid.</p>
+    ${canInviteFollowUp ? `<p style="margin:0 0 8px; font-size:13px; color:#4a5568;">When you answer, you can also invite the asker to a paid 15-minute follow-up conversation. You choose on the answer form.</p>` : ''}
     <p style="margin:0 0 24px; font-size:13px; color:#4a5568;">Your email stays private &mdash; answer securely through Drop Me A Question.</p>
     ${renderEmailButton(dashboardUrl, 'Answer now &rarr;')}
   `

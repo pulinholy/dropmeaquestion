@@ -5,11 +5,10 @@ import { logError } from '@/lib/log-error'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { APP_BASE_URL } from '@/lib/site'
 import { logFollowUpEvent } from '@/lib/follow-up-events'
-import { videoMode } from '@/lib/video/config'
 import {
   FOLLOW_UP_PLATFORM_FEE_RATE,
-  followUpPolicyLines,
-  followUpPolicyVersion,
+  FOLLOW_UP_POLICY_LINES,
+  FOLLOW_UP_POLICY_VERSION,
   getFollowUpOffer,
   validateProposedSlots,
 } from '@/lib/follow-up'
@@ -51,10 +50,8 @@ export async function POST(request: Request) {
   if (typeof body.questionId !== 'string') {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
   }
-  // The policy text depends on whether DMQ rooms are on, so the version the
-  // asker agreed to must be the one this server would show right now.
-  const mode = videoMode()
-  const policyVersion = followUpPolicyVersion(mode)
+  // The asker must have agreed to the wording this server shows right now.
+  const policyVersion = FOLLOW_UP_POLICY_VERSION
   if (body.acceptedPolicy !== true || body.policyVersion !== policyVersion) {
     return NextResponse.json(
       { error: 'Please read and agree to the cancellation policy to continue.' },
@@ -171,7 +168,7 @@ export async function POST(request: Request) {
       },
       metadata: { followUpId: created.id },
       custom_text: {
-        submit: { message: followUpPolicyLines(mode).join(' ').slice(0, 1200) },
+        submit: { message: FOLLOW_UP_POLICY_LINES.join(' ').slice(0, 1200) },
       },
       expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_LIFETIME_MINUTES * 60,
       success_url: `${APP_BASE_URL}/follow-up/${offer.question.id}?requested=1`,

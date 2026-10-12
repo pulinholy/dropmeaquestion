@@ -17,7 +17,6 @@ import ConfirmDialog from "@/components/ConfirmDialog"
 type Loaded = {
   available: boolean
   enabled: boolean
-  videoMode?: "dmq" | "external"
   calls: FollowUpCall[]
 }
 
@@ -175,10 +174,6 @@ export default function ConversationsPage() {
   async function join(call: FollowUpCall) {
     setJoiningId(call.id)
     setError(call.id, "")
-    const onDmq = call.videoProvider === "dmq"
-    // A link opens in a new tab, which has to be made inside the click so
-    // pop-up blockers allow it. A DMQ conversation opens on this page.
-    const tab = onDmq ? null : window.open("", "_blank")
     try {
       const res = await authedFetch("/api/follow-up/join", {
         method: "POST",
@@ -186,7 +181,6 @@ export default function ConversationsPage() {
       })
       const data = await res.json().catch(() => null)
       if (!res.ok || typeof data?.url !== "string") {
-        tab?.close()
         setError(call.id, typeof data?.error === "string" ? data.error : GENERIC_ERROR)
       } else if (data.mode === "embedded" && call.confirmedStart) {
         setRoom({
@@ -195,13 +189,8 @@ export default function ConversationsPage() {
           id: call.id,
           referenceId: call.referenceId,
         })
-      } else if (tab) {
-        tab.location.assign(data.url)
-      } else {
-        window.location.assign(data.url)
       }
     } catch {
-      tab?.close()
       setError(call.id, GENERIC_ERROR)
     }
     setReloadKey((k) => k + 1)
@@ -424,9 +413,8 @@ export default function ConversationsPage() {
                     call={call}
                     busy={busyId === call.id}
                     error={errors[call.id] ?? ""}
-                    videoMode={loaded.videoMode}
-                    onConfirm={(slot, meetingLink) =>
-                      act(call.id, "/api/follow-up/confirm", { id: call.id, slot, meetingLink })
+                    onConfirm={(slot) =>
+                      act(call.id, "/api/follow-up/confirm", { id: call.id, slot })
                     }
                     onDecline={() => act(call.id, "/api/follow-up/decline", { id: call.id })}
                   />

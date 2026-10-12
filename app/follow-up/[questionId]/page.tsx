@@ -5,9 +5,8 @@ import {
   getFollowUpOffer,
   formatPrice,
   followUpBookingPoints,
-  followUpPolicyVersion,
+  FOLLOW_UP_POLICY_VERSION,
 } from "@/lib/follow-up"
-import { videoMode } from "@/lib/video/config"
 import BookingForm from "./booking-form"
 import RequestStatus from "./request-status"
 
@@ -84,8 +83,8 @@ export default async function FollowUpPage({
         expertFirstName={offer.expert.firstName}
         referenceId={offer.question.referenceId}
         price={formatPrice(offer.priceCents)}
-        points={followUpBookingPoints(videoMode(), offer.expert.firstName)}
-        policyVersion={followUpPolicyVersion(videoMode())}
+        points={followUpBookingPoints(offer.expert.firstName)}
+        policyVersion={FOLLOW_UP_POLICY_VERSION}
       />
     )
   }

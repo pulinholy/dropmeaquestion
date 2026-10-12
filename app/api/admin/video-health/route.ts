@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireAdmin } from '@/lib/require-admin'
-import { videoLimits, videoMode } from '@/lib/video/config'
+import { videoAvailable, videoLimits } from '@/lib/video/config'
 
 // A one-glance check on DMQ-hosted conversations for the admin screen: is it
 // switched on and configured, how close are the spending limits, and when did
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
   ])
 
   return NextResponse.json({
-    mode: videoMode(),
+    offered: videoAvailable(),
     apiKeyConfigured: Boolean(process.env.DAILY_API_KEY),
     webhookSecretConfigured: Boolean(process.env.DAILY_WEBHOOK_HMAC),
     roomsLast24h: rooms.error ? null : (rooms.count ?? 0),
