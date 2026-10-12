@@ -46,6 +46,12 @@ export default function SiteFooter() {
           <span aria-hidden className="text-line">
             ·
           </span>
+          <a href="/conversation-policy" className="hover:text-ink">
+            Conversation policy
+          </a>
+          <span aria-hidden className="text-line">
+            ·
+          </span>
           <a
             href="mailto:hello@dropmeaquestion.com"
             className="hover:text-ink"

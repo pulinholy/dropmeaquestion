@@ -19,7 +19,7 @@ const publicSans = Public_Sans({
 
 const title = "Drop Me A Question | Get Paid for What You Know";
 const description =
-  "Create your page, set your price and response time, and get paid for answering questions from people who value your expertise.";
+  "Create your page, set your price and response time, and get paid for answering questions, plus optional paid follow-up conversations.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(PUBLIC_SITE_URL),

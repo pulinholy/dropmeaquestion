@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${PUBLIC_SITE_URL}/login`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${PUBLIC_SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${PUBLIC_SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${PUBLIC_SITE_URL}/conversation-policy`, changeFrequency: "yearly", priority: 0.2 },
   ]
 
   const { data: profiles } = await supabaseAdmin
