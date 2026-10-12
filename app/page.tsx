@@ -319,6 +319,9 @@ export default async function Home() {
       <section id="how" className="border-t border-line">
         <div className="mx-auto max-w-6xl px-6 py-16">
           <h2 className="font-display text-3xl text-ink">How it works</h2>
+          <p className="mt-2 text-ink-soft">
+            Get paid for your expertise in a few simple steps.
+          </p>
           <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {howItWorks.map(
               (
@@ -352,34 +355,36 @@ export default async function Home() {
             )}
           </ol>
 
-          <div className="mt-6 divide-y divide-line/60 rounded-lg border border-line/60 bg-line/20 sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-            <div className="px-5 py-2.5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
-                  <VideoIcon className="h-3 w-3" />
-                </span>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center gap-4 rounded-lg border border-line/70 bg-amber-50/60 px-5 py-3.5 sm:col-span-2 lg:col-span-2">
+              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+                <VideoIcon className="h-6 w-6" />
+              </span>
+              <span aria-hidden="true" className="h-12 w-px flex-shrink-0 bg-line" />
+              <div>
                 <p className="text-sm font-semibold text-ink">
                   Optional: Offer 15-minute conversations
                 </p>
+                <p className="mt-1 text-sm text-ink-soft">
+                  After answering a question, invite the asker to a private, paid
+                  15-minute conversation at a price you set.
+                </p>
               </div>
-              <p className="mt-1 text-sm text-ink-soft">
-                After answering a question, invite the asker to a private, paid
-                15-minute conversation at a price you set.
-              </p>
             </div>
-            <div className="px-5 py-2.5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
-                  <LockIcon className="h-3 w-3" />
-                </span>
+            <div className="flex items-center gap-4 rounded-lg border border-line/70 bg-amber-50/60 px-5 py-3.5 sm:col-span-2 lg:col-span-2">
+              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-500/10 text-green-700">
+                <LockIcon className="h-6 w-6" />
+              </span>
+              <span aria-hidden="true" className="h-12 w-px flex-shrink-0 bg-line" />
+              <div>
                 <p className="text-sm font-semibold text-ink">
                   Your contact information stays private
                 </p>
+                <p className="mt-1 text-sm text-ink-soft">
+                  Your email isn&apos;t shared with askers. Questions and answers are
+                  delivered through Drop Me A Question.
+                </p>
               </div>
-              <p className="mt-1 text-sm text-ink-soft">
-                Your email isn&apos;t shared with askers. Questions and answers are
-                delivered through Drop Me A Question.
-              </p>
             </div>
           </div>
         </div>
