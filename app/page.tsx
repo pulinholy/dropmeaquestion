@@ -302,12 +302,12 @@ export default async function Home() {
                 {hero.followUpPrice && (
                   <p className="mt-3 flex items-center gap-1.5 text-sm text-ink-soft">
                     <VideoIcon className="h-4 w-4 text-postal-red" />
-                    Follow-up conversation · 15 min · ${hero.followUpPrice}
+                    Follow-up conversation · 15 min
                   </p>
                 )}
 
                 <span className="mt-5 flex w-full items-center justify-center rounded-full bg-postal-red px-6 py-3 text-sm font-medium text-paper">
-                  Ask a question — ${hero.price}
+                  Drop me a question — ${hero.price}
                 </span>
               </a>
             </div>
