@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { isPastDeadline } from "@/lib/question-deadline"
 import { completePendingRegistration } from "@/lib/pending-registration"
 import { QuestionCountsContext, type QuestionCounts } from "./questions-context"
 import { ProfileContext, type ProfileInfo } from "./profile-context"
@@ -232,12 +233,15 @@ export default function DashboardLayout({
 
     const { data } = await supabase
       .from("questions")
-      .select("status")
+      .select("status, deadline_at")
       .eq("expert_id", userId)
 
     const next: QuestionCounts = { pending: 0, answered: 0, declined: 0, expired: 0 }
     ;(data ?? []).forEach((q) => {
-      if (q.status === "pending") next.pending++
+      // Past its response time counts as expired even before the nightly job
+      // has changed the row.
+      if (q.status === "pending" && q.deadline_at && isPastDeadline(q.deadline_at)) next.expired++
+      else if (q.status === "pending") next.pending++
       else if (q.status === "answered") next.answered++
       else if (q.status === "declined") next.declined++
       else if (q.status === "expired") next.expired++

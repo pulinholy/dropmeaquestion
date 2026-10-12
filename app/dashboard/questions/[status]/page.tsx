@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { formatPrice } from "@/lib/follow-up-rules"
+import { isPastDeadline, parseUtcDate } from "@/lib/question-deadline"
 import { useQuestionCounts } from "../../questions-context"
 
 const statusTabs = [
@@ -35,12 +36,14 @@ const labels: Record<string, string> = {
   expired: "Expired",
 }
 
-// Supabase returns timestamp (no timezone) columns without a "Z" suffix,
-// which the Date constructor would otherwise parse as local time instead
-// of UTC. Force UTC interpretation when no timezone is present.
-function parseUtcDate(dateStr: string): Date {
-  const hasTimezone = /[Zz]|[+-]\d{2}:?\d{2}$/.test(dateStr)
-  return new Date(hasTimezone ? dateStr : `${dateStr}Z`)
+// When the expert has to reply by, in their own time zone.
+function formatReplyBy(deadlineAt: string): string {
+  return parseUtcDate(deadlineAt).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -80,6 +83,7 @@ export default function QuestionsByStatusPage() {
   // and whether to offer one with the answer being written.
   const [followUpPriceCents, setFollowUpPriceCents] = useState<number | null>(null)
   const [offerFollowUp, setOfferFollowUp] = useState(true)
+  const [answerError, setAnswerError] = useState<{ id: string; message: string } | null>(null)
 
   useEffect(() => {
     loadQuestions()
@@ -125,11 +129,22 @@ export default function QuestionsByStatusPage() {
         "id, question_text, reference_id, status, created_at, deadline_at, answer_text, stripe_payment_intent_id, attachment_path, feedback_rating, feedback_comment"
       )
       .eq("expert_id", userId)
-      .eq("status", status)
+      .in("status", status === "pending" || status === "expired" ? ["pending", "expired"] : [status])
       .order("created_at", { ascending: false })
 
     if (!error && data) {
-      setQuestions(data)
+      // A pending question whose response time has run out counts as expired
+      // straight away. The row itself only changes when the nightly job runs,
+      // which also releases the card hold and emails the asker.
+      setQuestions(
+        data.filter((q) =>
+          status === "pending"
+            ? q.status === "pending" && !isPastDeadline(q.deadline_at)
+            : status === "expired"
+              ? q.status === "expired" || (q.status === "pending" && isPastDeadline(q.deadline_at))
+              : true
+        )
+      )
     }
     setLoading(false)
   }
@@ -192,17 +207,30 @@ export default function QuestionsByStatusPage() {
       Authorization: `Bearer ${sessionData.session.access_token}`,
     }
 
-    // answered_at is set server-side by a trigger, not here -- so it's
-    // never dependent on the expert's own device clock being correct.
-    const { error } = await supabase
-      .from("questions")
-      .update({
-        answer_text: answerText,
-        status: "answered",
-      })
-      .eq("id", questionId)
+    setAnswerError(null)
 
-    if (error) {
+    // Saved on the server, which refuses an answer once the response time has
+    // run out. answered_at is set by a database trigger, never by this device.
+    const saveRes = await fetch("/api/answer-question", {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ questionId, answerText }),
+    }).catch(() => null)
+
+    if (!saveRes || !saveRes.ok) {
+      const saveData = saveRes ? await saveRes.json().catch(() => null) : null
+      setAnswerError({
+        id: questionId,
+        message:
+          typeof saveData?.error === "string"
+            ? saveData.error
+            : "We couldn't save your answer. Please try again.",
+      })
+      if (saveData?.expired) {
+        setAnswering(null)
+        loadQuestions()
+        refreshCounts()
+      }
       setProcessingId(null)
       return
     }
@@ -268,9 +296,15 @@ export default function QuestionsByStatusPage() {
 
               <p className="mt-2 text-sm text-ink-soft">
                 {q.reference_id && `#${q.reference_id} · `}
-                {formatRelativeTime(q.created_at)}
+                {formatRelativeTime(q.created_at)} · Reply by {formatReplyBy(q.deadline_at)}
               </p>
               <p className="mt-1 text-ink">{q.question_text}</p>
+
+              {answerError && answerError.id === q.id && (
+                <p role="alert" className="mt-2 text-sm text-postal-red">
+                  {answerError.message}
+                </p>
+              )}
 
               {answering === q.id ? (
                 <div className="mt-3 space-y-2">
@@ -414,7 +448,11 @@ export default function QuestionsByStatusPage() {
                       <p>Declined — the payment hold was released.</p>
                     )}
                     {status === "expired" && (
-                      <p>Expired unanswered — the payment hold was released.</p>
+                      <p>
+                        {q.status === "pending"
+                          ? "Expired unanswered — the payment hold is being released."
+                          : "Expired unanswered — the payment hold was released."}
+                      </p>
                     )}
                     {q.feedback_comment && (
                       <p className="border-t border-line pt-2 italic text-ink-soft">
