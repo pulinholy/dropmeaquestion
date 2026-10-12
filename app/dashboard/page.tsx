@@ -5,6 +5,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { useQuestionCounts } from "./questions-context"
 import { useProfileInfo } from "./profile-context"
+import { useConversationSummary } from "./conversations-context"
 import GetMoreQuestionsIllustration from "@/components/GetMoreQuestionsIllustration"
 import {
   ChatIcon,
@@ -13,6 +14,7 @@ import {
   DollarSignIcon,
   LinkIcon,
   MegaphoneIcon,
+  VideoIcon,
 } from "@/components/icons"
 
 const EXPERT_NET_RATE = 0.85
@@ -49,6 +51,7 @@ function formatEventDate(dateStr: string): string {
 
 export default function DashboardHomePage() {
   const { counts } = useQuestionCounts()
+  const conversations = useConversationSummary()
   const { profile } = useProfileInfo()
   const [stats, setStats] = useState<Stats | null>(null)
   const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([])
@@ -294,7 +297,11 @@ export default function DashboardHomePage() {
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div
+        className={`mt-6 grid grid-cols-1 gap-4 ${
+          conversations.visible ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"
+        }`}
+      >
         <Link
           href="/dashboard/questions/pending"
           className="rounded-lg border border-line bg-card p-4 hover:border-postal-blue/40"
@@ -338,6 +345,55 @@ export default function DashboardHomePage() {
             Earnings from answered questions.
           </p>
         </Link>
+        {conversations.visible && (
+          <Link
+            href={
+              conversations.requests > 0
+                ? "/dashboard/conversations?tab=requests"
+                : "/dashboard/conversations"
+            }
+            className={`rounded-lg border bg-card p-4 ${
+              conversations.requests > 0
+                ? "border-postal-red/40 hover:border-postal-red"
+                : "border-line hover:border-postal-blue/40"
+            }`}
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+              <VideoIcon className="h-4 w-4" />
+            </div>
+            {conversations.requests > 0 ? (
+              <>
+                <p className="mt-2 font-display text-2xl text-ink">{conversations.requests}</p>
+                <p className="text-sm text-ink-soft">
+                  {conversations.requests === 1 ? "Request to review" : "Requests to review"}
+                </p>
+                <p className="mt-1 text-xs text-ink-soft/70">
+                  {conversations.upcoming > 0
+                    ? `Waiting for you to confirm. Plus ${conversations.upcoming} upcoming.`
+                    : "Waiting for you to confirm a time."}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-2 font-display text-2xl text-ink">{conversations.upcoming}</p>
+                <p className="text-sm text-ink-soft">
+                  {conversations.upcoming === 1 ? "Upcoming conversation" : "Upcoming conversations"}
+                </p>
+                <p className="mt-1 text-xs text-ink-soft/70">
+                  {conversations.nextStart
+                    ? `Next: ${new Date(conversations.nextStart).toLocaleString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}`
+                    : "New requests will show up here."}
+                </p>
+              </>
+            )}
+          </Link>
+        )}
       </div>
 
       {stripeStatusLoaded && !onboardingComplete && (

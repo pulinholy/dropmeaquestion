@@ -7,6 +7,12 @@ import { supabase } from "@/lib/supabase"
 import { isPastDeadline } from "@/lib/question-deadline"
 import { completePendingRegistration } from "@/lib/pending-registration"
 import { QuestionCountsContext, type QuestionCounts } from "./questions-context"
+import {
+  ConversationSummaryContext,
+  EMPTY_CONVERSATION_SUMMARY,
+  summarizeConversations,
+  type ConversationSummary,
+} from "./conversations-context"
 import { ProfileContext, type ProfileInfo } from "./profile-context"
 import { ActiveStatusContext } from "./active-status-context"
 import SiteFooter from "@/components/SiteFooter"
@@ -82,8 +88,9 @@ export default function DashboardLayout({
   const [togglingActive, setTogglingActive] = useState(false)
   const [isImpersonating, setIsImpersonating] = useState(false)
   // "Conversations" only appears for experts who offer follow-up calls or
-  // already have some; the count is requests waiting for them to confirm.
-  const [followUpNav, setFollowUpNav] = useState({ visible: false, waiting: 0 })
+  // already have some. The count is what is still open: requests waiting for
+  // them to confirm, plus conversations still to come.
+  const [followUpNav, setFollowUpNav] = useState<ConversationSummary>(EMPTY_CONVERSATION_SUMMARY)
 
   useEffect(() => {
     if (checkingSession) return
@@ -99,10 +106,10 @@ export default function DashboardLayout({
         if (!res.ok) return
         const json = await res.json()
         if (cancelled) return
-        const calls: { status: string }[] = json.calls ?? []
+        const calls: { status: string; confirmedStart: string | null }[] = json.calls ?? []
         setFollowUpNav({
           visible: Boolean(json.available && (json.enabled || calls.length > 0)),
-          waiting: calls.filter((c) => c.status === "requested").length,
+          ...summarizeConversations(calls),
         })
       } catch {
         // The menu item just stays hidden.
@@ -259,6 +266,7 @@ export default function DashboardLayout({
 
   return (
     <QuestionCountsContext.Provider value={{ counts, refreshCounts: loadCounts }}>
+      <ConversationSummaryContext.Provider value={followUpNav}>
       <ProfileContext.Provider value={{ profile, refreshProfile: loadProfile }}>
       <ActiveStatusContext.Provider
         value={{
@@ -403,9 +411,20 @@ export default function DashboardLayout({
                   <VideoIcon className="h-4 w-4" />
                   Conversations
                 </span>
-                {followUpNav.waiting > 0 && (
-                  <span className="rounded-full bg-postal-red px-1.5 text-[10px] font-semibold leading-4 text-white">
-                    {followUpNav.waiting}
+                {followUpNav.requests + followUpNav.upcoming > 0 && (
+                  <span
+                    title={
+                      followUpNav.requests > 0
+                        ? `${followUpNav.requests} to review, ${followUpNav.upcoming} upcoming`
+                        : `${followUpNav.upcoming} upcoming`
+                    }
+                    className={`rounded-full px-1.5 text-[10px] font-semibold leading-4 ${
+                      followUpNav.requests > 0
+                        ? "bg-postal-red text-white"
+                        : "bg-line text-ink-soft"
+                    }`}
+                  >
+                    {followUpNav.requests + followUpNav.upcoming}
                   </span>
                 )}
               </Link>
@@ -465,6 +484,7 @@ export default function DashboardLayout({
       </div>
       </ActiveStatusContext.Provider>
       </ProfileContext.Provider>
+      </ConversationSummaryContext.Provider>
     </QuestionCountsContext.Provider>
   )
 }
