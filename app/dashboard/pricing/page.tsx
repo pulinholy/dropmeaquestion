@@ -185,8 +185,9 @@ export default function PricingPage() {
         Pricing &amp; response time
       </h1>
       <p className="mt-1 text-sm text-ink-soft">
-        Set how much you charge for a question and how quickly you&apos;ll
-        respond. You can change these anytime.
+        {followUpAvailable
+          ? "Set your prices, response time, and optional follow-up conversations. You can change these anytime."
+          : "Set how much you charge for a question and how quickly you'll respond. You can change these anytime."}
       </p>
 
       <form
