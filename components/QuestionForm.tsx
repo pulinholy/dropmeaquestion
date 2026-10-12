@@ -205,13 +205,16 @@ export default function QuestionForm({
       </div>
 
       {followUpPrice && (
-        <p className="flex items-start gap-2 text-xs text-ink-soft">
-          <VideoIcon className="mt-0.5 h-4 w-4 flex-shrink-0" />
-          <span>
-            After answering your question, {expertFirstName} may invite you to a private
-            15-minute conversation for ${followUpPrice}. It&apos;s completely optional.
+        <div className="flex items-center gap-3 border-t border-line pt-4">
+          <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
+            <VideoIcon className="h-5 w-5" />
           </span>
-        </p>
+          <p className="text-sm text-ink-soft">
+            After answering your question, {expertFirstName} may invite you to a paid
+            15-minute follow-up conversation to discuss your answer further. It&apos;s
+            completely optional.
+          </p>
+        </div>
       )}
     </form>
     {showDemoModal && (

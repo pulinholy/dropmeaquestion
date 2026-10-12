@@ -208,7 +208,7 @@ export default async function ExpertPage({
             {followUpPrice && (
               <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-postal-red/10 px-3 py-1 text-xs font-medium text-ink">
                 <VideoIcon className="h-3.5 w-3.5 text-postal-red" />
-                Offers 15-minute conversations · ${followUpPrice}
+                Offers 15-minute conversations
               </p>
             )}
 
