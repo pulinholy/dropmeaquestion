@@ -82,15 +82,15 @@ const conversationPoints = [
   },
   {
     icon: ShieldCheckIcon,
-    title: "Paid when it happens",
-    body: "Their card is held when they book and charged after the conversation. You're paid once it takes place.",
+    title: "Payment handled for you",
+    body: "The asker's card is authorized when they request a conversation. Payment is handled based on the outcome and cancellation policy.",
     iconBg: "bg-green-500/10",
     iconText: "text-green-700",
   },
   {
     icon: LockIcon,
     title: "Private by default",
-    body: "Your email stays private. Conversations take place on Drop Me A Question and aren't recorded.",
+    body: "Your email isn't shared. Join directly on Drop Me A Question, with no recording.",
     iconBg: "bg-blue-500/10",
     iconText: "text-blue-600",
   },
@@ -525,7 +525,7 @@ export default async function Home() {
       <section id="start" className="border-t border-line bg-postal-red/10">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <h2 className="font-display text-2xl text-ink">
-            Your knowledge shouldn&apos;t have to live in your DMs.
+            Your experience is valuable. Make it count.
           </h2>
           <a
             href="/register"
