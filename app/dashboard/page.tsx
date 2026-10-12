@@ -27,6 +27,8 @@ const growthTips = [
 
 type Stats = {
   totalEarnedCents: number
+  // How many paid follow-up conversations are in the total.
+  conversationCount: number
 }
 
 type FeedbackItem = {
@@ -81,9 +83,26 @@ export default function DashboardHomePage() {
       .eq("status", "answered")
 
     const rows = data ?? []
-    const totalEarnedCents = rows.reduce((sum, q) => sum + Math.round((q.price_cents ?? 0) * EXPERT_NET_RATE), 0)
+    let totalEarnedCents = rows.reduce((sum, q) => sum + Math.round((q.price_cents ?? 0) * EXPERT_NET_RATE), 0)
 
-    setStats({ totalEarnedCents })
+    // Paid follow-up conversations count too. A failure here just leaves them
+    // out rather than hiding the rest.
+    let conversationCount = 0
+    try {
+      const res = await fetch("/api/follow-up/earnings", {
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const paid: { netCents: number }[] = json.conversations ?? []
+        conversationCount = paid.length
+        totalEarnedCents += paid.reduce((sum, c) => sum + c.netCents, 0)
+      }
+    } catch {
+      // Ignored: the total then covers answered questions only.
+    }
+
+    setStats({ totalEarnedCents, conversationCount })
   }
 
   async function loadRecentFeedback() {
@@ -342,7 +361,9 @@ export default function DashboardHomePage() {
           </p>
           <p className="text-sm text-ink-soft">Total earnings</p>
           <p className="mt-1 text-xs text-ink-soft/70">
-            Earnings from answered questions.
+            {(stats?.conversationCount ?? 0) > 0
+              ? "Earnings from answers and conversations."
+              : "Earnings from answered questions."}
           </p>
         </Link>
         {conversations.visible && (

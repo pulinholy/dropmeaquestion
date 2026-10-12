@@ -6,12 +6,21 @@ import { CheckIcon, CreditCardIcon } from "@/components/icons"
 
 const EXPERT_NET_RATE = 0.85
 
+// One line in the earnings list: an answered question or a paid conversation.
 type Earning = {
   id: string
-  question_text: string
+  kind: "question" | "conversation"
+  title: string
   reference_id: string | null
-  price_cents: number | null
-  answered_at: string | null
+  gross_cents: number
+  net_cents: number
+  date: string | null
+}
+
+const CONVERSATION_TITLES: Record<string, string> = {
+  completed: "Follow-up conversation",
+  late_cancelled: "Follow-up conversation (late cancellation)",
+  asker_no_show: "Follow-up conversation (asker didn't join)",
 }
 
 function formatShortDate(dateStr: string): string {
@@ -32,6 +41,9 @@ export default function PaymentsPage() {
   const [connectingStripe, setConnectingStripe] = useState(false)
   const [stripeError, setStripeError] = useState("")
   const [earnings, setEarnings] = useState<Earning[]>([])
+  // Whether this expert can offer follow-up conversations, so the page can
+  // mention them. Hidden for everyone else.
+  const [showConversations, setShowConversations] = useState(false)
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
 
   useEffect(() => {
@@ -62,7 +74,51 @@ export default function PaymentsPage() {
       .eq("status", "answered")
       .order("answered_at", { ascending: false })
 
-    setEarnings(questions ?? [])
+    const rows: Earning[] = (questions ?? []).map((q) => ({
+      id: q.id,
+      kind: "question",
+      title: q.question_text,
+      reference_id: q.reference_id,
+      gross_cents: q.price_cents ?? 0,
+      net_cents: Math.round((q.price_cents ?? 0) * EXPERT_NET_RATE),
+      date: q.answered_at,
+    }))
+
+    // Paid follow-up conversations, from the server. A failure here leaves
+    // them out rather than hiding the questions.
+    try {
+      const res = await fetch("/api/follow-up/earnings", {
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const paid: {
+          id: string
+          referenceId: string | null
+          outcome: string
+          paidAt: string | null
+          grossCents: number
+          netCents: number
+        }[] = json.conversations ?? []
+        for (const c of paid) {
+          rows.push({
+            id: c.id,
+            kind: "conversation",
+            title: CONVERSATION_TITLES[c.outcome] ?? "Follow-up conversation",
+            reference_id: c.referenceId,
+            gross_cents: c.grossCents,
+            net_cents: c.netCents,
+            date: c.paidAt,
+          })
+        }
+        setShowConversations(Boolean(json.available) || paid.length > 0)
+      }
+    } catch {
+      // Ignored: only the questions are listed.
+    }
+
+    rows.sort((a, b) => new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime())
+    setEarnings(rows)
     setLoading(false)
   }
 
@@ -153,16 +209,14 @@ export default function PaymentsPage() {
     return <p className="text-ink-soft">Loading...</p>
   }
 
-  const totalNetCents = earnings.reduce(
-    (sum, e) => sum + Math.round((e.price_cents ?? 0) * EXPERT_NET_RATE),
-    0
-  )
+  const totalNetCents = earnings.reduce((sum, e) => sum + e.net_cents, 0)
 
   return (
     <section>
       <h1 className="font-display text-xl text-ink">Payments</h1>
       <p className="mt-1 text-sm text-ink-soft">
-        Manage your payouts and see your earnings from answered questions.
+        Manage your payouts and see your earnings from answered questions
+        {showConversations ? " and follow-up conversations" : ""}.
       </p>
 
       {stripeOnboarded ? (
@@ -217,8 +271,9 @@ export default function PaymentsPage() {
               How payments work
             </h2>
             <p className="mt-1 text-sm text-ink-soft">
-              You receive 85% of every answered question. DMQ&apos;s 15%
-              platform fee includes payment processing. Stripe sends your
+              You receive 85% of every answered question
+              {showConversations ? " and every paid follow-up conversation" : ""}.
+              DMQ&apos;s 15% platform fee includes payment processing. Stripe sends your
               available balance to your bank based on your payout schedule.
             </p>
             <button
@@ -259,6 +314,14 @@ export default function PaymentsPage() {
                   Open your Stripe dashboard above for exact payout dates and
                   status.
                 </li>
+                {showConversations && (
+                  <li>
+                    Follow-up conversations work the same way: the asker&apos;s
+                    card is held when they request one and charged after the
+                    conversation takes place, and you receive 85%. A
+                    conversation appears below once its payment has been taken.
+                  </li>
+                )}
               </ol>
             )}
           </div>
@@ -278,8 +341,8 @@ export default function PaymentsPage() {
 
         {earnings.length === 0 ? (
           <p className="mt-3 text-sm text-ink-soft">
-            No answered questions yet — earnings will show up here once you
-            answer your first one.
+            Nothing earned yet — earnings will show up here once you answer
+            your first question{showConversations ? " or hold a paid conversation" : ""}.
           </p>
         ) : (
           <div className="-mx-5 mt-4 overflow-x-auto">
@@ -298,22 +361,22 @@ export default function PaymentsPage() {
               </thead>
               <tbody className="divide-y divide-line">
                 {earnings.map((e) => {
-                  const gross = e.price_cents ?? 0
-                  const net = Math.round(gross * EXPERT_NET_RATE)
+                  const gross = e.gross_cents
+                  const net = e.net_cents
                   return (
                     <tr key={e.id}>
                       <td className="max-w-[280px] px-5 py-3 align-top">
                         <p className="truncate font-medium text-ink">
-                          {e.question_text}
+                          {e.title}
                         </p>
                         {e.reference_id && (
                           <p className="mt-0.5 truncate text-xs text-ink-soft">
-                            Question #{e.reference_id}
+                            {e.kind === "conversation" ? "For question" : "Question"} #{e.reference_id}
                           </p>
                         )}
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 align-top text-ink-soft">
-                        {e.answered_at ? formatShortDate(e.answered_at) : "—"}
+                        {e.date ? formatShortDate(e.date) : "—"}
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 text-right align-top">
                         <p className="font-semibold text-green-700">
