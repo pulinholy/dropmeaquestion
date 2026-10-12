@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+function isPast(iso: string | null | undefined): boolean {
+  return Boolean(iso) && new Date(iso as string).getTime() < Date.now()
+}
+
 function Message({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-md px-6 py-16 text-center">
@@ -131,6 +135,14 @@ export default async function MeetPage({
       content = (
         <Message title="This conversation has taken place">
           Thanks for talking with {expertFirstName}.
+        </Message>
+      )
+    } else if (call.status === "requested" && isPast(call.confirm_by)) {
+      // Past the deadline; the daily job releases the hold and emails.
+      content = (
+        <Message title="This request has expired">
+          {expertFirstName} didn&apos;t confirm a time in time. You haven&apos;t been charged,
+          and the hold on your card is being released. We&apos;ll email you when it&apos;s done.
         </Message>
       )
     } else if (call.status === "requested") {

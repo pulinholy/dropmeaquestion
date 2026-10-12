@@ -57,13 +57,22 @@ export async function GET(request: Request) {
     return NextResponse.json(unavailable)
   }
 
+  // A request still waiting after its deadline is shown as expired straight
+  // away. The row itself only changes when the daily job runs, which also
+  // releases the card hold and sends the emails.
+  const nowMs = Date.now()
+  const shownStatus = (r: { status: string; confirm_by: string | null }) =>
+    r.status === 'requested' && r.confirm_by && new Date(r.confirm_by).getTime() < nowMs
+      ? 'expired'
+      : r.status
+
   return NextResponse.json({
     available: true,
     videoMode: dmqOn ? 'dmq' : 'external',
     enabled: Boolean(expert.follow_up_allowed && expert.follow_up_enabled),
     calls: (rows ?? []).map((r) => ({
       id: r.id,
-      status: r.status,
+      status: shownStatus(r),
       priceCents: r.price_cents,
       referenceId: referenceById.get(r.question_id) ?? null,
       proposedSlots: r.proposed_slots,

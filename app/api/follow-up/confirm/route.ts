@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
   const { data: call } = await supabaseAdmin
     .from('follow_up_calls')
-    .select('id, question_id, status, proposed_slots, asker_timezone, price_cents')
+    .select('id, question_id, status, proposed_slots, asker_timezone, price_cents, confirm_by')
     .eq('id', body.id)
     .eq('expert_id', user.id)
     .maybeSingle()
@@ -61,6 +61,15 @@ export async function POST(request: Request) {
   if (call.status !== 'requested') {
     return NextResponse.json(
       { error: 'This request has already been handled or has expired.' },
+      { status: 409 }
+    )
+  }
+
+  // The asker was told the expert has until this deadline. The daily job
+  // tidies up expired requests, but until it runs they must not be confirmable.
+  if (call.confirm_by && Date.now() > new Date(call.confirm_by).getTime()) {
+    return NextResponse.json(
+      { error: 'This request has expired, so it can’t be confirmed. The asker isn’t charged.' },
       { status: 409 }
     )
   }

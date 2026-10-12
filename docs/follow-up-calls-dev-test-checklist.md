@@ -111,6 +111,7 @@ emails.
 | **Problem report** | After the start, asker or expert clicks Report, picks a reason (try each, and "Something else" with and without a note) | `disputed`. Stripe still **Uncaptured**. Alert email arrives at the support inbox with the reason and note. `/admin/conversations` shows them, plus a **Timeline** of everything that happened |
 | **Admin resolve** | `/admin/conversations`: try each of the 3 buttons on 3 different disputes | Charge, release, release and record that the expert didn't show |
 | **Expiry** | Set `confirm_by` to the past, run the job | `expired`. Canceled. Asker emailed |
+| **Expiry, before the job runs** | Set `confirm_by` to the past, do NOT run the job | Expert's list shows it under Cancelled & missed as Expired (no Confirm button, sidebar count drops); confirming it by API is refused; asker's private page says it has expired. The row stays `requested` until the job runs |
 
 ## 4. Daily-job auto-settlement
 
