@@ -280,35 +280,40 @@ export default function PricingPage() {
                     Follow-up conversations
                   </h2>
                   <p className="mt-1 text-sm text-ink-soft">
-                    Give askers the option to request a paid 15-minute conversation
-                    after receiving your answer.
+                    After answering a question, you can invite the asker to a paid
+                    15-minute follow-up conversation.
                   </p>
                 </div>
               </div>
 
-              <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/30">
-                <input
-                  type="checkbox"
-                  checked={followUpEnabled}
-                  onChange={(e) => setFollowUpEnabled(e.target.checked)}
-                  className="sr-only"
-                />
-                <span
-                  aria-hidden="true"
-                  className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
-                    followUpEnabled ? "bg-ink text-white" : "border-2 border-line"
-                  }`}
-                >
-                  {followUpEnabled && (
-                    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3.5 8.5l3 3 6-6.5" />
-                    </svg>
-                  )}
-                </span>
-                <span className="text-base text-ink">
+              <div className="mt-4 flex items-center justify-between gap-4 border-t border-line pt-4">
+                <span id="follow-up-switch-label" className="text-sm font-semibold text-ink">
                   Offer 15-minute follow-up conversations
                 </span>
-              </label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={followUpEnabled}
+                  aria-labelledby="follow-up-switch-label"
+                  onClick={() => setFollowUpEnabled((on) => !on)}
+                  className={`relative inline-flex h-7 w-[3.75rem] flex-shrink-0 items-center rounded-full text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 ${
+                    followUpEnabled ? "bg-green-600 text-white" : "bg-line text-ink-soft"
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`absolute ${followUpEnabled ? "left-2.5" : "right-2.5"}`}
+                  >
+                    {followUpEnabled ? "On" : "Off"}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`absolute h-5 w-5 rounded-full bg-white shadow transition-all ${
+                      followUpEnabled ? "right-1" : "left-1"
+                    }`}
+                  />
+                </button>
+              </div>
 
               {followUpEnabled && (
                 <div className="mt-4">
@@ -339,15 +344,12 @@ export default function PricingPage() {
                   {!isNaN(parseFloat(followUpPrice)) &&
                     parseFloat(followUpPrice) >= MIN_FOLLOW_UP_PRICE &&
                     parseFloat(followUpPrice) <= MAX_FOLLOW_UP_PRICE && (
-                      <div className="mt-4 px-1">
-                        <div className="flex items-baseline justify-between gap-4">
-                          <p className="text-sm font-medium text-ink">You receive</p>
-                          <p className="text-lg font-semibold text-ink">
-                            ${(parseFloat(followUpPrice) * 0.85).toFixed(2)}
-                          </p>
-                        </div>
-                        <p className="mt-1 text-sm text-ink-soft">
-                          After DMQ&apos;s 15% platform fee. Payment processing included.
+                      <div className="mt-4 flex items-baseline justify-between gap-4 px-1">
+                        <p className="text-sm text-ink-soft">
+                          You receive after the 15% platform fee
+                        </p>
+                        <p className="text-lg font-semibold text-ink">
+                          ${(parseFloat(followUpPrice) * 0.85).toFixed(2)}
                         </p>
                       </div>
                     )}
@@ -356,7 +358,8 @@ export default function PricingPage() {
 
               <p className="mt-4 flex items-center gap-2 text-xs text-ink-soft">
                 <InfoIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                You&apos;ll confirm each request and provide a meeting link.
+                You&apos;ll review each request and confirm a time. Conversations take
+                place on Drop Me A Question.
               </p>
 
               <button
@@ -384,13 +387,15 @@ export default function PricingPage() {
               {showFollowUpDetails && (
                 <ul id="follow-up-details" className="mt-3 list-disc space-y-2 pl-5 text-sm text-ink-soft">
                   <li>
-                    Askers receive the invitation in the email that delivers your
-                    written answer. It isn&apos;t shown on your public page.
+                    You choose, answer by answer, whether to invite the asker. The
+                    invitation comes in the email that delivers your written
+                    answer, and your public page mentions that you may offer it.
                   </li>
                   <li>
                     Askers propose up to three times. You confirm one within 24
-                    hours and add your own Zoom or Google Meet link. A new link
-                    per call, with a waiting room turned on, is best.
+                    hours. The conversation takes place on Drop Me A Question as
+                    an audio call with an optional camera, so there is no link to
+                    send.
                   </li>
                   <li>
                     Askers can cancel free up to 24 hours before the confirmed
@@ -405,8 +410,13 @@ export default function PricingPage() {
                     report one, we hold the payment and review it.
                   </li>
                   <li>
-                    Your email address isn&apos;t shared by Drop Me A Question.
-                    Your meeting service may show your display name.
+                    Your email address isn&apos;t shared by Drop Me A Question. You
+                    appear under your profile name and the asker appears as Guest.
+                    Conversations aren&apos;t recorded.
+                  </li>
+                  <li>
+                    The 15% platform fee covers payment processing, so what you see
+                    as &quot;You receive&quot; is what you are paid.
                   </li>
                 </ul>
               )}
