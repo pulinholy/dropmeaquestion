@@ -112,7 +112,7 @@ function ThankYouContent() {
   useEffect(() => {
     if (!sessionId) {
       setErrorMessage(
-        "We couldn't find your payment. If you were charged, check your email — you'll still get an answer."
+        "We couldn't find your payment. If your card shows a pending hold, check your email — you'll still get an answer."
       )
       setStatus("error")
       return
@@ -201,7 +201,7 @@ function ThankYouContent() {
           <p className="mt-3 text-ink-soft">
             {slow
               ? "This is taking longer than usual, but don't worry — we'll email you as soon as your question is confirmed."
-              : "Your payment was completed. We're confirming your question with DMQ. This usually takes just a moment."}
+              : "Your card has been authorized, not charged. We're confirming your question with DMQ. This usually takes just a moment."}
           </p>
         </>
       )}
@@ -229,8 +229,8 @@ function ThankYouContent() {
               : " by email."}
           </p>
           <p className="mt-1 text-ink-soft">
-            We&apos;ll email you when your answer is ready. If {expertFirstName} doesn&apos;t
-            respond in time, you won&apos;t be charged.
+            We&apos;ll email you when your answer is ready. Your card is only charged if{" "}
+            {expertFirstName} answers. If they don&apos;t respond in time, you won&apos;t be charged.
           </p>
 
           <div className="mt-8 w-full rounded-lg border border-line bg-white p-5 text-left shadow-sm sm:p-6">

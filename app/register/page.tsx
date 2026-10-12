@@ -6,6 +6,14 @@ import { supabase } from "@/lib/supabase"
 import SiteFooter from "@/components/SiteFooter"
 import TopicInput from "@/components/TopicInput"
 import { slugify } from "@/lib/slugify"
+import {
+  PLATFORM_FEE_RATE,
+  QUESTION_PRICE_MAX,
+  QUESTION_PRICE_MIN,
+  checkQuestionPrice,
+  expertNetDollars,
+  onlyPriceDigits,
+} from "@/lib/pricing"
 import { savePendingRegistration } from "@/lib/pending-registration"
 import {
   PersonIcon,
@@ -16,8 +24,6 @@ import {
   VideoIcon,
 } from "@/components/icons"
 
-const MIN_PRICE = 5
-const PLATFORM_FEE_RATE = 0.15
 const MAX_BIO_LENGTH = 500
 const MIN_BIO_FOR_AI = 30
 const MAX_AI_IMPROVEMENTS = 3
@@ -110,12 +116,9 @@ export default function RegisterPage() {
     }
   }
 
-  const priceValue = parseFloat(price)
-  const isPriceBelowMinimum = !isNaN(priceValue) && priceValue < MIN_PRICE
-  const netEarnings =
-    !isNaN(priceValue) && priceValue >= MIN_PRICE
-      ? (priceValue * (1 - PLATFORM_FEE_RATE)).toFixed(2)
-      : null
+  // Always from what is in the box right now.
+  const priceCheck = checkQuestionPrice(price)
+  const showPriceError = !priceCheck.ok && price !== ""
 
   async function checkUsername(value: string) {
     const clean = value.toLowerCase().replace(/[^a-z0-9-]/g, "")
@@ -148,8 +151,9 @@ export default function RegisterPage() {
       setLoading(false)
       return
     }
-    if (parseFloat(price) < MIN_PRICE) {
-      setError(`Price per question must be at least $${MIN_PRICE}.`)
+    const submittedPrice = checkQuestionPrice(price)
+    if (!submittedPrice.ok) {
+      setError(submittedPrice.message)
       setLoading(false)
       return
     }
@@ -482,31 +486,40 @@ export default function RegisterPage() {
                   $
                 </span>
                 <input
-                  type="number"
+                  id="register-price"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={3}
+                  autoComplete="off"
                   required
-                  min={MIN_PRICE}
-                  step="0.01"
+                  aria-label="Price per question in dollars"
+                  aria-invalid={showPriceError}
+                  aria-describedby="register-price-help"
                   value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(e) => setPrice(onlyPriceDigits(e.target.value))}
                   className="w-full px-3 py-2 text-ink outline-none"
                 />
                 <span className="flex items-center whitespace-nowrap bg-line/30 px-3 text-sm text-ink-soft">
                   USD
                 </span>
               </div>
-              {netEarnings !== null ? (
-                <p className="mt-1 text-xs text-ink-soft">
-                  You receive ${netEarnings} on a ${price} question after
-                  the {PLATFORM_FEE_RATE * 100}% platform fee. You can
-                  change this anytime.
-                </p>
-              ) : (
-                isPriceBelowMinimum && (
-                  <p className="mt-1 text-sm text-postal-red">
-                    Price per question must be at least ${MIN_PRICE}.
-                  </p>
-                )
-              )}
+              <p
+                id="register-price-help"
+                className={`mt-1 text-xs ${showPriceError ? "text-postal-red" : "text-ink-soft"}`}
+              >
+                {showPriceError && !priceCheck.ok ? (
+                  priceCheck.message
+                ) : priceCheck.ok ? (
+                  <>
+                    You receive ${expertNetDollars(priceCheck.dollars)} on a ${priceCheck.dollars}{" "}
+                    question after the {PLATFORM_FEE_RATE * 100}% platform fee. You can change this
+                    anytime.
+                  </>
+                ) : (
+                  <>Whole dollars only, from ${QUESTION_PRICE_MIN} to ${QUESTION_PRICE_MAX}.</>
+                )}
+              </p>
             </div>
 
             <div>

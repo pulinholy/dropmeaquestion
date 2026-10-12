@@ -4,6 +4,16 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { formatResponseWindow } from "@/lib/format"
+import {
+  QUESTION_PRICE_MAX,
+  QUESTION_PRICE_MIN,
+  FOLLOW_UP_PRICE_MAX,
+  FOLLOW_UP_PRICE_MIN,
+  checkFollowUpPrice,
+  checkQuestionPrice,
+  expertNetDollars,
+  onlyPriceDigits,
+} from "@/lib/pricing"
 import { useProfileInfo } from "../profile-context"
 import {
   ChatIcon,
@@ -14,9 +24,6 @@ import {
   InfoIcon,
 } from "@/components/icons"
 
-const MIN_PRICE = 5
-const MIN_FOLLOW_UP_PRICE = 15
-const MAX_FOLLOW_UP_PRICE = 100
 
 const responseOptions = [
   { hours: 12, label: "Within 12 hours" },
@@ -44,6 +51,9 @@ export default function PricingPage() {
   const [followUpEnabled, setFollowUpEnabled] = useState(false)
   const [followUpPrice, setFollowUpPrice] = useState("35")
   const [showFollowUpDetails, setShowFollowUpDetails] = useState(false)
+  // Set once Save is pressed (or a price is typed), so an empty box isn't
+  // scolded before the person has had a go.
+  const [tried, setTried] = useState(false)
 
   useEffect(() => {
     load()
@@ -104,21 +114,16 @@ export default function PricingPage() {
     setSaved(false)
     setError("")
 
-    if (parseFloat(price) < MIN_PRICE) {
-      setError(`Minimum question price is $${MIN_PRICE}.`)
+    setTried(true)
+    const priceCheck = checkQuestionPrice(price)
+    if (!priceCheck.ok) {
+      setError(priceCheck.message)
       setSaving(false)
       return
     }
-
-    const followUpValue = parseFloat(followUpPrice)
-    const followUpPriceValid =
-      !isNaN(followUpValue) &&
-      followUpValue >= MIN_FOLLOW_UP_PRICE &&
-      followUpValue <= MAX_FOLLOW_UP_PRICE
-    if (followUpAvailable && followUpEnabled && !followUpPriceValid) {
-      setError(
-        `Follow-up conversation price must be between $${MIN_FOLLOW_UP_PRICE} and $${MAX_FOLLOW_UP_PRICE}.`
-      )
+    const followUpCheck = checkFollowUpPrice(followUpPrice)
+    if (followUpAvailable && followUpEnabled && !followUpCheck.ok) {
+      setError(followUpCheck.message)
       setSaving(false)
       return
     }
@@ -126,40 +131,29 @@ export default function PricingPage() {
     const { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) return
 
-    const userId = sessionData.session.user.id
-
-    const { error: updateError } = await supabase
-      .from("experts")
-      .update({
-        price_cents: Math.round(parseFloat(price) * 100),
-        response_window_hours: parseInt(responseWindowHours, 10),
+    try {
+      const res = await fetch("/api/save-pricing", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+        body: JSON.stringify({
+          price,
+          responseWindowHours: parseInt(responseWindowHours, 10),
+          followUp: followUpAvailable ? { enabled: followUpEnabled, price: followUpPrice } : null,
+        }),
       })
-      .eq("id", userId)
-
-    if (updateError) {
-      setError(updateError.message)
-      setSaving(false)
-      return
-    }
-
-    if (followUpAvailable) {
-      const { error: followUpError } = await supabase
-        .from("experts")
-        .update({
-          follow_up_enabled: followUpEnabled,
-          // Keep a valid price on file even while switched off, so turning it
-          // back on remembers it.
-          follow_up_price_cents: followUpPriceValid
-            ? Math.round(followUpValue * 100)
-            : null,
-        })
-        .eq("id", userId)
-
-      if (followUpError) {
-        setError(followUpError.message)
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setError(typeof data?.error === "string" ? data.error : "Could not save your pricing. Please try again.")
         setSaving(false)
         return
       }
+    } catch {
+      setError("Could not save your pricing. Please try again.")
+      setSaving(false)
+      return
     }
 
     setSaved(true)
@@ -170,10 +164,13 @@ export default function PricingPage() {
     return <p className="text-ink-soft">Loading...</p>
   }
 
-  const priceValue = parseFloat(price)
-  const hasValidPrice = !isNaN(priceValue) && priceValue > 0
-  const netEarnings = hasValidPrice ? (priceValue * 0.85).toFixed(2) : "0.00"
-  const displayPrice = hasValidPrice ? priceValue.toFixed(2) : "0.00"
+  // Everything below is worked out from what is in the boxes right now, never
+  // from a price typed earlier or from what was last saved.
+  const priceCheck = checkQuestionPrice(price)
+  const followUpCheck = checkFollowUpPrice(followUpPrice)
+  const showPriceError = !priceCheck.ok && (tried || price !== "")
+  const showFollowUpError = !followUpCheck.ok && (tried || followUpPrice !== "")
+  const canSave = priceCheck.ok && !(followUpAvailable && followUpEnabled && !followUpCheck.ok)
 
   return (
     <section>
@@ -213,28 +210,50 @@ export default function PricingPage() {
                   <span className="flex-shrink-0 text-sm text-ink-soft">$</span>
                   <span className="mx-2.5 h-5 w-px flex-shrink-0 bg-line" />
                   <input
-                    type="number"
-                    required
-                    min={0}
-                    step="0.01"
+                    id="question-price"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    autoComplete="off"
+                    aria-label="Price per question in dollars"
+                    aria-invalid={showPriceError}
+                    aria-describedby="question-price-help"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={(e) => {
+                      setPrice(onlyPriceDigits(e.target.value))
+                      setSaved(false)
+                    }}
                     className="min-w-0 flex-1 border-0 p-0 text-sm text-ink focus:outline-none focus:ring-0"
                   />
                   <span className="flex-shrink-0 text-sm text-ink-soft">
                     USD
                   </span>
                 </div>
+                <p
+                  id="question-price-help"
+                  className={`mt-1.5 text-xs ${showPriceError ? "text-postal-red" : "text-ink-soft"}`}
+                >
+                  {showPriceError && !priceCheck.ok
+                    ? priceCheck.message
+                    : `Whole dollars only, from $${QUESTION_PRICE_MIN} to $${QUESTION_PRICE_MAX}.`}
+                </p>
 
                 <div className="mt-3 flex items-start gap-3 rounded-lg bg-green-500/10 p-3">
                   <DollarSignIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-700" />
                   <p className="text-xs text-ink">
-                    <span className="font-semibold text-green-700">
-                      You receive ${netEarnings}
-                    </span>{" "}
-                    after DMQ&apos;s 15% platform fee.
-                    <br />
-                    Payment processing is included.
+                    {priceCheck.ok ? (
+                      <>
+                        <span className="font-semibold text-green-700">
+                          You receive ${expertNetDollars(priceCheck.dollars)}
+                        </span>{" "}
+                        after DMQ&apos;s 15% platform fee.
+                        <br />
+                        Payment processing is included.
+                      </>
+                    ) : (
+                      <>Enter a valid price to see what you would receive.</>
+                    )}
                   </p>
                 </div>
               </div>
@@ -328,32 +347,41 @@ export default function PricingPage() {
                     <span className="flex-shrink-0 text-base text-ink">$</span>
                     <input
                       id="follow-up-price"
-                      type="number"
-                      min={MIN_FOLLOW_UP_PRICE}
-                      max={MAX_FOLLOW_UP_PRICE}
-                      step="0.01"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      autoComplete="off"
+                      aria-invalid={showFollowUpError}
+                      aria-describedby="follow-up-price-help"
                       value={followUpPrice}
-                      onChange={(e) => setFollowUpPrice(e.target.value)}
+                      onChange={(e) => {
+                        setFollowUpPrice(onlyPriceDigits(e.target.value))
+                        setSaved(false)
+                      }}
                       className="min-w-0 flex-1 border-0 bg-transparent p-0 text-base text-ink focus:outline-none focus:ring-0"
                     />
                     <span className="flex-shrink-0 text-xs text-ink-soft">USD</span>
                   </div>
-                  <p className="mt-2 text-xs text-ink-soft">
-                    Set a price between ${MIN_FOLLOW_UP_PRICE} and ${MAX_FOLLOW_UP_PRICE}.
+                  <p
+                    id="follow-up-price-help"
+                    className={`mt-2 text-xs ${showFollowUpError ? "text-postal-red" : "text-ink-soft"}`}
+                  >
+                    {showFollowUpError && !followUpCheck.ok
+                      ? followUpCheck.message
+                      : `Whole dollars only, from $${FOLLOW_UP_PRICE_MIN} to $${FOLLOW_UP_PRICE_MAX}.`}
                   </p>
 
-                  {!isNaN(parseFloat(followUpPrice)) &&
-                    parseFloat(followUpPrice) >= MIN_FOLLOW_UP_PRICE &&
-                    parseFloat(followUpPrice) <= MAX_FOLLOW_UP_PRICE && (
-                      <div className="mt-4 flex items-baseline justify-between gap-4 px-1">
-                        <p className="text-sm text-ink-soft">
-                          You receive after the 15% platform fee
-                        </p>
-                        <p className="text-lg font-semibold text-ink">
-                          ${(parseFloat(followUpPrice) * 0.85).toFixed(2)}
-                        </p>
-                      </div>
-                    )}
+                  {followUpCheck.ok && (
+                    <div className="mt-4 flex items-baseline justify-between gap-4 px-1">
+                      <p className="text-sm text-ink-soft">
+                        You receive after the 15% platform fee
+                      </p>
+                      <p className="text-lg font-semibold text-ink">
+                        ${expertNetDollars(followUpCheck.dollars)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -430,7 +458,7 @@ export default function PricingPage() {
           <div className="flex items-center gap-4">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || !canSave}
               className="rounded-full bg-postal-red px-6 py-2.5 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save changes"}
@@ -491,7 +519,7 @@ export default function PricingPage() {
 
                 <div className="mt-3 border-t border-line pt-3">
                   <p className="font-display text-2xl font-semibold text-ink">
-                    ${displayPrice}
+                    {priceCheck.ok ? `$${priceCheck.dollars}` : "—"}
                   </p>
                   <p className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-ink-soft">
                     <ClockIcon className="h-3.5 w-3.5" />
@@ -525,12 +553,12 @@ export default function PricingPage() {
                 <div className="mt-3 space-y-1.5 rounded-sm border border-line p-3 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-ink-soft">Question price</span>
-                    <span className="text-ink">${displayPrice}</span>
+                    <span className="text-ink">{priceCheck.ok ? `$${priceCheck.dollars}` : "—"}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-ink-soft">You receive</span>
                     <span className="font-semibold text-ink">
-                      ${netEarnings}
+                      {priceCheck.ok ? `$${expertNetDollars(priceCheck.dollars)}` : "—"}
                     </span>
                   </div>
                 </div>
