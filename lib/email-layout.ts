@@ -40,6 +40,8 @@ export function renderEmailLayout(bodyHtml: string): string {
                 <a href="${SITE_URL}/terms" style="color:#4a5568; text-decoration:underline;">Terms of Service</a>
                 &nbsp;&middot;&nbsp;
                 <a href="${SITE_URL}/privacy" style="color:#4a5568; text-decoration:underline;">Privacy Policy</a>
+                &nbsp;&middot;&nbsp;
+                <a href="${SITE_URL}/conversation-policy" style="color:#4a5568; text-decoration:underline;">Conversation Policy</a>
               </td>
             </tr>
             <tr>
