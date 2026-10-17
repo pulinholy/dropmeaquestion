@@ -47,3 +47,8 @@ next-env.d.ts
 .env*
 # keep the committed template tracked
 !.env.example
+
+# Explainer video tooling and rendered files (kept local)
+/promo/tools/node_modules/
+/promo/out/
+/promo/tools/.profile/
