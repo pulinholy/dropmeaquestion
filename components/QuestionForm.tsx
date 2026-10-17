@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { MailIcon, ShieldCheckIcon, InfoIcon, PaperclipIcon, VideoIcon } from "./icons"
 import { formatResponseWindow } from "@/lib/format"
 import DemoProfileModal from "./DemoProfileModal"
+import { isUnchangedStarter } from "@/lib/question-form"
 
 const MAX_QUESTION_LENGTH = 1000
 const CHECKOUT_TIMEOUT_MS = 20000
@@ -18,6 +19,8 @@ export default function QuestionForm({
   responseWindowHours,
   topics,
   followUpPrice = null,
+  guidance = null,
+  starter = null,
   demo = false,
 }: {
   expertId: string
@@ -28,11 +31,15 @@ export default function QuestionForm({
   topics: string[]
   // Set only when this expert can really invite a follow-up conversation.
   followUpPrice?: string | null
+  // The expert's own note on what to include, and starter text that pre-fills
+  // the box. Both are optional.
+  guidance?: string | null
+  starter?: string | null
   // Example profile: looks and behaves like the real form, but submitting
   // opens an explainer instead of ever contacting the checkout API.
   demo?: boolean
 }) {
-  const [question, setQuestion] = useState("")
+  const [question, setQuestion] = useState(starter ?? "")
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -58,6 +65,10 @@ export default function QuestionForm({
     e.preventDefault()
     if (demo) {
       setShowDemoModal(true)
+      return
+    }
+    if (isUnchangedStarter(question, starter)) {
+      setError("Add your own details to the starter text before sending your question.")
       return
     }
     setLoading(true)
@@ -107,9 +118,9 @@ export default function QuestionForm({
         <label className="block text-sm font-semibold text-ink">
           What would you like to ask {expertFirstName}?
         </label>
-        <p className="mt-0.5 text-xs text-ink-soft">
-          For the best answer, focus on one main question and include any
-          helpful context.
+        <p className="mt-0.5 whitespace-pre-wrap text-xs text-ink-soft">
+          {guidance ??
+            "For the best answer, focus on one main question and include any helpful context."}
         </p>
         <textarea
           required
@@ -129,6 +140,15 @@ export default function QuestionForm({
             {question.length}/{MAX_QUESTION_LENGTH}
           </p>
         </div>
+        {starter && isUnchangedStarter(question, starter) && (
+          <button
+            type="button"
+            onClick={() => setQuestion("")}
+            className="mt-1 text-xs font-medium text-ink-soft underline underline-offset-2 hover:text-ink"
+          >
+            Start blank
+          </button>
+        )}
       </div>
       <div>
         <label className="block text-sm font-semibold text-ink">

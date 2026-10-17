@@ -262,3 +262,15 @@ delete from follow_up_calls where created_at > now() - interval '1 day';
 ```
 
 Then switch the expert's follow-ups back off on the Pricing page.
+
+## Question form (guidance and starter text)
+
+Needs `supabase/question_form.sql` on the project first. Run `node scripts/question-form-test.mts` for the rule checks.
+
+- [ ] **Page settings > Question form** appears (it stays hidden before the SQL). Pick **Career coach**: "What to include" and "Starter text" fill in, and the preview below shows what askers will see.
+- [ ] Type a link, an email address or a phone number into either box: a red message appears and **Save** is off.
+- [ ] Save, then open the expert's public page: the guidance replaces the generic hint, and the question box is pre-filled.
+- [ ] **Start blank** clears the box (and only shows while the text is unchanged). Sending the starter text unchanged shows "Add your own details..." on the page and is also refused by the server.
+- [ ] Fill in the starter lines and send: the question reaches the expert with its line breaks (Questions list, thank-you page, answer email).
+- [ ] Clear both boxes and save: the public page is back to the original hint and an empty box.
+- [ ] An expert who never touched the card sees no change.

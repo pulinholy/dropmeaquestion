@@ -147,6 +147,23 @@ export default async function ExpertPage({
     }
   }
 
+  // The expert's note on what to include and optional starter text. A separate
+  // read, so the page works before the database has these columns.
+  const { data: formText } = await supabaseAdmin
+    .from("experts")
+    .select("question_guidance, question_template")
+    .eq("id", profile.id)
+    .maybeSingle()
+  // Switched off by the expert: their text is kept but not shown.
+  const { data: formFlag } = await supabaseAdmin
+    .from("experts")
+    .select("question_form_enabled")
+    .eq("id", profile.id)
+    .maybeSingle()
+  const formOn = formFlag?.question_form_enabled !== false
+  const questionGuidance = formOn ? formText?.question_guidance || null : null
+  const questionStarter = formOn ? formText?.question_template || null : null
+
   const price = formatPrice(expert.price_cents)
   const firstName = profile.full_name?.split(" ")[0] || profile.full_name
   const topicNames = topics?.map((t) => t.name) ?? []
@@ -252,6 +269,8 @@ export default async function ExpertPage({
                       responseWindowHours={expert.response_window_hours}
                       topics={topicNames}
                       followUpPrice={followUpPrice}
+                      guidance={questionGuidance}
+                      starter={questionStarter}
                       demo={isDemo}
                     />
                   ) : (

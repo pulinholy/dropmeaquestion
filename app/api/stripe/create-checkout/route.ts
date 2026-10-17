@@ -5,6 +5,7 @@ import { logError } from '@/lib/log-error'
 import { generateReferenceId } from '@/lib/reference-id'
 import { APP_BASE_URL } from '@/lib/site'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { isUnchangedStarter } from '@/lib/question-form'
 
 const MAX_QUESTION_LENGTH = 1000
 const PLATFORM_FEE_RATE = 0.15
@@ -44,6 +45,26 @@ export async function POST(request: Request) {
   if (!expert || !expert.is_active || !expert.stripe_onboarded || !expert.stripe_account_id) {
     return NextResponse.json(
       { error: 'This expert is not accepting questions right now.' },
+      { status: 400 }
+    )
+  }
+
+  // An expert's starter text, sent back exactly as it was pre-filled, is not
+  // a question. A separate read, so this works before the columns exist.
+  const { data: formText } = await supabaseAdmin
+    .from('experts')
+    .select('question_template')
+    .eq('id', expertId)
+    .maybeSingle()
+  const { data: formFlag } = await supabaseAdmin
+    .from('experts')
+    .select('question_form_enabled')
+    .eq('id', expertId)
+    .maybeSingle()
+  const formOn = formFlag?.question_form_enabled !== false
+  if (formOn && isUnchangedStarter(question, formText?.question_template)) {
+    return NextResponse.json(
+      { error: 'Add your own details to the starter text before sending your question.' },
       { status: 400 }
     )
   }

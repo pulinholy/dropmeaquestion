@@ -313,7 +313,7 @@ export default function QuestionsByStatusPage() {
                 {q.reference_id && `#${q.reference_id} · `}
                 {formatRelativeTime(q.created_at)} · Reply by {formatReplyBy(q.deadline_at)}
               </p>
-              <p className="mt-1 text-ink">{q.question_text}</p>
+              <p className="mt-1 whitespace-pre-wrap text-ink">{q.question_text}</p>
 
               {answerError && answerError.id === q.id && (
                 <p role="alert" className="mt-2 text-sm text-postal-red">
@@ -427,7 +427,7 @@ export default function QuestionsByStatusPage() {
                   {q.reference_id && `#${q.reference_id} · `}
                   {formatShortDate(q.created_at)}
                 </p>
-                <p className="mt-1 text-ink">{q.question_text}</p>
+                <p className="mt-1 whitespace-pre-wrap text-ink">{q.question_text}</p>
 
                 {q.feedback_rating && (
                   <div className="mt-1 flex items-center gap-1.5">

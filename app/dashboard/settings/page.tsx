@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import QRCode from "qrcode"
 import { supabase } from "@/lib/supabase"
+import QuestionFormCard, { useQuestionForm } from "@/components/QuestionFormSettings"
 import { formatResponseWindow } from "@/lib/format"
 import { useProfileInfo } from "../profile-context"
 import { useActiveStatus } from "../active-status-context"
@@ -33,6 +34,7 @@ export default function SettingsPage() {
   const { profile } = useProfileInfo()
   const { isActive, loading: activeStatusLoading, toggling, toggleActive } = useActiveStatus()
 
+  const questionForm = useQuestionForm()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -184,8 +186,7 @@ export default function SettingsPage() {
     setGeneratingQr(false)
   }
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSave() {
     setSaving(true)
     setSaved(false)
     setError("")
@@ -205,6 +206,13 @@ export default function SettingsPage() {
 
     if (updateError) {
       setError(updateError.message)
+      setSaving(false)
+      return
+    }
+
+    const questionFormError = await questionForm.save()
+    if (questionFormError) {
+      setError(questionFormError)
     } else {
       setSaved(true)
     }
@@ -225,81 +233,8 @@ export default function SettingsPage() {
         questions.
       </p>
 
-      <form
-        onSubmit={handleUpdateEmail}
-        className="mt-4 rounded-lg border border-line bg-card p-5"
-      >
-        <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
-            <MailIcon className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-ink">Account email</h2>
-            <p className="mt-0.5 text-xs text-ink-soft">
-              Used to log in and to receive your question notifications.
-              Askers never see this.
-            </p>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <input
-                type="email"
-                required
-                value={emailInput}
-                onChange={(e) => {
-                  setEmailInput(e.target.value)
-                  setEmailSaved(false)
-                  setEmailConfirmed(false)
-                  setEmailError("")
-                }}
-                className="min-w-[220px] flex-1 rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
-              />
-              <button
-                type="submit"
-                disabled={
-                  emailSaving || emailInput.trim() === currentEmail || !emailInput.trim()
-                }
-                className="flex-shrink-0 rounded-full bg-postal-red px-4 py-2 text-xs font-medium text-white hover:bg-ink disabled:opacity-50"
-              >
-                {emailSaving ? "Updating..." : "Update email"}
-              </button>
-            </div>
-
-            {emailError && (
-              <p className="mt-2 text-xs text-postal-red">
-                {emailError}{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmailError("")
-                  }}
-                  className="underline"
-                >
-                  Try again
-                </button>
-              </p>
-            )}
-            {emailConfirmed && (
-              <p className="mt-2 text-xs font-medium text-green-700">
-                Your email has been updated.
-              </p>
-            )}
-            {emailSaved && !emailConfirmed && (
-              <p className="mt-2 text-xs text-postal-blue">
-                Check {emailInput.trim()} for a confirmation link to finish
-                the change. Your login email stays the same until you
-                confirm.
-              </p>
-            )}
-          </div>
-        </div>
-      </form>
-
-      <form
-        onSubmit={handleSave}
-        className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[65fr_35fr]"
-      >
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className="rounded-lg border border-line bg-card p-5">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[65fr_35fr]">
+          <div className="rounded-lg border border-line bg-card p-5 lg:col-start-1 lg:row-start-1">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
                 <LinkIcon className="h-4 w-4" />
@@ -369,6 +304,76 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          <form
+            onSubmit={handleUpdateEmail}
+            className="rounded-lg border border-line bg-card p-5 lg:col-start-1 lg:row-start-2"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+                <MailIcon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm font-semibold text-ink">Account email</h2>
+                <p className="mt-0.5 text-xs text-ink-soft">
+                  Used to log in and to receive your question notifications.
+                  Askers never see this.
+                </p>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <input
+                    type="email"
+                    required
+                    value={emailInput}
+                    onChange={(e) => {
+                      setEmailInput(e.target.value)
+                      setEmailSaved(false)
+                      setEmailConfirmed(false)
+                      setEmailError("")
+                    }}
+                    className="min-w-[220px] flex-1 rounded-sm border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60"
+                  />
+                  <button
+                    type="submit"
+                    disabled={
+                      emailSaving || emailInput.trim() === currentEmail || !emailInput.trim()
+                    }
+                    className="flex-shrink-0 rounded-full bg-postal-red px-4 py-2 text-xs font-medium text-white hover:bg-ink disabled:opacity-50"
+                  >
+                    {emailSaving ? "Updating..." : "Update email"}
+                  </button>
+                </div>
+
+                {emailError && (
+                  <p className="mt-2 text-xs text-postal-red">
+                    {emailError}{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmailError("")
+                      }}
+                      className="underline"
+                    >
+                      Try again
+                    </button>
+                  </p>
+                )}
+                {emailConfirmed && (
+                  <p className="mt-2 text-xs font-medium text-green-700">
+                    Your email has been updated.
+                  </p>
+                )}
+                {emailSaved && !emailConfirmed && (
+                  <p className="mt-2 text-xs text-postal-blue">
+                    Check {emailInput.trim()} for a confirmation link to finish
+                    the change. Your login email stays the same until you
+                    confirm.
+                  </p>
+                )}
+              </div>
+            </div>
+          </form>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-start-1 lg:row-start-3">
           <div className="rounded-lg border border-line bg-card p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
@@ -462,7 +467,9 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-card p-5">
+          </div>
+
+          <div className="rounded-lg border border-line bg-card p-5 lg:col-span-2 lg:row-start-4">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-red/10 text-postal-red">
                 <PauseIcon className="h-4 w-4" />
@@ -492,30 +499,7 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-
-          {error && <p className="text-sm text-postal-red">{error}</p>}
-          {saved && <p className="text-sm text-postal-blue">Saved.</p>}
-
-          <div className="flex items-center gap-4">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-full bg-postal-red px-6 py-2.5 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
-            >
-              {saving ? "Saving..." : "Save changes"}
-            </button>
-            <button
-              type="button"
-              onClick={load}
-              className="text-sm font-medium text-ink-soft hover:text-ink"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="rounded-lg border border-line bg-card p-4">
+          <div className="rounded-lg border border-line bg-card p-4 lg:col-start-2 lg:row-span-2 lg:row-start-1">
             <h2 className="text-sm font-semibold text-ink">
               Preview of your page
             </h2>
@@ -593,7 +577,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-lavender/30 p-4">
+          <div className="rounded-lg border border-line bg-lavender/30 p-4 lg:col-start-2 lg:row-start-3">
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
                 <LightbulbIcon className="h-4 w-4" />
@@ -622,8 +606,37 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-        </div>
-      </form>
+
+      </div>
+
+      <QuestionFormCard form={questionForm} firstName={profile.fullName?.split(" ")[0] || "you"} />
+
+      <div className="mt-5">
+              {error && <p className="text-sm text-postal-red">{error}</p>}
+              {saved && <p className="text-sm text-postal-blue">Saved.</p>}
+
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="rounded-full bg-postal-red px-6 py-2.5 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save changes"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    load()
+                    questionForm.reload()
+                  }}
+                  className="text-sm font-medium text-ink-soft hover:text-ink"
+                >
+                  Cancel
+                </button>
+              </div>
+
+      </div>
     </section>
   )
 }
