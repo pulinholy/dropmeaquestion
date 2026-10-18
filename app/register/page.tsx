@@ -24,7 +24,7 @@ import {
   VideoIcon,
 } from "@/components/icons"
 
-const MAX_BIO_LENGTH = 500
+const MAX_BIO_LENGTH = 1000
 const MIN_BIO_FOR_AI = 30
 const MAX_AI_IMPROVEMENTS = 3
 

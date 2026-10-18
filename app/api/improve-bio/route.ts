@@ -3,7 +3,7 @@ import { anthropic } from '@/lib/anthropic'
 import { logError } from '@/lib/log-error'
 import { enforceRateLimit } from '@/lib/rate-limit'
 
-const MAX_BIO_LENGTH = 500
+const MAX_BIO_LENGTH = 1000
 const MIN_INPUT_LENGTH = 10
 const MAX_INPUT_LENGTH = 2000
 

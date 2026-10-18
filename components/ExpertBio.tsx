@@ -10,7 +10,7 @@ export default function ExpertBio({ bio }: { bio: string }) {
   const displayed = isLong && !expanded ? `${bio.slice(0, BIO_PREVIEW_LENGTH).trimEnd()}…` : bio
 
   return (
-    <p className="mt-3 text-sm leading-relaxed text-ink">
+    <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink">
       {displayed}{" "}
       {isLong && (
         <button

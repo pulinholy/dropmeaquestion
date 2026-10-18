@@ -8,7 +8,7 @@ import { slugify } from "@/lib/slugify"
 import { CheckIcon, ChatIcon, EyeIcon } from "@/components/icons"
 
 const HEADLINE_MAX = 100
-const BIO_MAX = 500
+const BIO_MAX = 1000
 const MIN_BIO_FOR_AI = 30
 const MAX_AI_IMPROVEMENTS = 3
 

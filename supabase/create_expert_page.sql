@@ -55,7 +55,7 @@ begin
     raise exception 'invalid_response_window';
   end if;
 
-  if p_bio is not null and length(p_bio) > 500 then
+  if p_bio is not null and length(p_bio) > 1000 then
     raise exception 'bio_too_long';
   end if;
 
