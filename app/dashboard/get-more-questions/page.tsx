@@ -125,6 +125,8 @@ export default function GetMoreQuestionsPage() {
   const [activeTemplate, setActiveTemplate] = useState<MessageKind>("professional")
   const [copiedTemplate, setCopiedTemplate] = useState(false)
   const [notice, setNotice] = useState("")
+  // The icon the pointer or keyboard is on, so its action can be shown.
+  const [hoveredAction, setHoveredAction] = useState("")
 
   const [cardStyle, setCardStyle] = useState<CardStyle>("profile")
   // "" means "show my main profile" (no topic highlighted).
@@ -238,12 +240,24 @@ export default function GetMoreQuestionsPage() {
   const messageTopics = highlight ? [highlight] : topics
   const topicsPhrase = joinWithOr(messageTopics)
 
+  // Each message leads with what the audience gets, not with the platform.
+  // They differ in length and tone: a few short paragraphs, two lines, one line.
+  const hasTopics = messageTopics.length > 0
   const messages: Record<MessageKind, string> = {
-    professional: `I'm now taking questions through Drop Me A Question. If you'd like my perspective on ${topicsPhrase}, you can send me a question here: ${pageUrl}`,
-    casual: `Have a question for me about ${topicsPhrase}? You can now ask me directly on Drop Me A Question: ${pageUrl}`,
-    short: `I'm taking questions about ${joinWithAnd(messageTopics.slice(0, 3))}. Ask me here → ${pageUrl}`,
+    professional: `${
+      hasTopics ? `Have questions about ${topicsPhrase}?` : "Have a question for me?"
+    }\n\nI'm now offering personalized answers through Drop Me A Question. Send me your question directly, and I'll reply with advice based on my own experience.\n\nAsk me here: ${pageUrl}`,
+    casual: `${
+      hasTopics ? `Got a question about ${topicsPhrase}?` : "Got a question for me?"
+    } Ask me directly on Drop Me A Question and I'll answer it personally: ${pageUrl}`,
+    short: `${
+      hasTopics ? `Questions about ${joinWithAnd(messageTopics.slice(0, 3))}?` : "Got a question?"
+    } Ask me here → ${pageUrl}`,
   }
   const activeMessage = messages[activeTemplate]
+  // X only takes a short post: use the chosen message when it fits, otherwise the short one.
+  const xFits = activeMessage.length <= 260
+  const xText = xFits ? activeMessage : messages.short
 
   async function copyText(text: string): Promise<boolean> {
     try {
@@ -276,6 +290,8 @@ export default function GetMoreQuestionsPage() {
 
   type SharePlatform = {
     label: string
+    // What clicking does, shown on hover or focus and read by screen readers.
+    action: string
     badge?: IconComponent
     icon?: IconComponent
     // Opens an external page (shows the ↗ marker).
@@ -287,12 +303,14 @@ export default function GetMoreQuestionsPage() {
 
   const encodedUrl = encodeURIComponent(pageUrl)
 
-  // LinkedIn and Facebook only accept a link now, not pre-filled text, so we
-  // copy the message for the person to paste. Instagram, TikTok, YouTube and
-  // websites have no share link at all: copy the link and say where to put it.
+  // LinkedIn and Facebook only accept a link, not pre-filled text, so we copy the
+  // chosen message for the person to paste. Instagram, YouTube and TikTok have no
+  // share link at all, so we copy the message as a caption or description and open
+  // the platform. Every action uses the message and topic chosen below.
   const sharePlatforms: SharePlatform[] = [
     {
       label: "LinkedIn",
+      action: "Copy message & open LinkedIn",
       badge: LinkedInBadgeIcon,
       external: true,
       href: pageUrl
@@ -306,35 +324,45 @@ export default function GetMoreQuestionsPage() {
     },
     {
       label: "Instagram",
+      action: "Copy caption & open Instagram",
       badge: InstagramBadgeIcon,
-      external: false,
+      external: true,
+      href: "https://www.instagram.com/",
       onClick: async () => {
-        await copyText(pageUrl)
-        showNotice(
-          "Link copied. Add it to your Instagram bio, and post your card as an image or story."
-        )
+        if (await copyText(activeMessage)) {
+          showNotice(
+            "Caption copied. Paste it into your Instagram post, and add your link to your bio."
+          )
+        }
       },
     },
     {
       label: "YouTube",
+      action: "Copy description & open YouTube",
       badge: YouTubeBadgeIcon,
-      external: false,
+      external: true,
+      href: "https://studio.youtube.com/",
       onClick: async () => {
-        await copyText(pageUrl)
-        showNotice("Link copied. Paste it into your video description or channel links.")
+        if (await copyText(activeMessage)) {
+          showNotice("Description copied. Paste it into your video description or channel About page.")
+        }
       },
     },
     {
       label: "TikTok",
+      action: "Copy caption & open TikTok",
       badge: TikTokBadgeIcon,
-      external: false,
+      external: true,
+      href: "https://www.tiktok.com/",
       onClick: async () => {
-        await copyText(pageUrl)
-        showNotice("Link copied. Add it to your TikTok bio or a video caption.")
+        if (await copyText(activeMessage)) {
+          showNotice("Caption copied. Paste it into your TikTok caption, and add your link to your bio.")
+        }
       },
     },
     {
       label: "Facebook",
+      action: "Copy message & open Facebook",
       badge: FacebookBadgeIcon,
       external: true,
       href: pageUrl ? `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` : undefined,
@@ -346,14 +374,14 @@ export default function GetMoreQuestionsPage() {
     },
     {
       label: "X (Twitter)",
+      action: xFits ? "Open X with your message" : "Open X with your short message",
       badge: XBadgeIcon,
       external: true,
-      href: pageUrl
-        ? `https://x.com/intent/tweet?text=${encodeURIComponent(messages.short)}`
-        : undefined,
+      href: pageUrl ? `https://x.com/intent/tweet?text=${encodeURIComponent(xText)}` : undefined,
     },
     {
       label: "Email",
+      action: "Open an email with your message",
       icon: MailIcon,
       external: false,
       href: pageUrl
@@ -362,6 +390,7 @@ export default function GetMoreQuestionsPage() {
     },
     {
       label: "Website",
+      action: "Copy your page link",
       icon: LinkIcon,
       external: false,
       onClick: async () => {
@@ -415,8 +444,11 @@ export default function GetMoreQuestionsPage() {
         }`}
       >
         <DownloadIcon className="h-3.5 w-3.5" />
-        Download image
+        Download share card
       </a>
+      <p className="mt-2 text-center text-xs text-ink-soft">
+        Post this image with your message to help your page stand out.
+      </p>
     </>
   )
 
@@ -476,8 +508,9 @@ export default function GetMoreQuestionsPage() {
                   Share your page
                 </h2>
                 <p className="mt-0.5 text-xs text-ink-soft">
-                  Click an icon to share your page. Where a platform can&apos;t
-                  be pre-filled, we copy your message so you can paste it.
+                  Choose a platform. We copy the message below and open the
+                  platform for you to paste it, or fill it in where the platform
+                  allows. The message and topic you choose below are the ones used.
                 </p>
                 <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-8">
                   {sharePlatforms.map((platform) => {
@@ -500,6 +533,14 @@ export default function GetMoreQuestionsPage() {
                     )
                     const className =
                       "flex flex-col items-center gap-1 text-center hover:opacity-80"
+                    const hover = {
+                      title: platform.action,
+                      "aria-label": platform.action,
+                      onMouseEnter: () => setHoveredAction(platform.action),
+                      onFocus: () => setHoveredAction(platform.action),
+                      onMouseLeave: () => setHoveredAction(""),
+                      onBlur: () => setHoveredAction(""),
+                    }
 
                     return platform.href ? (
                       <a
@@ -509,6 +550,7 @@ export default function GetMoreQuestionsPage() {
                         rel={platform.external ? "noreferrer" : undefined}
                         onClick={platform.onClick}
                         className={className}
+                        {...hover}
                       >
                         {content}
                       </a>
@@ -518,16 +560,20 @@ export default function GetMoreQuestionsPage() {
                         type="button"
                         onClick={platform.onClick}
                         className={className}
+                        {...hover}
                       >
                         {content}
                       </button>
                     )
                   })}
                 </div>
+                <p className="mt-3 min-h-[1rem] text-xs text-ink-soft">
+                  {hoveredAction || "Hover over or tap an icon to see what it does."}
+                </p>
                 <p
                   role="status"
                   aria-live="polite"
-                  className={`mt-3 rounded-sm bg-green-500/10 px-3 py-2 text-xs text-green-800 ${
+                  className={`mt-2 rounded-sm bg-green-500/10 px-3 py-2 text-xs text-green-800 ${
                     notice ? "" : "hidden"
                   }`}
                 >
@@ -674,7 +720,7 @@ export default function GetMoreQuestionsPage() {
                 </div>
 
                 <div className="mt-2 flex items-end justify-between gap-4 rounded-sm border border-line p-3">
-                  <p className="break-words text-xs text-ink-soft">
+                  <p className="whitespace-pre-line break-words text-xs text-ink-soft">
                     {activeMessage}
                   </p>
                   <button
