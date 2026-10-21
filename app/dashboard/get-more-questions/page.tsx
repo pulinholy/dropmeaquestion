@@ -500,6 +500,57 @@ export default function GetMoreQuestionsPage() {
 
           <div className="rounded-lg border border-line bg-card p-4">
             <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
+                <DocumentIcon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display text-base text-ink">
+                  Ready-to-share message
+                </h2>
+                <p className="mt-0.5 text-xs text-ink-soft">
+                  Use one of these templates or edit it to match your style.
+                  You can post it on any platform — LinkedIn, Instagram,
+                  YouTube, Facebook, X, email, or your website.
+                </p>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(
+                    [
+                      ["professional", "Professional"],
+                      ["casual", "Casual"],
+                      ["short", "Short"],
+                    ] as const
+                  ).map(([kind, label]) => (
+                    <button
+                      key={kind}
+                      onClick={() => selectTemplate(kind)}
+                      className={`rounded-full px-4 py-1.5 text-xs font-medium ${
+                        activeTemplate === kind
+                          ? "bg-postal-red text-white"
+                          : "border border-line text-ink-soft hover:border-postal-red hover:text-postal-red"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-2 flex items-end justify-between gap-4 rounded-sm border border-line p-3">
+                  <p className="whitespace-pre-line break-words text-xs text-ink-soft">
+                    {activeMessage}
+                  </p>
+                  <button
+                    onClick={copyTemplate}
+                    className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1.5 text-xs font-medium text-postal-red hover:bg-postal-red/10"
+                  >
+                    {copiedTemplate ? "Copied!" : "Copy message"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-line bg-card p-4">
+            <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-lavender text-ink">
                 <MegaphoneIcon className="h-4 w-4" />
               </div>
@@ -510,7 +561,7 @@ export default function GetMoreQuestionsPage() {
                 <p className="mt-0.5 text-xs text-ink-soft">
                   Choose a platform. We copy the message below and open the
                   platform for you to paste it, or fill it in where the platform
-                  allows. The message and topic you choose below are the ones used.
+                  allows. The message and topic you have chosen are the ones used.
                 </p>
                 <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-8">
                   {sharePlatforms.map((platform) => {
@@ -682,57 +733,6 @@ export default function GetMoreQuestionsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-line bg-card p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-postal-blue/10 text-postal-blue">
-                <DocumentIcon className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="font-display text-base text-ink">
-                  Ready-to-share message
-                </h2>
-                <p className="mt-0.5 text-xs text-ink-soft">
-                  Use one of these templates or edit it to match your style.
-                  You can post it on any platform — LinkedIn, Instagram,
-                  YouTube, Facebook, X, email, or your website.
-                </p>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {(
-                    [
-                      ["professional", "Professional"],
-                      ["casual", "Casual"],
-                      ["short", "Short"],
-                    ] as const
-                  ).map(([kind, label]) => (
-                    <button
-                      key={kind}
-                      onClick={() => selectTemplate(kind)}
-                      className={`rounded-full px-4 py-1.5 text-xs font-medium ${
-                        activeTemplate === kind
-                          ? "bg-postal-red text-white"
-                          : "border border-line text-ink-soft hover:border-postal-red hover:text-postal-red"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="mt-2 flex items-end justify-between gap-4 rounded-sm border border-line p-3">
-                  <p className="whitespace-pre-line break-words text-xs text-ink-soft">
-                    {activeMessage}
-                  </p>
-                  <button
-                    onClick={copyTemplate}
-                    className="flex-shrink-0 rounded-full border border-postal-red px-3 py-1.5 text-xs font-medium text-postal-red hover:bg-postal-red/10"
-                  >
-                    {copiedTemplate ? "Copied!" : "Copy message"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="hidden flex-col gap-4 xl:flex">
