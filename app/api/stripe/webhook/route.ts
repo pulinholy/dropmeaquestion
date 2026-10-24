@@ -8,17 +8,28 @@ import { confirmFollowUpPayment } from '@/lib/confirm-follow-up-payment'
 
 export async function POST(request: Request) {
   const body = await request.text()
-  const signature = request.headers.get('stripe-signature')!
+  const signature = request.headers.get('stripe-signature') ?? ''
 
-  let event
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    )
-  } catch (err) {
-    await logError('stripe/webhook:signature', err)
+  // Stripe signs events with a different secret per webhook endpoint. Events
+  // about the platform's own payments and events about connected accounts come
+  // from two separate endpoints, so either secret is accepted.
+  const secrets = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
+  ].filter((s): s is string => Boolean(s))
+
+  let event: Stripe.Event | null = null
+  let signatureError: unknown = null
+  for (const secret of secrets) {
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, secret)
+      break
+    } catch (err) {
+      signatureError = err
+    }
+  }
+  if (!event) {
+    await logError('stripe/webhook:signature', signatureError ?? new Error('No webhook secret set'))
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
