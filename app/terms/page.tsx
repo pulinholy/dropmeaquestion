@@ -94,7 +94,7 @@ export default function TermsPage() {
             </p>
           </section>
 
-          <section>
+          <section id="refunds">
             <h2 className="font-display text-xl text-ink">
               Payments, fees, and refunds
             </h2>
