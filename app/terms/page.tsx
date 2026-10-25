@@ -18,7 +18,7 @@ export default function TermsPage() {
           Terms of Service
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Last updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+          Last updated: October 24, 2026
         </p>
 
         <div className="mt-10 space-y-10 text-ink-soft">
@@ -255,6 +255,19 @@ export default function TermsPage() {
               <li>
                 Use the Service to send unsolicited advertising or spam to
                 Experts or Askers.
+              </li>
+              <li>
+                Offer or pay for anything that Stripe prohibits or restricts
+                (see{" "}
+                <a
+                  href="https://stripe.com/legal/restricted-businesses"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Stripe&apos;s list of prohibited and restricted businesses
+                </a>
+                ), since payments on DMQ are processed by Stripe.
               </li>
               <li>
                 Record or share a conversation without the consent of
