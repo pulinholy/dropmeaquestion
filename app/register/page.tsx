@@ -15,6 +15,7 @@ import {
   onlyPriceDigits,
 } from "@/lib/pricing"
 import { savePendingRegistration } from "@/lib/pending-registration"
+import { notifyNewExpert } from "@/lib/notify-new-expert"
 import {
   PersonIcon,
   DocumentIcon,
@@ -234,6 +235,7 @@ export default function RegisterPage() {
         return
       }
 
+      void notifyNewExpert()
       router.push("/register/success")
     } catch {
       setError("Something went wrong. Please check your connection and try again.")

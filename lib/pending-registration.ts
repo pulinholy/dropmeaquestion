@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"
+import { notifyNewExpert } from "@/lib/notify-new-expert"
 
 // When the project requires email confirmation, signup returns no session, so
 // the page can't be created yet. The form details (never the password) are
@@ -66,5 +67,6 @@ export async function completePendingRegistration(
   if (!error || error.message === "already_registered") {
     clearPendingRegistration()
   }
+  if (!error) void notifyNewExpert()
   return !error
 }
