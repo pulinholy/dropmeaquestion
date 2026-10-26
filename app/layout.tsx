@@ -3,6 +3,7 @@ import { Fraunces, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { PUBLIC_SITE_URL } from "@/lib/site";
 import AuthHashRedirect from "@/components/AuthHashRedirect";
+import { Analytics } from "@vercel/analytics/next";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className={`${fraunces.variable} ${publicSans.variable} antialiased`}>
         <AuthHashRedirect />
         {children}
+        <Analytics />
       </body>
     </html>
   );

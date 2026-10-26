@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Last updated: October 24, 2026
+          Last updated: October 26, 2026
         </p>
 
         <div className="mt-10 space-y-10 text-ink-soft">
@@ -112,7 +112,7 @@ export default function PrivacyPage() {
               <li><strong className="text-ink">Supabase</strong> — our database, authentication, and file storage (profile photos and question attachments).</li>
               <li><strong className="text-ink">Resend</strong> — delivering answer and notification emails.</li>
               <li><strong className="text-ink">Daily</strong> — carrying the audio (and camera, if turned on) of follow-up conversations in real time, and keeping technical connection records of each session.</li>
-              <li><strong className="text-ink">Vercel</strong> — hosting the website.</li>
+              <li><strong className="text-ink">Vercel</strong> — hosting the website, and counting visits with anonymous page-view analytics that don&apos;t use cookies.</li>
             </ul>
             <p className="mt-3">
               An Expert&apos;s public page (name, headline, bio, photo, price)
