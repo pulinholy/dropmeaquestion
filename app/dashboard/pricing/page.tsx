@@ -26,7 +26,6 @@ import {
 
 
 const responseOptions = [
-  { hours: 12, label: "Within 12 hours" },
   { hours: 24, label: "Within 24 hours" },
   { hours: 48, label: "Within 48 hours" },
 ]
@@ -77,7 +76,8 @@ export default function PricingPage() {
 
     if (expert) {
       setPrice((expert.price_cents / 100).toString())
-      setResponseWindowHours(String(expert.response_window_hours))
+      // An older shorter promise (12 hours) is no longer offered: show 24.
+      setResponseWindowHours(String(Math.max(24, expert.response_window_hours)))
       setHeadline(expert.headline ?? "")
     }
 

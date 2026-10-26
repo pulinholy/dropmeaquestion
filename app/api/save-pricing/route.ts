@@ -4,7 +4,7 @@ import { requireUser } from '@/lib/require-user'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { checkFollowUpPrice, checkQuestionPrice } from '@/lib/pricing'
 
-const RESPONSE_WINDOWS = [12, 24, 48]
+const RESPONSE_WINDOWS = [24, 48]
 
 // Saves the signed-in expert's prices and response time. The price rules (whole
 // dollars, $5-$500 for questions and $15-$100 for conversations) are checked
