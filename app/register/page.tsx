@@ -278,6 +278,10 @@ export default function RegisterPage() {
           <p className="mt-2 text-ink-soft">
             Set up the basics. You can update everything later.
           </p>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-ink-soft">
+            To get paid, you&apos;ll connect a Stripe account. For now, experts
+            must be based in the United States.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-10 space-y-6">
