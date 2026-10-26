@@ -79,16 +79,19 @@ export async function sendFollowUpRequestedEmails({
     )
   }
 
+  // Short on purpose: the full rules are shown at checkout and on the policy
+  // page, so this email carries only the confirmation and the key disclosures.
   const askerBody = `
     <p style="margin:0 0 16px;">Your request for a 15-minute conversation with ${name} has been sent.</p>
-    <p style="margin:0 0 8px;">The times you proposed:</p>
+    <p style="margin:0 0 8px; font-weight:bold; color:#17243a;">Your proposed times</p>
     <ul style="margin:0 0 16px; padding-left:20px;">${times}</ul>
-    <p style="margin:0 0 12px;">${name} has 24 hours to confirm one of your proposed times. You&rsquo;ll get an email when it&rsquo;s confirmed. If ${name} can&rsquo;t make any of them, we&rsquo;ll let you know and release the hold.</p>
-    <p style="margin:0 0 16px;">Your card has a temporary $${formatPrice(priceCents)} hold. You&rsquo;re only charged after the conversation takes place.</p>
+    <p style="margin:0 0 8px; font-weight:bold; color:#17243a;">What happens next</p>
+    <p style="margin:0 0 16px;">${name} has 24 hours to confirm one of these times. We&rsquo;ll email you once it&rsquo;s confirmed. If none of them works, we&rsquo;ll let you know and release your hold.</p>
+    <p style="margin:0 0 8px; font-weight:bold; color:#17243a;">Payment</p>
+    <p style="margin:0 0 20px;">$${formatPrice(priceCents)} is on hold on your card. You&rsquo;re charged only after the conversation takes place.</p>
     ${renderEmailButton(`${EMAIL_BASE_URL}/meet/${followUpId}`, 'View your request &rarr;')}
-    <p style="margin:16px 0 4px; font-size:13px; font-weight:bold; color:#17243a;">How it works</p>
-    <ul style="margin:0 0 16px; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_POLICY_LINES)}</ul>
-    <ul style="margin:0; padding-left:20px; font-size:13px; color:#4a5568;">${listItems(FOLLOW_UP_PRIVACY_LINES)}</ul>
+    <p style="margin:16px 0 4px; font-size:13px; color:#4a5568;">You can cancel for free until 24 hours before the conversation. If ${name} cancels or doesn&rsquo;t join, you won&rsquo;t be charged. See the <a href="${EMAIL_BASE_URL}/conversation-policy" style="color:#4a5568;">Conversation &amp; Cancellation Policy</a>.</p>
+    <p style="margin:0; font-size:13px; color:#4a5568;">Your email address stays private. The conversation takes place on Drop Me A Question.</p>
   `
   await send(
     askerEmail,
