@@ -41,6 +41,9 @@ export default function QuestionForm({
 }) {
   const [question, setQuestion] = useState(starter ?? "")
   const [email, setEmail] = useState("")
+  // Off unless the asker ticks it: the expert only ever sees an email that
+  // was shared on purpose.
+  const [shareEmail, setShareEmail] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
@@ -85,6 +88,7 @@ export default function QuestionForm({
           expertId,
           question,
           email,
+          shareEmail,
           username,
         }),
         signal: controller.signal,
@@ -165,8 +169,22 @@ export default function QuestionForm({
             className="w-full rounded-sm border border-line py-2 pl-9 pr-3 text-ink placeholder:text-ink-soft/60"
           />
         </div>
+        <label className="mt-2 flex cursor-pointer items-start gap-2 text-xs text-ink-soft">
+          <input
+            type="checkbox"
+            checked={shareEmail}
+            onChange={(e) => setShareEmail(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-shrink-0 accent-postal-red"
+          />
+          <span>
+            Share my email with {expertFirstName} so they can contact me directly
+            (optional).
+          </span>
+        </label>
         <p className="mt-1 text-xs text-ink-soft">
-          🔒 Your email stays private and isn&apos;t shared with {expertFirstName}.
+          {shareEmail
+            ? `🔓 ${expertFirstName} will see your email next to your question.`
+            : `🔒 Your email stays private and isn't shared with ${expertFirstName}.`}
         </p>
       </div>
       {error && <p className="text-sm text-postal-red">{error}</p>}

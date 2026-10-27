@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Last updated: October 26, 2026
+          Last updated: October 27, 2026
         </p>
 
         <div className="mt-10 space-y-10 text-ink-soft">
@@ -117,9 +117,15 @@ export default function PrivacyPage() {
             <p className="mt-3">
               An Expert&apos;s public page (name, headline, bio, photo, price)
               is, by design, visible to anyone who visits it. An Asker&apos;s
-              email address and question are only visible to the Expert
-              they&apos;re addressed to, and to DMQ as needed to operate the
-              Service.
+              question is visible to the Expert it&apos;s addressed to, and to
+              DMQ as needed to operate the Service. An Asker&apos;s email
+              address is not shown to the Expert unless the Asker ticks the
+              box at checkout to share it with that Expert. If they do, the
+              Expert sees it next to the question and may use it only to
+              follow up with the Asker, under our Terms. An Asker who changed
+              their mind can email us and we&apos;ll ask the Expert to stop
+              contacting them. Otherwise, DMQ uses the address only to send
+              the Asker their answer and related notices.
             </p>
             <p className="mt-3">
               We don&apos;t share your information with anyone else unless

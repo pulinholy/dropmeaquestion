@@ -6,6 +6,8 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { formatPrice } from "@/lib/follow-up-rules"
 import { isPastDeadline, parseUtcDate } from "@/lib/question-deadline"
+import { buildQaCsv, type QaRow } from "@/lib/qa-csv"
+import { fetchAskerContacts } from "@/lib/fetch-asker-contacts"
 import { useQuestionCounts } from "../../questions-context"
 
 const statusTabs = [
@@ -67,6 +69,21 @@ function formatShortDate(dateStr: string): string {
   })
 }
 
+function SharedEmail({ email }: { email: string | undefined }) {
+  if (!email) return null
+  return (
+    <p className="mt-2 text-sm text-ink-soft">
+      <span className="text-xs font-medium tracking-wide">SHARED BY ASKER</span>{" "}
+      <a
+        href={`mailto:${email}`}
+        className="text-postal-blue underline decoration-line underline-offset-4 hover:text-ink"
+      >
+        {email}
+      </a>
+    </p>
+  )
+}
+
 export default function QuestionsByStatusPage() {
   const params = useParams<{ status: string }>()
   const status = params.status
@@ -87,6 +104,10 @@ export default function QuestionsByStatusPage() {
   // Shown when an answer was saved and sent but its payment didn't go through
   // at once. It is retried automatically, so this is only a heads-up.
   const [paymentNotice, setPaymentNotice] = useState("")
+  // Emails askers chose to share with this expert, by question id.
+  const [contacts, setContacts] = useState<Record<string, string>>({})
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState("")
 
   useEffect(() => {
     loadQuestions()
@@ -125,7 +146,9 @@ export default function QuestionsByStatusPage() {
     const userId = sessionData.session.user.id
 
     // Explicit column list -- asker_email is deliberately excluded so it
-    // never reaches the expert's browser, not just hidden from the UI.
+    // never reaches the expert's browser, not just hidden from the UI. The
+    // few emails askers chose to share come separately, from the server.
+    const contactsPromise = fetchAskerContacts(sessionData.session.access_token)
     const { data, error } = await supabase
       .from("questions")
       .select(
@@ -136,6 +159,7 @@ export default function QuestionsByStatusPage() {
       .order("created_at", { ascending: false })
 
     if (!error && data) {
+      setContacts(await contactsPromise)
       // A pending question whose response time has run out counts as expired
       // straight away. The row itself only changes when the nightly job runs,
       // which also releases the card hold and emails the asker.
@@ -150,6 +174,46 @@ export default function QuestionsByStatusPage() {
       )
     }
     setLoading(false)
+  }
+
+  async function downloadQa() {
+    if (exporting) return
+    setExporting(true)
+    setExportError("")
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setExporting(false)
+      return
+    }
+
+    // Same rule as the list above: no asker_email in the select.
+    const sharedPromise = fetchAskerContacts(sessionData.session.access_token)
+    const { data, error } = await supabase
+      .from("questions")
+      .select("id, reference_id, created_at, answered_at, question_text, answer_text")
+      .eq("expert_id", sessionData.session.user.id)
+      .eq("status", "answered")
+      .order("created_at", { ascending: true })
+
+    if (error || !data) {
+      setExportError("We couldn't prepare the download. Please try again.")
+      setExporting(false)
+      return
+    }
+
+    const shared = await sharedPromise
+    const rows: QaRow[] = data.map((q) => ({ ...q, shared_email: shared[q.id] ?? null }))
+    const blob = new Blob([buildQaCsv(rows)], { type: "text/csv;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `dmq-questions-and-answers-${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+    setExporting(false)
   }
 
   async function viewAttachment(path: string) {
@@ -294,6 +358,26 @@ export default function QuestionsByStatusPage() {
           )
         })}
       </div>
+      {status === "answered" && counts.answered > 0 && (
+        <div className="mt-4">
+          <button
+            onClick={downloadQa}
+            disabled={exporting}
+            className="text-sm text-postal-blue underline decoration-line underline-offset-4 hover:text-ink disabled:opacity-50"
+          >
+            {exporting ? "Preparing..." : "Download all answered questions (CSV)"}
+          </button>
+          <p className="mt-1 text-xs text-ink-soft">
+            Your questions and answers, for a spreadsheet or your own content. The email column is
+            filled in only for askers who chose to share theirs with you.
+          </p>
+          {exportError && (
+            <p role="alert" className="mt-1 text-sm text-postal-red">
+              {exportError}
+            </p>
+          )}
+        </div>
+      )}
       <div className="mt-4 space-y-3">
         {questions.length === 0 && (
           <p className="text-ink-soft">No {label.toLowerCase()} questions.</p>
@@ -314,6 +398,7 @@ export default function QuestionsByStatusPage() {
                 {formatRelativeTime(q.created_at)} · Reply by {formatReplyBy(q.deadline_at)}
               </p>
               <p className="mt-1 whitespace-pre-wrap text-ink">{q.question_text}</p>
+              <SharedEmail email={contacts[q.id]} />
 
               {answerError && answerError.id === q.id && (
                 <p role="alert" className="mt-2 text-sm text-postal-red">
@@ -428,6 +513,7 @@ export default function QuestionsByStatusPage() {
                   {formatShortDate(q.created_at)}
                 </p>
                 <p className="mt-1 whitespace-pre-wrap text-ink">{q.question_text}</p>
+                <SharedEmail email={contacts[q.id]} />
 
                 {q.feedback_rating && (
                   <div className="mt-1 flex items-center gap-1.5">

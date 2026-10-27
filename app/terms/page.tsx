@@ -18,7 +18,7 @@ export default function TermsPage() {
           Terms of Service
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Last updated: October 24, 2026
+          Last updated: October 27, 2026
         </p>
 
         <div className="mt-10 space-y-10 text-ink-soft">
@@ -275,6 +275,14 @@ export default function TermsPage() {
                 DMQ to avoid its fees.
               </li>
             </ul>
+            <p className="mt-3">
+              Askers can choose to share their email address with an Expert
+              when they ask a question. Experts may use a shared address only
+              to follow up with that Asker about their question or their own
+              work. Experts must not sell it, share it with anyone else, or
+              send marketing email to it without including a working way to
+              opt out, and must stop contacting an Asker who asks them to.
+            </p>
             <p className="mt-3">
               We may suspend or terminate accounts that violate these rules.
             </p>

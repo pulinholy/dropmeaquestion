@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   ])
   if (limited) return limited
 
-  const { expertId, question, email, username } = await request.json()
+  const { expertId, question, email, username, shareEmail } = await request.json()
 
   if (typeof question !== 'string' || question.length > MAX_QUESTION_LENGTH) {
     return NextResponse.json(
@@ -91,6 +91,11 @@ export async function POST(request: Request) {
         status: 'awaiting_payment',
         price_cents: expert.price_cents,
         reference_id: generateReferenceId(),
+        // Only ever written when the asker ticked the box, so a question
+        // without consent never depends on these columns existing.
+        ...(shareEmail === true
+          ? { share_email_with_expert: true, share_email_consent_at: new Date().toISOString() }
+          : {}),
       })
       .select('id')
       .single()
