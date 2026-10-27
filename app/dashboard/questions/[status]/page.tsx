@@ -6,6 +6,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { formatPrice } from "@/lib/follow-up-rules"
 import { isPastDeadline, parseUtcDate } from "@/lib/question-deadline"
+import { DownloadIcon } from "@/components/icons"
 import { buildQaCsv, type QaRow } from "@/lib/qa-csv"
 import { fetchAskerContacts } from "@/lib/fetch-asker-contacts"
 import { useQuestionCounts } from "../../questions-context"
@@ -359,20 +360,26 @@ export default function QuestionsByStatusPage() {
         })}
       </div>
       {status === "answered" && counts.answered > 0 && (
-        <div className="mt-4">
-          <button
-            onClick={downloadQa}
-            disabled={exporting}
-            className="text-sm text-postal-blue underline decoration-line underline-offset-4 hover:text-ink disabled:opacity-50"
-          >
-            {exporting ? "Preparing..." : "Download all answered questions (CSV)"}
-          </button>
-          <p className="mt-1 text-xs text-ink-soft">
-            Your questions and answers, for a spreadsheet or your own content. The email column is
-            filled in only for askers who chose to share theirs with you.
-          </p>
+        <div className="mt-4 rounded-sm border border-line p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-ink">Export questions &amp; answers</h2>
+              <p className="mt-0.5 text-xs text-ink-soft">
+                Download your answered questions as a CSV. Asker emails are included only when they
+                agreed to share them.
+              </p>
+            </div>
+            <button
+              onClick={downloadQa}
+              disabled={exporting}
+              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-sm border border-line px-3 py-1.5 text-sm font-medium text-ink hover:bg-line disabled:opacity-50"
+            >
+              <DownloadIcon className="h-4 w-4" />
+              {exporting ? "Preparing..." : "Download CSV"}
+            </button>
+          </div>
           {exportError && (
-            <p role="alert" className="mt-1 text-sm text-postal-red">
+            <p role="alert" className="mt-2 text-sm text-postal-red">
               {exportError}
             </p>
           )}
