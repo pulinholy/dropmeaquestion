@@ -18,7 +18,7 @@ export default function TermsPage() {
           Terms of Service
         </h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Last updated: October 27, 2026
+          Last updated: October 28, 2026
         </p>
 
         <div className="mt-10 space-y-10 text-ink-soft">
@@ -35,8 +35,9 @@ export default function TermsPage() {
             <p className="mt-3">
               There are two kinds of people who use DMQ, and these Terms
               apply to both: <strong className="text-ink">Experts</strong>{" "}
-              — people who create a page, set a price, and answer questions,
-              and who can also offer paid follow-up conversations — and{" "}
+              — people who create a page, set a price, and answer questions
+              (coaches, creators, consultants, and anyone else who sets up a
+              page), and who can also offer paid follow-up conversations — and{" "}
               <strong className="text-ink">Askers</strong> — people who pay
               to ask an Expert a question, or to book a follow-up conversation. We refer to both together as
               &quot;users&quot; or &quot;you.&quot;

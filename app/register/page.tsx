@@ -394,7 +394,7 @@ export default function RegisterPage() {
             icon={DocumentIcon}
             iconBg="bg-green-500/10"
             iconText="text-green-700"
-            title="Your expertise"
+            title="What you&apos;re known for"
             description="Tell people about your background and what they can ask you."
           >
             <div>
@@ -468,7 +468,7 @@ export default function RegisterPage() {
                 What can people ask you about?
               </label>
               <p className="mt-1 text-sm text-ink-soft">
-                Add up to 5 topics that describe your expertise.
+                Add up to 5 topics people ask you about.
               </p>
               <div className="mt-2">
                 <TopicInput topics={topics} onChange={setTopics} />

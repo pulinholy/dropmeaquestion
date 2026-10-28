@@ -233,7 +233,7 @@ export default async function Home() {
               </a>
             </div>
             <p className="mt-4 text-sm text-ink-soft">
-              No website. No invoices. Just your expertise.
+              No website. No invoices. Just what you know.
             </p>
           </div>
 
@@ -320,7 +320,7 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-6 py-16">
           <h2 className="font-display text-3xl text-ink">How it works</h2>
           <p className="mt-2 text-ink-soft">
-            Get paid for your expertise in a few simple steps.
+            Get paid for what you know in a few simple steps.
           </p>
           <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {howItWorks.map(
@@ -548,7 +548,7 @@ export default async function Home() {
               Here to ask a question?
             </h2>
             <p className="mt-2 text-sm text-ink-soft">
-              You&apos;ll need a personal link from the expert you want to ask.
+              You&apos;ll need a personal link from the person you want to ask.
             </p>
 
             <div className="mt-6 space-y-3 text-left">
@@ -558,7 +558,7 @@ export default async function Home() {
                   Already have their link?
                 </p>
                 <p className="mt-1.5 text-sm text-ink-soft">
-                  Open the link the expert shared with you to ask your question.
+                  Open the link they shared with you to ask your question.
                 </p>
               </div>
               <div className="rounded-lg bg-blue-500/10 p-4">
@@ -567,14 +567,14 @@ export default async function Home() {
                   Don&apos;t have a link yet?
                 </p>
                 <p className="mt-1.5 text-sm text-ink-soft">
-                  Ask the expert to share their Drop Me A Question page with you.
+                  Ask them to share their Drop Me A Question page with you.
                 </p>
               </div>
             </div>
 
             <div className="mt-6 border-t border-line pt-5">
               <p className="text-xs text-ink-soft">
-                Are you an expert who wants to receive paid questions?
+                Want to receive paid questions yourself?
               </p>
               <Link
                 href="/register"
