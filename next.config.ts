@@ -53,8 +53,11 @@ const dailyFrames = "https://*.daily.co https://*.dailywebrtc.com https://*.dail
 // are included, not just the page that shows the call, or the call would be
 // blocked after arriving by a sidebar link.
 const callPages = ["/admin/:path*", "/meet/:followUpId", "/dashboard/:path*"];
+// The dashboard also shows the "Preview & Send" PDF, which the browser holds as
+// a blob: address, so frames may load those too. Nothing outside the page can
+// create a blob: address that this page would then frame.
 const callPageHeaders = [
-  { key: "Content-Security-Policy", value: buildCsp([`frame-src ${dailyFrames}`]) },
+  { key: "Content-Security-Policy", value: buildCsp([`frame-src ${dailyFrames} blob:`]) },
   {
     key: "Permissions-Policy",
     value: `camera=(self "https://*.daily.co"), microphone=(self "https://*.daily.co"), geolocation=(), payment=(), usb=()`,

@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
 import {
+  renderEmailButton,
   renderEmailLayout,
   renderEmailQuote,
   renderEmailSecondaryButton,
   EMAIL_BASE_URL,
 } from '@/lib/email-layout'
+import { loadExpertLetterInfo } from '@/lib/answer-letter'
+import { normalizeSignature, renderSignatureHtml } from '@/lib/answer-signature'
 import { logError } from '@/lib/log-error'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireUser } from '@/lib/require-user'
@@ -61,6 +64,18 @@ export async function POST(request: Request) {
   const expertName = profile?.full_name || 'Your expert'
   const expertFirstName = expertName.split(' ')[0]
   const feedbackUrl = `${EMAIL_BASE_URL}/feedback/${questionId}`
+  const pdfUrl = `${EMAIL_BASE_URL}/answer/${questionId}/pdf`
+
+  // The signature saved with this answer when it was sent. If that isn't there
+  // (an older answer, or the database doesn't have the column yet) the expert's
+  // current signature is used, which is never empty.
+  const letterInfo = await loadExpertLetterInfo(user.id)
+  const { data: snapshot } = await supabaseAdmin
+    .from('questions')
+    .select('answer_signature')
+    .eq('id', questionId)
+    .maybeSingle()
+  const signature = normalizeSignature(snapshot?.answer_signature, letterInfo.signature)
 
   // An optional paid follow-up conversation, only when this expert offers
   // them and the offer is still open. Any trouble checking means no offer.
@@ -115,6 +130,12 @@ export async function POST(request: Request) {
     <div style="margin:0 0 20px; padding:20px 22px; background-color:#eaf2fb; border:1px solid #cddff2; border-radius:8px;">
       <p style="margin:0 0 10px; font-size:18px; font-weight:bold; line-height:1.3;">${first}&rsquo;s answer</p>
       <div style="font-size:16px; line-height:1.65; white-space:pre-wrap;">${escapeHtml(question.answer_text ?? '')}</div>
+      ${renderSignatureHtml(signature)}
+    </div>
+    <div style="margin:0 0 20px; padding:16px 18px; background-color:#faf8f4; border:1px solid #e6dfd0; border-radius:6px;">
+      <p style="margin:0 0 3px; font-size:15px; font-weight:bold; line-height:1.3;">Your personalized answer</p>
+      <p style="margin:0 0 12px; font-size:13px; color:#4a5568;">A nicely formatted PDF of your question and ${first}&rsquo;s answer, with ${first}&rsquo;s signature. Keep it or share it.</p>
+      ${renderEmailButton(pdfUrl, 'View &amp; download your answer &rarr;')}
     </div>
     <p style="margin:0; font-size:13px; color:#4a5568;">Was this helpful? <a href="${feedbackUrl}" style="color:#17243a; font-weight:bold; text-decoration:underline;">Give feedback &rarr;</a></p>
     ${followUpBlock}

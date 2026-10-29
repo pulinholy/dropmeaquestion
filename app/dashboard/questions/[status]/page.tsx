@@ -9,6 +9,8 @@ import { isPastDeadline, parseUtcDate } from "@/lib/question-deadline"
 import { DownloadIcon } from "@/components/icons"
 import { buildQaCsv, type QaRow } from "@/lib/qa-csv"
 import { fetchAskerContacts } from "@/lib/fetch-asker-contacts"
+import { ANSWER_MAX_CHARS } from "@/lib/answer-limits"
+import AnswerPreviewDialog from "@/components/AnswerPreviewDialog"
 import { useQuestionCounts } from "../../questions-context"
 
 const statusTabs = [
@@ -96,6 +98,8 @@ export default function QuestionsByStatusPage() {
   const [answering, setAnswering] = useState<string | null>(null)
   const [answerText, setAnswerText] = useState("")
   const [processingId, setProcessingId] = useState<string | null>(null)
+  // The question whose "Preview & Send" window is open.
+  const [previewing, setPreviewing] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   // Whether this expert has follow-up conversations switched on in Pricing,
   // and whether to offer one with the answer being written.
@@ -286,6 +290,8 @@ export default function QuestionsByStatusPage() {
     }).catch(() => null)
 
     if (!saveRes || !saveRes.ok) {
+      // Back to the answer box, where the problem is shown.
+      setPreviewing(null)
       const saveData = saveRes ? await saveRes.json().catch(() => null) : null
       setAnswerError({
         id: questionId,
@@ -322,6 +328,7 @@ export default function QuestionsByStatusPage() {
       body: JSON.stringify({ questionId, offerFollowUp: followUpPriceCents === null || offerFollowUp }),
     })
 
+    setPreviewing(null)
     setAnswering(null)
     setAnswerText("")
     loadQuestions()
@@ -418,6 +425,7 @@ export default function QuestionsByStatusPage() {
                   <textarea
                     rows={3}
                     value={answerText}
+                    maxLength={ANSWER_MAX_CHARS}
                     onChange={(e) => setAnswerText(e.target.value)}
                     className="w-full rounded-sm border border-line px-3 py-2 text-ink"
                     placeholder="Write your answer..."
@@ -459,11 +467,14 @@ export default function QuestionsByStatusPage() {
                   )}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => submitAnswer(q.id)}
-                      disabled={processingId === q.id}
+                      onClick={() => {
+                        setAnswerError(null)
+                        setPreviewing(q.id)
+                      }}
+                      disabled={processingId === q.id || !answerText.trim()}
                       className="rounded-sm bg-ink px-3 py-1.5 text-sm font-medium text-paper hover:bg-postal-blue disabled:opacity-50"
                     >
-                      {processingId === q.id ? "Sending..." : "Send Answer"}
+                      Preview &amp; Send
                     </button>
                     <button
                       onClick={() => setAnswering(null)}
@@ -581,6 +592,16 @@ export default function QuestionsByStatusPage() {
             )
           })}
       </div>
+
+      {previewing && (
+        <AnswerPreviewDialog
+          questionId={previewing}
+          answerText={answerText}
+          sending={processingId === previewing}
+          onBack={() => setPreviewing(null)}
+          onConfirm={() => submitAnswer(previewing)}
+        />
+      )}
     </section>
   )
 }

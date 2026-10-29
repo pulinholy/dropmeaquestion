@@ -5,6 +5,7 @@ import Link from "next/link"
 import QRCode from "qrcode"
 import { supabase } from "@/lib/supabase"
 import QuestionFormCard, { useQuestionForm } from "@/components/QuestionFormSettings"
+import AnswerSignatureCard, { useAnswerSignature } from "@/components/AnswerSignatureSettings"
 import { formatResponseWindow } from "@/lib/format"
 import { useProfileInfo } from "../profile-context"
 import { useActiveStatus } from "../active-status-context"
@@ -35,6 +36,7 @@ export default function SettingsPage() {
   const { isActive, loading: activeStatusLoading, toggling, toggleActive } = useActiveStatus()
 
   const questionForm = useQuestionForm()
+  const answerSignature = useAnswerSignature(profile.fullName)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -211,8 +213,9 @@ export default function SettingsPage() {
     }
 
     const questionFormError = await questionForm.save()
-    if (questionFormError) {
-      setError(questionFormError)
+    const signatureError = await answerSignature.save()
+    if (questionFormError || signatureError) {
+      setError(questionFormError || signatureError || "")
     } else {
       setSaved(true)
     }
@@ -611,6 +614,8 @@ export default function SettingsPage() {
 
       <QuestionFormCard form={questionForm} firstName={profile.fullName?.split(" ")[0] || "you"} />
 
+      <AnswerSignatureCard form={answerSignature} />
+
       <div className="mt-5">
               {error && <p className="text-sm text-postal-red">{error}</p>}
               {saved && <p className="text-sm text-postal-blue">Saved.</p>}
@@ -629,6 +634,7 @@ export default function SettingsPage() {
                   onClick={() => {
                     load()
                     questionForm.reload()
+                    answerSignature.reload()
                   }}
                   className="text-sm font-medium text-ink-soft hover:text-ink"
                 >
