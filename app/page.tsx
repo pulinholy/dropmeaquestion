@@ -12,6 +12,7 @@ import {
   ClockIcon,
   ChatIcon,
   ChatBubbleMarkIcon,
+  MailIcon,
   LockIcon,
   RobotIcon,
   PersonIcon,
@@ -95,6 +96,12 @@ const conversationPoints = [
     iconBg: "bg-blue-500/10",
     iconText: "text-blue-600",
   },
+]
+
+const whenToUse = [
+  { icon: ChatIcon, label: "A follower DMs you a question" },
+  { icon: ChatBubbleMarkIcon, label: "A viewer asks for help in the comments" },
+  { icon: MailIcon, label: "Someone emails to pick your brain" },
 ]
 
 const answerPoints = [
@@ -337,6 +344,30 @@ export default async function Home() {
               </a>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* When an expert would use it */}
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-3xl px-6 py-12 text-center">
+          <h2 className="font-display text-2xl text-ink sm:text-3xl">
+            Already answering questions for free?
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-lg text-ink-soft">
+            Turn the DMs, comments and &ldquo;can I pick your brain?&rdquo; emails into a simple paid
+            offering. No scheduling and no course to build.
+          </p>
+          <ul className="mt-6 flex flex-wrap justify-center gap-3">
+            {whenToUse.map(({ icon: Icon, label }) => (
+              <li
+                key={label}
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm text-ink"
+              >
+                <Icon className="h-4 w-4 flex-shrink-0 text-postal-red" />
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
