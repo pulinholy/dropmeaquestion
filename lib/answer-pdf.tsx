@@ -1,3 +1,5 @@
+import { existsSync } from 'fs'
+import path from 'path'
 import { Document, Font, Link, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer'
 import { PUBLIC_SITE_URL } from './site'
 import { SIGNATURE_COLORS, type AnswerSignature } from './answer-signature'
@@ -34,6 +36,14 @@ export function pdfSafeText(text: string): string {
 // Words are never split with a hyphen: it looks odd in a letter.
 Font.registerHyphenationCallback((word) => [word])
 
+// The handwriting used for the signature name only (Caveat, SIL Open Font
+// License; see assets/fonts/Caveat-OFL.txt). Literal path so Vercel's file
+// tracing ships it with the function. If it ever can't be found the name falls
+// back to the plain italic, so a missing file never breaks a document.
+const HANDWRITING_FILE = path.join(process.cwd(), 'assets', 'fonts', 'Caveat-Variable.ttf')
+const hasHandwriting = existsSync(HANDWRITING_FILE)
+if (hasHandwriting) Font.register({ family: 'Caveat', src: HANDWRITING_FILE })
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 52,
@@ -49,15 +59,22 @@ const styles = StyleSheet.create({
   fromName: { fontSize: 22, fontFamily: 'Helvetica-Bold', marginTop: 4, lineHeight: 1.2 },
   headline: { fontSize: 9.5, color: SOFT, marginTop: 3 },
   rule: { borderBottomWidth: 1, borderBottomColor: LINE, marginTop: 18, marginBottom: 18 },
-  question: { fontSize: 14, fontFamily: 'Helvetica-Bold', marginTop: 5, lineHeight: 1.35 },
+  // The question is context: small, plain and grey, so the answer leads.
+  questionLabel: { fontSize: 7.5, letterSpacing: 1, color: SOFT, fontFamily: 'Helvetica-Bold' },
+  question: { fontSize: 10, color: SOFT, marginTop: 4, lineHeight: 1.45 },
+  // The answer is the main thing on the page: larger type in a warm panel with
+  // a coral edge.
   answerBox: {
-    marginTop: 16,
-    backgroundColor: '#f4f1ea',
-    borderRadius: 6,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
+    marginTop: 22,
+    backgroundColor: '#fdf3f0',
+    borderLeftWidth: 3,
+    borderLeftColor: CORAL,
+    borderRadius: 4,
+    paddingVertical: 18,
+    paddingHorizontal: 22,
   },
-  paragraph: { fontSize: 11, lineHeight: 1.55, marginTop: 8 },
+  answerLabel: { fontSize: 9, letterSpacing: 1.2, color: CORAL, fontFamily: 'Helvetica-Bold' },
+  paragraph: { fontSize: 12.5, lineHeight: 1.6, marginTop: 10 },
   closing: { fontSize: 11, marginTop: 24 },
   sigTitle: { fontSize: 9, color: SOFT, marginTop: 2 },
   footer: { position: 'absolute', bottom: 28, left: 56, right: 56 },
@@ -113,14 +130,14 @@ function AnswerDocument(input: AnswerPdfInput) {
         <View style={styles.rule} />
 
         <View>
-          <Text style={styles.eyebrow}>YOUR QUESTION</Text>
+          <Text style={styles.questionLabel}>YOUR QUESTION</Text>
           <Text style={styles.question}>{pdfSafeText(input.question)}</Text>
         </View>
 
         <View style={styles.answerBox}>
-          <Text style={styles.eyebrow}>MY ANSWER</Text>
+          <Text style={styles.answerLabel}>MY ANSWER</Text>
           {paragraphs.map((p, i) => (
-            <Text key={i} style={i === 0 ? { ...styles.paragraph, marginTop: 6 } : styles.paragraph}>
+            <Text key={i} style={i === 0 ? { ...styles.paragraph, marginTop: 8 } : styles.paragraph}>
               {p}
             </Text>
           ))}
@@ -128,16 +145,30 @@ function AnswerDocument(input: AnswerPdfInput) {
 
         <View wrap={false}>
           <Text style={styles.closing}>{pdfSafeText(input.signature.closing)}</Text>
-          <Text
-            style={{
-              fontSize: 15,
-              marginTop: 6,
-              color,
-              fontFamily: input.signature.boldName ? 'Helvetica-BoldOblique' : 'Helvetica-Oblique',
-            }}
-          >
-            {name}
-          </Text>
+          {hasHandwriting ? (
+            // A little larger than the italic, with a slight upward tilt, like a
+            // real signature. "Bold" is drawn as a second pass a hair to the
+            // side, because the font file has one weight.
+            <View style={{ marginTop: 4, height: 34, transform: 'rotate(-2deg)', transformOrigin: 'left center' }}>
+              <Text style={{ fontFamily: 'Caveat', fontSize: 28, color, lineHeight: 1.1 }}>{name}</Text>
+              {input.signature.boldName ? (
+                <Text style={{ fontFamily: 'Caveat', fontSize: 28, color, lineHeight: 1.1, position: 'absolute', left: 0.5, top: 0 }}>
+                  {name}
+                </Text>
+              ) : null}
+            </View>
+          ) : (
+            <Text
+              style={{
+                fontSize: 15,
+                marginTop: 6,
+                color,
+                fontFamily: input.signature.boldName ? 'Helvetica-BoldOblique' : 'Helvetica-Oblique',
+              }}
+            >
+              {name}
+            </Text>
+          )}
           {input.signature.title ? <Text style={styles.sigTitle}>{pdfSafeText(input.signature.title)}</Text> : null}
         </View>
 

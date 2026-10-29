@@ -80,6 +80,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The answer PDF reads its signature handwriting font from disk, so make sure
+  // the file ships with the two routes that build the PDF.
+  outputFileTracingIncludes: {
+    "/answer/**": ["./assets/fonts/Caveat-Variable.ttf"],
+    "/api/preview-answer": ["./assets/fonts/Caveat-Variable.ttf"],
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
