@@ -1,6 +1,7 @@
 import Link from "next/link"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
+import SampleAnswerCard from "@/components/SampleAnswerCard"
 import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { formatPrice, formatResponseWindow } from "@/lib/format"
@@ -93,6 +94,30 @@ const conversationPoints = [
     body: "Your email isn't shared. Join directly on Drop Me A Question, with no recording.",
     iconBg: "bg-blue-500/10",
     iconText: "text-blue-600",
+  },
+]
+
+const answerPoints = [
+  {
+    icon: ChatIcon,
+    title: "Written in your own voice",
+    body: "Answer in your own words and sign it with your name.",
+    iconBg: "bg-blue-500/10",
+    iconText: "text-blue-600",
+  },
+  {
+    icon: DocumentIcon,
+    title: "A PDF to keep or share",
+    body: "Askers can view and download their answer from the email.",
+    iconBg: "bg-postal-red/10",
+    iconText: "text-postal-red",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: "Charged only if you answer",
+    body: "The asker's card is only charged when you answer in time.",
+    iconBg: "bg-green-500/10",
+    iconText: "text-green-700",
   },
 ]
 
@@ -311,6 +336,37 @@ export default async function Home() {
                 </span>
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What the asker receives — a sample of the personal answer */}
+      <section className="border-t border-line bg-card">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <h2 className="font-display text-3xl text-ink">What your asker receives</h2>
+              <p className="mt-3 text-lg text-ink-soft">
+                A personal, signed answer they can keep, not a generic reply.
+              </p>
+              <ul className="mt-8 space-y-5">
+                {answerPoints.map(({ icon: Icon, title, body, iconBg, iconText }) => (
+                  <li key={title} className="flex items-start gap-4">
+                    <span
+                      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${iconBg} ${iconText}`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="font-medium text-ink">{title}</p>
+                      <p className="mt-0.5 text-sm text-ink-soft">{body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <SampleAnswerCard />
           </div>
         </div>
       </section>
