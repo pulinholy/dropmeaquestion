@@ -516,7 +516,7 @@ export default async function Home() {
             ))}
           </div>
           <p className="mt-6 text-center text-ink-soft">
-            And anyone people already come to for advice.
+            And anyone people already come to with questions.
           </p>
         </div>
       </section>
