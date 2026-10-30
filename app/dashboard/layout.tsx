@@ -37,7 +37,7 @@ const PRODUCT_FEEDBACK_HREF = `mailto:hello@dropmeaquestion.com?subject=${encode
 const yourPageLinks = [
   { href: "/dashboard/profile", label: "Profile", icon: PersonIcon },
   { href: "/dashboard/pricing", label: "Pricing", icon: TagIcon },
-  { href: "/dashboard/settings", label: "Page settings", icon: SettingsIcon },
+  { href: "/dashboard/settings", label: "Settings", icon: SettingsIcon },
   { href: "/dashboard/feedback", label: "Feedback", icon: StarIcon },
   {
     href: "/dashboard/get-more-questions",
@@ -83,6 +83,7 @@ export default function DashboardLayout({
     username: null,
     avatarUrl: null,
   })
+  const [accountEmail, setAccountEmail] = useState("")
   const [isActive, setIsActive] = useState(true)
   const [activeStatusLoading, setActiveStatusLoading] = useState(true)
   const [togglingActive, setTogglingActive] = useState(false)
@@ -163,6 +164,7 @@ export default function DashboardLayout({
         return
       }
 
+      setAccountEmail(data.session.user.email ?? "")
       setCheckingSession(false)
       loadCounts()
       loadProfile()
@@ -336,9 +338,20 @@ export default function DashboardLayout({
                   {profile.fullName.charAt(0).toUpperCase() || "?"}
                 </div>
               )}
-              <p className="truncate text-sm font-medium text-ink">
-                {profile.fullName}
-              </p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-ink">
+                  {profile.fullName}
+                </p>
+                {accountEmail && (
+                  <Link
+                    href="/dashboard/settings"
+                    title={`Signed in as ${accountEmail}. Change it in Settings.`}
+                    className="block truncate text-xs text-ink-soft hover:text-postal-red"
+                  >
+                    {accountEmail}
+                  </Link>
+                )}
+              </div>
             </div>
 
             {!activeStatusLoading && (

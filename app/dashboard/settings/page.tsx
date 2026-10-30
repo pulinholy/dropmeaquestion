@@ -230,7 +230,7 @@ export default function SettingsPage() {
 
   return (
     <section>
-      <h1 className="font-display text-xl text-ink">Page settings</h1>
+      <h1 className="font-display text-xl text-ink">Settings</h1>
       <p className="mt-1 text-sm text-ink-soft">
         Manage your public page link and decide when you want to accept
         questions.
