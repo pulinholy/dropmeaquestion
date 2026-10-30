@@ -2,6 +2,7 @@ import Link from "next/link"
 import SiteHeader from "@/components/SiteHeader"
 import SiteFooter from "@/components/SiteFooter"
 import SampleAnswerCard from "@/components/SampleAnswerCard"
+import SampleConversationCard from "@/components/SampleConversationCard"
 import { supabase } from "@/lib/supabase"
 import { supabaseAdmin } from "@/lib/supabase-admin"
 import { formatPrice, formatResponseWindow } from "@/lib/format"
@@ -402,6 +403,53 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Follow-up conversations — the optional next step after an answer */}
+      <section id="conversations" className="border-t border-line">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div className="lg:order-2">
+              <h2 className="font-display text-3xl text-ink">
+                Some answers deserve{" "}
+                <span className="text-postal-red">a conversation</span>.
+              </h2>
+              <p className="mt-3 text-lg text-ink-soft">
+                Along with your answer, you can offer a 15-minute follow-up
+                conversation. The asker proposes times, you confirm one, and you
+                talk right on Drop Me A Question, in the browser, with nothing to
+                install and no meeting link to send.
+              </p>
+              <ul className="mt-8 space-y-5">
+                {conversationPoints.map(({ icon: Icon, title, body, iconBg, iconText }) => (
+                  <li key={title} className="flex items-start gap-4">
+                    <span
+                      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${iconBg} ${iconText}`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="font-medium text-ink">{title}</p>
+                      <p className="mt-0.5 text-sm text-ink-soft">{body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-sm text-ink-soft">
+                <Link
+                  href="/conversation-policy"
+                  className="font-medium text-ink underline underline-offset-2 hover:text-postal-blue"
+                >
+                  How conversations work
+                </Link>
+              </p>
+            </div>
+
+            <div className="lg:order-1">
+              <SampleConversationCard />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works — from the expert's side */}
       <section id="how" className="border-t border-line">
         <div className="mx-auto max-w-6xl px-6 py-16">
@@ -531,52 +579,6 @@ export default async function Home() {
               </span>
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Follow-up conversations */}
-      <section id="conversations" className="border-t border-line">
-        <div className="mx-auto max-w-5xl px-6 py-16">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl text-ink">
-              Some answers deserve{" "}
-              <span className="text-postal-red">a conversation</span>.
-            </h2>
-            <p className="mt-4 text-lg text-ink-soft">
-              Along with your answer, you can offer a 15-minute follow-up
-              conversation. The asker proposes times, you confirm one, and you
-              talk right on Drop Me A Question, in the browser, with nothing to
-              install and no meeting link to send.
-            </p>
-          </div>
-
-          <ul className="mt-10 grid gap-4 sm:grid-cols-3">
-            {conversationPoints.map(({ icon: Icon, title, body, iconBg, iconText }) => (
-              <li
-                key={title}
-                className="rounded-xl border border-line bg-white p-6 text-center"
-              >
-                <span
-                  className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full ${iconBg} ${iconText}`}
-                >
-                  <Icon className="h-5 w-5" />
-                </span>
-                <p className="mt-4 font-display text-lg font-semibold text-ink">
-                  {title}
-                </p>
-                <p className="mt-2 text-sm text-ink-soft">{body}</p>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-6 text-center text-sm text-ink-soft">
-            <Link
-              href="/conversation-policy"
-              className="font-medium text-ink underline underline-offset-2 hover:text-postal-blue"
-            >
-              How conversations work
-            </Link>
-          </p>
         </div>
       </section>
 
